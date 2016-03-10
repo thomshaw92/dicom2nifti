@@ -1,6 +1,2 @@
 [run]
-include =
-dicom2nifti/*
-omit =
-  */tests/*
-  */scripts/*
+source = dicom2nifti

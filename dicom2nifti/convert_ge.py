@@ -286,8 +286,11 @@ def _get_bvals_bvecs(grouped_dicoms):
         # 0043:1039: B-values (4 values, 1st value is actual B value)
 
         # bval can be stored both in string as number format in dicom so implement both
-        if isinstance(dicom_[Tag(0x0043, 0x1039)].value, string_types):
+        # some workarounds needed for implicit transfer syntax to work
+        if isinstance(dicom_[Tag(0x0043, 0x1039)].value, string_types):  # this works for python2.7
             original_bval = float(dicom_[Tag(0x0043, 0x1039)].value.split('\\')[0])
+        elif isinstance(dicom_[Tag(0x0043, 0x1039)].value, bytes):  # this works for python3.o
+            original_bval = float(dicom_[Tag(0x0043, 0x1039)].value.decode("utf-8").split('\\')[0])
         else:
             original_bval = dicom_[Tag(0x0043, 0x1039)][0]
         original_bvec = numpy.array([0, 0, 0], dtype=numpy.float)

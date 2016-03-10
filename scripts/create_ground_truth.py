@@ -1,0 +1,32 @@
+import os
+import dicom2nifti
+
+
+def subdir_count(path):
+    count = 0
+    for f in os.listdir(path):
+        child = os.path.join(path, f)
+        if os.path.isdir(child):
+            count += 1
+    return count
+
+
+def main():
+    for root, dir_names, _ in os.walk(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                                   'tests',
+                                                   'data')):
+        # New directory
+        for dir_name in dir_names:
+            dir_path = os.path.join(root, dir_name)
+            if subdir_count(dir_path) > 0:
+                continue  # not processing because not lowest level of directory
+            print(dir_path)
+            output_file = dir_path + '_ground_truth.nii.gz'
+            try:
+                dicom2nifti.dicom_series_to_nifti(dir_path, output_file)
+            except:
+                pass
+
+
+if __name__ == "__main__":
+    main()

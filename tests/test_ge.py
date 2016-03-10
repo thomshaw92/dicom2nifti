@@ -24,18 +24,18 @@ class TestConversionGE(unittest.TestCase):
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GE_DTI)[0]) == True
             assert compare_bval(results['BVAL_FILE'],
-                                ground_thruth_filenames(test_data.GE_DTI)[1]) == True
-            assert compare_bvec(results['BVEC_FILE'],
                                 ground_thruth_filenames(test_data.GE_DTI)[2]) == True
+            assert compare_bvec(results['BVEC_FILE'],
+                                ground_thruth_filenames(test_data.GE_DTI)[3]) == True
 
             convert_ge.dicom_to_nifti(test_data.GE_DTI_IMPLICIT,
                                       os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GE_DTI_IMPLICIT)[0]) == True
             assert compare_bval(results['BVAL_FILE'],
-                                ground_thruth_filenames(test_data.GE_DTI_IMPLICIT)[1]) == True
-            assert compare_bvec(results['BVEC_FILE'],
                                 ground_thruth_filenames(test_data.GE_DTI_IMPLICIT)[2]) == True
+            assert compare_bvec(results['BVEC_FILE'],
+                                ground_thruth_filenames(test_data.GE_DTI_IMPLICIT)[3]) == True
         finally:
             shutil.rmtree(tmp_output_dir)
 

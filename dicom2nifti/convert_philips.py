@@ -312,11 +312,10 @@ def _multiframe_dti_to_nifti(dicom_directory, output_file):
     print('Creating bval en bvec files')
     bval_file = '%s/%s.bval' % (base_path, base_name)
     bvec_file = '%s/%s.bvec' % (base_path, base_name)
-    img = _create_bvals_bvecs(multiframe_dicom, bval_file, bvec_file, img, output_file)
+    _create_bvals_bvecs(multiframe_dicom, bval_file, bvec_file, img, output_file)
 
     gc.collect()  # force the collection for conversion of big datasets this is needed
-    return {'NIFTI': img,
-            'NII_FILE': output_file,
+    return {'NII_FILE': output_file,
             'BVAL_FILE': bval_file,
             'BVEC_FILE': bvec_file}
 
@@ -353,8 +352,7 @@ def _multiframe_to_nifti(dicom_directory, output_file):
     img.to_filename(output_file)
 
     gc.collect()  # force the collection for conversion of big datasets this is needed
-    return {'NIFTI': img,
-            'NII_FILE': output_file}
+    return {'NII_FILE': output_file}
 
 
 def _singleframe_to_nifti(grouped_dicoms, output_file):
@@ -380,8 +378,7 @@ def _singleframe_to_nifti(grouped_dicoms, output_file):
     img.to_filename(output_file)
 
     gc.collect()  # force the collection for conversion of big datasets this is needed
-    return {'NIFTI': img,
-            'NII_FILE': output_file}
+    return {'NII_FILE': output_file}
 
 
 def _singleframe_dti_to_nifti(grouped_dicoms, output_file):
@@ -414,11 +411,10 @@ def _singleframe_dti_to_nifti(grouped_dicoms, output_file):
     print('Creating bval en bvec files')
     bval_file = '%s.bval' % base_name
     bvec_file = '%s.bvec' % base_name
-    img = _create_singleframe_bvals_bvecs(grouped_dicoms, bval_file, bvec_file, img, output_file)
+    _create_singleframe_bvals_bvecs(grouped_dicoms, bval_file, bvec_file, img, output_file)
 
     gc.collect()  # force the collection for conversion of big datasets this is needed
-    return {'NIFTI': img,
-            'NII_FILE': output_file,
+    return {'NII_FILE': output_file,
             'BVAL_FILE': bval_file,
             'BVEC_FILE': bvec_file}
 
@@ -671,8 +667,6 @@ def _create_bvals_bvecs(multiframe_dicom, bval_file, bvec_file, nifti, nifti_fil
     common.write_bval_file(bvals, bval_file)
     common.write_bvec_file(bvecs, bvec_file)
 
-    return nifti
-
 
 def _fix_dti(bvals, bvecs, nifti, nifti_file):
     """
@@ -726,6 +720,4 @@ def _create_singleframe_bvals_bvecs(grouped_dicoms, bval_file, bvec_file, nifti,
     # save the found bvecs to the file
     common.write_bval_file(bvals, bval_file)
     common.write_bvec_file(bvecs, bvec_file)
-
-    return nifti
 

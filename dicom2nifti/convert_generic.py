@@ -55,8 +55,7 @@ def dicom_to_nifti(dicom_directory, output_file):
     img.to_filename(output_file)
     gc.collect()  # force the collection for conversion of big datasets this is needed
 
-    return {'NIFTI': img,
-            'NII_FILE': output_file}
+    return {'NII_FILE': output_file}
 
 
 def _remove_non_dicoms(dicom_directory):

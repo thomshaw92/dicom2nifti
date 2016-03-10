@@ -149,8 +149,7 @@ def _fmri_to_nifti(grouped_dicoms, output_file):
     img.to_filename(output_file)
 
     gc.collect()  # force the collection for conversion of big datasets this is needed
-    return {'NIFTI': img,
-            'NII_FILE': output_file}
+    return {'NII_FILE': output_file}
 
 
 def _dti_to_nifti(grouped_dicoms, output_file):
@@ -183,8 +182,7 @@ def _dti_to_nifti(grouped_dicoms, output_file):
     img.to_filename(output_file)
 
     gc.collect()  # force the collection for conversion of big datasets this is needed
-    return {'NIFTI': img,
-            'NII_FILE': output_file,
+    return {'NII_FILE': output_file,
             'BVAL_FILE': bval_file,
             'BVEC_FILE': bvec_file}
 

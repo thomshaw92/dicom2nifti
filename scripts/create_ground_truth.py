@@ -1,6 +1,6 @@
 import os
 import dicom2nifti
-
+import dicom2nifti.image_reorientation as image_reorientation
 
 def subdir_count(path):
     count = 0
@@ -22,8 +22,10 @@ def main():
                 continue  # not processing because not lowest level of directory
             print(dir_path)
             output_file = dir_path + '_ground_truth.nii.gz'
+            reoriented_file = dir_path + '_ground_truth_reoriented.nii.gz'
             try:
-                dicom2nifti.dicom_series_to_nifti(dir_path, output_file)
+                dicom2nifti.dicom_series_to_nifti(dir_path, output_file, False)
+                image_reorientation.reorient_image(output_file, reoriented_file)
             except:
                 pass
 

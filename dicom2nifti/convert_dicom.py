@@ -18,7 +18,7 @@ import dicom2nifti.convert_siemens as convert_siemens
 import dicom2nifti.convert_ge as convert_ge
 import dicom2nifti.convert_philips as convert_philips
 import dicom2nifti.common as common
-
+import dicom2nifti.image_reorientation as image_reorientation
 
 # Disable this warning as there is not reason for an init class in an enum
 # pylint: disable=w0232, r0903, C0103
@@ -35,7 +35,7 @@ class Vendor(object):
 
 
 # pylint: enable=w0232, r0903, C0103
-def dicom_series_to_nifti(original_dicom_directory, output_file):
+def dicom_series_to_nifti(original_dicom_directory, output_file, reorient_nifti=True):
     """ Converts dicom single series (see pydicom) to nifty, mimicking SPM
 
     Examples: See unit test
@@ -53,7 +53,8 @@ def dicom_series_to_nifti(original_dicom_directory, output_file):
 
     Inspired by http://nipy.sourceforge.net/nibabel/dicom/spm_dicom.html
     Inspired by http://code.google.com/p/pydicom/source/browse/source/dicom/contrib/pydicom_series.py
-    :param output_file: filepath to write to
+    :param reorient_nifti: if True the nifti affine and data will be updated so the data is stored LAS oriented
+    :param output_file: file path to write to
     :param original_dicom_directory: directory with the dicom files for a single series/scan
     """
     # copy files so we can can modify without altering the original
@@ -69,15 +70,20 @@ def dicom_series_to_nifti(original_dicom_directory, output_file):
 
         vendor = _get_vendor(dicom_directory)
         if vendor == Vendor.GENERIC:
-            return convert_generic.dicom_to_nifti(dicom_directory, output_file)
-        if vendor == Vendor.SIEMENS:
-            return convert_siemens.dicom_to_nifti(dicom_directory, output_file)
-        if vendor == Vendor.GE:
-            return convert_ge.dicom_to_nifti(dicom_directory, output_file)
-        if vendor == Vendor.PHILIPS:
-            return convert_philips.dicom_to_nifti(dicom_directory, output_file)
+            results = convert_generic.dicom_to_nifti(dicom_directory, output_file)
+        elif vendor == Vendor.SIEMENS:
+            results = convert_siemens.dicom_to_nifti(dicom_directory, output_file)
+        elif vendor == Vendor.GE:
+            results = convert_ge.dicom_to_nifti(dicom_directory, output_file)
+        elif vendor == Vendor.PHILIPS:
+            results = convert_philips.dicom_to_nifti(dicom_directory, output_file)
         else:
             raise ConversionValidationError("UNSUPPORTED_DATA")
+
+        # do image reorientation if needed
+        if reorient_nifti:
+            image_reorientation.reorient_image(results['NII_FILE'], results['NII_FILE'])
+        return results
     finally:
         # remove the copied data
         shutil.rmtree(temp_directory)
@@ -127,6 +133,7 @@ def _get_vendor(dicom_directory):
 def decompress_dicom(input_file):
     """
     This function can be used to convert a jpeg compressed image to an uncompressed one for further conversion
+    :param input_file: single dicom file to decompress
     """
     gdcmconv_executable = _which('gdcmconv')
     if gdcmconv_executable is None:
@@ -138,6 +145,7 @@ def decompress_dicom(input_file):
 def decompress_directory(dicom_directory):
     """
     This function can be used to convert a folder of jpeg compressed images to an uncompressed ones
+    :param dicom_directory: directory with dicom files to decompress
     """
     if not is_compressed(dicom_directory):
         return
@@ -155,6 +163,7 @@ def decompress_directory(dicom_directory):
 def compress_dicom(input_file):
     """
     This function can be used to convert a jpeg compressed image to an uncompressed one for further conversion
+    :param input_file: single dicom file to compress
     """
     gdcmconv_executable = _which('gdcmconv')
     if gdcmconv_executable is None:
@@ -166,6 +175,7 @@ def compress_dicom(input_file):
 def compress_directory(dicom_directory):
     """
     This function can be used to convert a folder of jpeg compressed images to an uncompressed ones
+    :param dicom_directory: directory of dicom files to compress
     """
     if is_compressed(dicom_directory):
         return

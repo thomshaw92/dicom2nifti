@@ -62,7 +62,7 @@ def dicom_to_nifti(dicom_directory, output_file):
         print('Found sequence type: FMRI')
         return _fmri_to_nifti(grouped_dicoms, output_file)
 
-    print('Warning: Assuming all others are anatomical')
+    print('Assuming anatomical data')
     return convert_generic.dicom_to_nifti(dicom_directory, output_file)
 
 

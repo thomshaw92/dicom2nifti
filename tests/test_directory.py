@@ -23,6 +23,13 @@ class TestConversionDicom(unittest.TestCase):
         finally:
             shutil.rmtree(tmp_output_dir)
 
+    def test_remove_accents(self):
+
+        assert convert_directory._remove_accents_(u'êén_ölîfānt@') == 'een_olifant'
+        assert convert_directory._remove_accents_(')(*&^%$#@!][{}\\"|,./?><') == ')(.'
+
+
+
 
 
 if __name__ == '__main__':

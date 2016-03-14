@@ -65,7 +65,7 @@ def _remove_accents_(filename):
     Function that will try to remove accents from a unicode string to be used in a filename.
     input filename should be either an ascii or unicode string
     """
-    if type(filename) == unicode:
+    if type(filename) is type(six.u('')):
         unicode_filename = filename
     else:
         unicode_filename = six.u(filename)

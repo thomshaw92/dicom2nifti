@@ -1,6 +1,8 @@
 import os
 import dicom2nifti
 import dicom2nifti.image_reorientation as image_reorientation
+from __future__ import print_function
+
 
 def subdir_count(path):
     count = 0

@@ -17,6 +17,7 @@ setup(
     url='https://github.com/icometrix/dicom2nifti',
     download_url='https://github.com/icometrix/dicom2nifti/tarball/0.0.1.dev2',
     keywords=['dicom', 'nifti', 'medical imaging'],
+    scripts=['scripts/dicom2nifti'],
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[
         'Development Status :: 3 - Alpha',
@@ -30,7 +31,7 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX :: Linux'],
-    install_requires=['nibabel', 'pydicom', 'numpy', 'six'],
+    install_requires=['nibabel', 'pydicom', 'numpy', 'six', 'future'],
     setup_requires=['nose', 'coverage']
 
 )

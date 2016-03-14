@@ -4,6 +4,8 @@ dicom2nifti
 
 @author: abrys
 """
+from __future__ import print_function
+
 import gc
 import os
 import struct

@@ -4,6 +4,8 @@ this module houses all the code to just convert a directory of random dicom file
 
 @author: abrys
 """
+from __future__ import print_function
+
 import dicom
 import os
 import dicom2nifti.common as common
@@ -13,6 +15,8 @@ import tempfile
 import shutil
 import string
 import unicodedata
+import six
+from builtins import bytes
 
 
 def convert_directory(dicom_directory, output_folder, compression=True, reorient=True):
@@ -61,6 +65,14 @@ def _remove_accents_(filename):
     Function that will try to remove accents from a unicode string to be used in a filename.
     input filename should be either an ascii or unicode string
     """
-    VALID_CHARACTERS = "-_.() %s%s" % (string.ascii_letters, string.digits)
+    valid_characters = bytes(b'-_.() 1234567890abcdefghijklmnopqrstuvwxyz')
     cleaned_filename = unicodedata.normalize('NFKD', u(filename)).encode('ASCII', 'ignore')
-    return ''.join(chr(c) for c in cleaned_filename if chr(c) in VALID_CHARACTERS)
+
+    new_filename = six.u('')
+
+    for char_int in bytes(cleaned_filename):
+        char_byte = bytes([char_int])
+        if char_byte in valid_characters:
+            new_filename += char_byte.decode()
+
+    return new_filename

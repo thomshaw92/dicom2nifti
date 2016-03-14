@@ -15,6 +15,7 @@ from dicom2nifti.convert_ge import is_ge
 from dicom2nifti.convert_dicom import is_compressed, decompress_directory, compress_directory
 from dicom2nifti.convert_siemens import is_siemens
 from dicom2nifti.convert_philips import is_philips
+from __future__ import print_function
 
 
 def anonymize_directory(input_directory, output_directory=None):

@@ -19,13 +19,38 @@ Python library for converting dicom files to nifti
    pip install dicom2nifti
 
 ---------------
- General usage
+ Usage
 ---------------
+Command line
+^^^^^^^^^^^^^
+.. code-block:: bash
+
+   dicom2nifti [--no-compression] [--no-reorientation] input_directory output_directory
+
+for more information
+
+.. code-block:: bash
+
+   dicom2nifti -h
+
+From python
+^^^^^^^^^^^^
+
+Converting a directory with dicom files to nifti files
+
 .. code-block:: python
 
    import dicom2nifti
 
-   dicom2nifti.dummy_function(dummy_data)
+   dicom_series_to_nifti(original_dicom_directory, output_file, reorient_nifti=True)
+
+Converting a directory with only 1 series to 1 nifti file
+
+.. code-block:: python
+
+   import dicom2nifti
+
+   dicom2nifti.dicom_series_to_nifti(original_dicom_directory, output_file, reorient_nifti=True)
 
 ----------------
  Supported data

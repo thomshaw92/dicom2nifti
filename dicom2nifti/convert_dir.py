@@ -45,7 +45,11 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
         work_dir = tempfile.mkdtemp()
         try:
             # construct the filename for the nifti
-            base_filename = _remove_accents_('%s_%s' % (dicom_info[0][1].SeriesNumber, dicom_info[0][1].SequenceName))
+            if 'SeriesNumber' in dicom_info[0][1] and 'SequenceName' in dicom_info[0][1]:
+                base_filename = _remove_accents_('%s_%s' % (dicom_info[0][1].SeriesNumber,
+                                                            dicom_info[0][1].SequenceName))
+            else:
+                base_filename = _remove_accents_('%s' % dicom_info[0][1].SeriesNumber)
             print('--------------------------------------------')
             print('Start converting ', base_filename)
             if compression:

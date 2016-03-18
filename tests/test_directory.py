@@ -9,7 +9,7 @@ import unittest
 import tempfile
 import shutil
 
-import dicom2nifti.convert_directory as convert_directory
+import dicom2nifti.convert_dir as convert_directory
 import tests.test_data as test_data
 
 

@@ -82,6 +82,14 @@ class TestConversionDicom(unittest.TestCase):
         finally:
             shutil.rmtree(tmp_output_dir)
 
+    def test_convert_directory(self):
+
+        tmp_output_dir = tempfile.mkdtemp()
+        try:
+            dicom2nifti.convert_directory(test_data.GENERIC_ANATOMICAL, tmp_output_dir)
+
+        finally:
+            shutil.rmtree(tmp_output_dir)
 
 if __name__ == '__main__':
     unittest.main()

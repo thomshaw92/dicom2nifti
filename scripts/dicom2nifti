@@ -8,7 +8,7 @@ from __future__ import print_function
 
 import argparse
 import os
-import dicom2nifti.convert_directory as convert_directory
+import dicom2nifti.convert_dir as convert_directory
 import sys
 
 

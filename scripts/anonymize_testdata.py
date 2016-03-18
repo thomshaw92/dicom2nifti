@@ -4,6 +4,7 @@ dicom2nifti
 
 @author: abrys
 """
+from __future__ import print_function
 
 import dicom
 import numpy
@@ -15,7 +16,6 @@ from dicom2nifti.convert_ge import is_ge
 from dicom2nifti.convert_dicom import is_compressed, decompress_directory, compress_directory
 from dicom2nifti.convert_siemens import is_siemens
 from dicom2nifti.convert_philips import is_philips
-from __future__ import print_function
 
 
 def anonymize_directory(input_directory, output_directory=None):
@@ -159,7 +159,7 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
     print(dicom_in.pixel_array.shape, dicom_in.pixel_array.dtype)
     random_data = numpy.random.randint(0, 255, dicom_in.pixel_array.shape).astype(dicom_in.pixel_array.dtype)
     print(random_data.shape)
-    dicom_in.PixelData = random_data.tostring()
+    #dicom_in.PixelData = random_data.tostring()
 
     # Save dicom_file_out
     # Make sure we have a directory
@@ -209,6 +209,3 @@ def _anonymize_files(dicom_directory_in, dicom_directory_out, fields_to_keep):
     if original_compressed:
         print('Compressing files')
         compress_directory(dicom_directory_out)
-
-
-

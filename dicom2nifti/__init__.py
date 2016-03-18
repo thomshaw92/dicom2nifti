@@ -6,4 +6,4 @@ dicom2nifti
 """
 
 from .convert_dicom import dicom_series_to_nifti
-from .convert_directory import convert_directory
+from .convert_dir import convert_directory

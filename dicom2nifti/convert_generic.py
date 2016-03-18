@@ -14,25 +14,30 @@ import nibabel
 from dicom.tag import Tag
 import dicom
 import dicom2nifti.common as common
+from six import string_types
 
-
-def dicom_to_nifti(dicom_directory, output_file):
+def dicom_to_nifti(input_dicoms, output_file):
     """
     This function will convert an anatomical dicom series to a nifti
 
     Examples: See unit test
     :param output_file: filepath to the output nifti
-    :param dicom_directory: directory with the dicom files for a single scan
+    :param input_dicoms: directory with the dicom files for a single scan, or list of read in dicoms
     """
 
-    # make sure there are only dicom files in the directory
-    _remove_non_dicoms(dicom_directory)
-    # remove localizers based on image type
-    _remove_localizers_by_imagetype(dicom_directory)
-    # remove_localizers based on image orientation
-    _remove_localizers_by_orientation(dicom_directory)
+    # do everthing for a directory of dicoms
+    if isinstance(input_dicoms, string_types):
+        # make sure there are only dicom files in the directory
+        _remove_non_dicoms(input_dicoms)
+        all_dicoms = _get_all_dicoms(input_dicoms, False)
+    else:
+        all_dicoms = input_dicoms
 
-    all_dicoms = _get_all_dicoms(dicom_directory, False)
+    # remove localizers based on image type
+    all_dicoms = _remove_localizers_by_imagetype(all_dicoms)
+    # remove_localizers based on image orientation
+    all_dicoms = _remove_localizers_by_orientation(all_dicoms)
+
     # validate all the dicom files for correct orientations
     common.validate_slicecount(all_dicoms)
     # validate that all slices have the same orientation
@@ -72,31 +77,24 @@ def _remove_non_dicoms(dicom_directory):
                 os.remove(file_path)
 
 
-def _remove_localizers_by_imagetype(dicom_directory):
+def _remove_localizers_by_imagetype(dicoms):
     """
     Search dicoms for localizers and delete them
     """
     # Loop overall files and build dict
-    for root, _, file_names in os.walk(dicom_directory):
-        # go over all the files and try to read the dicom header
-        for file_name in file_names:
-            file_path = os.path.join(root, file_name)
-            if common.is_dicom_file(file_path):
-                # Read each dicom file and put in dict
-                read_dicom = dicom.read_file(file_path, stop_before_pixels=True)
-                if 'ImageType' in read_dicom and 'LOCALIZER' in read_dicom.ImageType:
-                    print('Removing localizer %s ' % file_path)
-                    os.remove(file_path)
-                    continue
-                # 'Projection Image' are Localizers for CT only see MSMET-234
-                if 'CT' in read_dicom.Modality and \
-                        'ImageType' in read_dicom and 'PROJECTION IMAGE' in read_dicom.ImageType:
-                    print('Removing projection image %s ' % file_path)
-                    os.remove(file_path)
-                    continue
+    filtered_dicoms = []
+    for dicom_ in dicoms:
+        if 'ImageType' in dicom_ and 'LOCALIZER' in dicom_.ImageType:
+            continue
+        # 'Projection Image' are Localizers for CT only see MSMET-234
+        if 'CT' in dicom_.Modality and \
+                'ImageType' in dicom_ and 'PROJECTION IMAGE' in dicom_.ImageType:
+            continue
+        filtered_dicoms.append(dicom_)
+    return filtered_dicoms
 
 
-def _remove_localizers_by_orientation(dicom_directory):
+def _remove_localizers_by_orientation(dicoms):
     """
     Removing localizers based on the orientation.
     This is needed as in some cases with ct data there are some localizer/projection type images that cannot
@@ -106,35 +104,30 @@ def _remove_localizers_by_orientation(dicom_directory):
     orientations = []
     sorted_dicoms = {}
     # Loop overall files and build dict
-    for root, _, file_names in os.walk(dicom_directory):
-        for file_name in file_names:
-            dicom_file = os.path.join(root, file_name)
-            dicom_header = dicom.read_file(dicom_file, stop_before_pixels=True)
-            # Create affine matrix (http://nipy.sourceforge.net/nibabel/dicom/dicom_orientation.html#dicom-slice-affine)
-            image_orient1 = numpy.array(dicom_header.ImageOrientationPatient)[0:3]
-            image_orient2 = numpy.array(dicom_header.ImageOrientationPatient)[3:6]
-            image_orient_combined = (image_orient1.tolist(), image_orient2.tolist())
-            found_orientation = False
-            for orientation in orientations:
-                if numpy.allclose(image_orient_combined[0], numpy.array(orientation[0]), rtol=0.001, atol=0.001) \
-                        and numpy.allclose(image_orient_combined[1], numpy.array(orientation[1]), rtol=0.001,
-                                           atol=0.001):
-                    sorted_dicoms[str(orientation)].append(dicom_file)
-                    found_orientation = True
-                    break
-            if not found_orientation:
-                orientations.append(image_orient_combined)
-                sorted_dicoms[str(image_orient_combined)] = [dicom_file]
+    for dicom_header in dicoms:
+        # Create affine matrix (http://nipy.sourceforge.net/nibabel/dicom/dicom_orientation.html#dicom-slice-affine)
+        image_orient1 = numpy.array(dicom_header.ImageOrientationPatient)[0:3]
+        image_orient2 = numpy.array(dicom_header.ImageOrientationPatient)[3:6]
+        image_orient_combined = (image_orient1.tolist(), image_orient2.tolist())
+        found_orientation = False
+        for orientation in orientations:
+            if numpy.allclose(image_orient_combined[0], numpy.array(orientation[0]), rtol=0.001, atol=0.001) \
+                    and numpy.allclose(image_orient_combined[1], numpy.array(orientation[1]), rtol=0.001,
+                                       atol=0.001):
+                sorted_dicoms[str(orientation)].append(dicom_header)
+                found_orientation = True
+                break
+        if not found_orientation:
+            orientations.append(image_orient_combined)
+            sorted_dicoms[str(image_orient_combined)] = [dicom_header]
 
     # if there are multiple possible orientations delete orientations where there are less than 4 files
     # we don't convert anything less that that anyway
-    if len(sorted_dicoms.keys()) > 1:
-        for dicom_files in sorted_dicoms.values():
-            if len(dicom_files) <= 4:
-                for dicom_file in dicom_files:
-                    print('Removing badly oriented dicom %s ' % dicom_file)
-                    os.remove(dicom_file)
-
+    filtered_dicoms = []
+    for orientation in sorted_dicoms.keys():
+        if len(sorted_dicoms[orientation]) > 4:
+            filtered_dicoms.extend(sorted_dicoms[orientation])
+    return filtered_dicoms
 
 def _get_all_dicoms(dicom_directory, fast_read=True):
     """

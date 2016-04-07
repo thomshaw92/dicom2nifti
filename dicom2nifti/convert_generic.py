@@ -16,13 +16,14 @@ import dicom
 import dicom2nifti.common as common
 from six import string_types
 
-def dicom_to_nifti(input_dicoms, output_file):
+def dicom_to_nifti(input_dicoms, output_file, perform_checks = True):
     """
     This function will convert an anatomical dicom series to a nifti
 
     Examples: See unit test
     :param output_file: filepath to the output nifti
     :param input_dicoms: directory with the dicom files for a single scan, or list of read in dicoms
+    :param perform_checks (True): performs highly relevant consistency checks on data
     """
 
     # do everthing for a directory of dicoms
@@ -33,17 +34,18 @@ def dicom_to_nifti(input_dicoms, output_file):
     else:
         all_dicoms = input_dicoms
 
-    # remove localizers based on image type
-    all_dicoms = _remove_localizers_by_imagetype(all_dicoms)
-    # remove_localizers based on image orientation
-    all_dicoms = _remove_localizers_by_orientation(all_dicoms)
+    if perform_checks:
+        # remove localizers based on image type
+        all_dicoms = _remove_localizers_by_imagetype(all_dicoms)
+        # remove_localizers based on image orientation
+        all_dicoms = _remove_localizers_by_orientation(all_dicoms)
 
-    # validate all the dicom files for correct orientations
-    common.validate_slicecount(all_dicoms)
-    # validate that all slices have the same orientation
-    common.validate_orientation(all_dicoms)
-    # validate that we have an orthogonal image (to detect gantry tilting etc)
-    common.validate_orthogonal(all_dicoms)
+        # validate all the dicom files for correct orientations
+        common.validate_slicecount(all_dicoms)
+        # validate that all slices have the same orientation
+        common.validate_orientation(all_dicoms)
+        # validate that we have an orthogonal image (to detect gantry tilting etc)
+        common.validate_orthogonal(all_dicoms)
 
     # Get data; originally z,y,x, transposed to x,y,z
     data = common.get_volume_pixeldata(all_dicoms)

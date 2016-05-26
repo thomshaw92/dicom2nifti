@@ -7,8 +7,8 @@ Created on Fri Jun  7 07:40:20 2013
 # To ignore numpy errors:
 #     pylint: disable=E1101
 
-import numpy
 import nibabel
+import numpy
 
 
 class Slice(object):

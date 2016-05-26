@@ -6,17 +6,18 @@ dicom2nifti
 """
 
 from __future__ import print_function
+
 import os
 import re
-import gc
-import numpy
-import nibabel
-import dicom
 import traceback
+
+import nibabel
+import numpy
 from dicom.tag import Tag
+
+import dicom2nifti.common as common
 import dicom2nifti.convert_generic as convert_generic
 from dicom2nifti.exceptions import ConversionValidationError, ConversionError
-import dicom2nifti.common as common
 
 
 # Disable this warning as there is not reason for an init class in an enum
@@ -34,13 +35,13 @@ class MosaicType(object):
 # pylint: enable=w0232, r0903
 
 
-def is_siemens(dicom_directory):
+def is_siemens(dicom_input):
     """
     Use this function to detect if a dicom series is a siemens dataset
-    :param dicom_directory: directory with dicom files for 1 scan
+    :param dicom_input: directory with dicom files for 1 scan
     """
     # read dicom header
-    header = common.read_first_header(dicom_directory)
+    header = dicom_input[0]
 
     # check if manufacturer is Siemens
     if 'Manufacturer' not in header or 'Modality' not in header:
@@ -56,49 +57,40 @@ def is_siemens(dicom_directory):
     return True
 
 
-def dicom_to_nifti(dicom_directory, output_file):
+def dicom_to_nifti(dicom_input, output_file):
     """
     This is the main dicom to nifti conversion function for ge images.
     As input ge images are required. It will then determine the type of images and do the correct conversion
     :param output_file: filepath to the output nifti
-    :param dicom_directory: directory with dicom files for 1 scan
+    :param dicom_input: directory with dicom files for 1 scan
     """
 
-    assert is_siemens(dicom_directory)
+    assert is_siemens(dicom_input)
 
-    if _is_dti(dicom_directory):
-        print('Found sequence type: MOSAIC DTI')
-        return _mosaic_dti_to_nifti(dicom_directory, output_file)
+    if _is_4d(dicom_input):
+        print('Found sequence type: MOSAIC 4D')
+        return _mosaic_4d_to_nifti(dicom_input, output_file)
 
-    if _is_frmi(dicom_directory):
-        print('Found sequence type: MOSAIC FMRI')
-        return _mosaic_fmri_to_nifti(dicom_directory, output_file)
-
-    grouped_dicoms = _classic_get_grouped_dicoms(dicom_directory)
-    if _is_classic_dti(grouped_dicoms):
-        print('Found sequence type: CLASSIC DTI')
-        return _classic_dti_to_nifti(grouped_dicoms, output_file)
-
-    if _is_classic_frmi(grouped_dicoms):
-        print('Found sequence type: CLASSIC FMRI')
-        return _classic_fmri_to_nifti(grouped_dicoms, output_file)
+    grouped_dicoms = _classic_get_grouped_dicoms(dicom_input)
+    if _is_classic_4d(grouped_dicoms):
+        print('Found sequence type: CLASSIC 4D')
+        return _classic_4d_to_nifti(grouped_dicoms, output_file)
 
     print('Assuming anatomical data')
-    return convert_generic.dicom_to_nifti(dicom_directory, output_file)
+    return convert_generic.dicom_to_nifti(dicom_input, output_file)
 
 
-def _is_mosaic(input_data):
+def _is_mosaic(dicom_input):
     """
-    Use this function to detect if a dicom series is a siemens fmri dataset
+    Use this function to detect if a dicom series is a siemens 4d dataset
     NOTE: Only the first slice will be checked so you can only provide an already sorted dicom directory
     (containing one series)
     """
-    # take both dicom_directory and grouped dicoms list as input
-    if type(input_data) is list:
-        header = input_data[0][0]
-    else:
-        # read dicom header
-        header = common.read_first_header(input_data)
+    # for grouped dicoms
+    if type(dicom_input) is list and type(dicom_input[0]) is list:
+        header = dicom_input[0][0]
+    else:  # all the others
+        header = dicom_input[0]
 
     # check if image type contains m and mosaic
     if 'MOSAIC' not in header.ImageType:
@@ -110,28 +102,21 @@ def _is_mosaic(input_data):
     return True
 
 
-def _is_frmi(dicom_directory):
+def _is_4d(dicom_input):
     """
-    Use this function to detect if a dicom series is a siemens fmri dataset
+    Use this function to detect if a dicom series is a siemens 4d dataset
     NOTE: Only the first slice will be checked so you can only provide an already sorted dicom directory
     (containing one series)
     """
-    if not _is_mosaic(dicom_directory):
-        return False
-
-    # read dicom header
-    header = common.read_first_header(dicom_directory)
-
-    # bval and bvec should be absent
-    if Tag(0x0019, 0x100c) in header:
+    if not _is_mosaic(dicom_input):
         return False
 
     return True
 
 
-def _is_classic_frmi(grouped_dicoms):
+def _is_classic_4d(grouped_dicoms):
     """
-    Use this function to detect if a dicom series is a siemens fmri dataset
+    Use this function to detect if a dicom series is a siemens 4d dataset
     NOTE: Only the first slice will be checked so you can only provide an already sorted dicom directory
     (containing one series)
     """
@@ -142,66 +127,32 @@ def _is_classic_frmi(grouped_dicoms):
     if len(grouped_dicoms) <= 1:
         return False
 
-    # get dicom header
-    header = grouped_dicoms[0][0]
-
-    # bval and bvec should be absent
-    if Tag(0x0019, 0x100c) in header:
-        return False
-
     return True
 
 
-def _is_dti(dicom_directory):
+def _is_diffusion_imaging(header_input):
     """
     Use this function to detect if a dicom series is a siemens dti dataset
     NOTE: Only the first slice will be checked so you can only provide an already sorted dicom directory
     (containing one series)
     """
-    if not _is_mosaic(dicom_directory):
-        return False
 
-    # read dicom header
-    header = common.read_first_header(dicom_directory)
-
-    # bval and bvec should be absent
-    if Tag(0x0019, 0x100c) not in header:
+    # bval and bvec should be present
+    if Tag(0x0019, 0x100c) not in header_input:
         return False
 
     return True
 
 
-def _is_classic_dti(grouped_dicoms):
+def _mosaic_4d_to_nifti(dicom_input, output_file):
     """
-    Use this function to detect if a dicom series is a siemens dti dataset
-    NOTE: Only the first slice will be checked so you can only provide an already sorted dicom directory
-    (containing one series)
-    """
-    if _is_mosaic(grouped_dicoms):
-        return False
-
-    if len(grouped_dicoms) <= 1:
-        return False
-
-    # get dicom header
-    header = grouped_dicoms[0][0]
-
-    # bval and bvec should be absent
-    if Tag(0x0019, 0x100c) not in header:
-        return False
-
-    return True
-
-
-def _mosaic_fmri_to_nifti(dicom_directory, output_file):
-    """
-    This function will convert siemens fmri series to a nifti
+    This function will convert siemens 4d series to a nifti
     Some inspiration on which fields can be used was taken from
     http://slicer.org/doc/html/DICOMDiffusionVolumePlugin_8py_source.html
     """
     # Get the sorted mosaics
     print('Sorting dicom slices')
-    sorted_mosaics = _get_sorted_mosaics(dicom_directory)
+    sorted_mosaics = _get_sorted_mosaics(dicom_input)
     common.validate_orientation(sorted_mosaics)
 
     # Create mosaic block
@@ -210,7 +161,7 @@ def _mosaic_fmri_to_nifti(dicom_directory, output_file):
 
     print('Creating affine')
     # Create the nifti header info
-    affine = _create_affine_siemens_mosaic(dicom_directory)
+    affine = _create_affine_siemens_mosaic(dicom_input)
     print('Creating nifti')
     # Convert to nifti
     img = nibabel.Nifti1Image(full_block, affine)
@@ -219,13 +170,27 @@ def _mosaic_fmri_to_nifti(dicom_directory, output_file):
     # Save to disk
     img.to_filename(output_file)
 
-    gc.collect()  # force the collection for conversion of big datasets this is needed
+    if _is_diffusion_imaging(dicom_input[0]):
+        # Create the bval en bvec files
+        print('Creating bval en bvec files')
+        base_path = os.path.dirname(output_file)
+        base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
+        print('Creating bval en bvec files')
+        bval_file = '%s/%s.bval' % (base_path, base_name)
+        bvec_file = '%s/%s.bvec' % (base_path, base_name)
+        _create_bvals(sorted_mosaics, bval_file)
+        _create_bvecs(sorted_mosaics, bvec_file)
+
+        return {'NII_FILE': output_file,
+                'BVAL_FILE': bval_file,
+                'BVEC_FILE': bvec_file}
+
     return {'NII_FILE': output_file}
 
 
-def _classic_fmri_to_nifti(grouped_dicoms, output_file):
+def _classic_4d_to_nifti(grouped_dicoms, output_file):
     """
-    This function will convert siemens fmri series to a nifti
+    This function will convert siemens 4d series to a nifti
     Some inspiration on which fields can be used was taken from
     http://slicer.org/doc/html/DICOMDiffusionVolumePlugin_8py_source.html
     """
@@ -249,28 +214,34 @@ def _classic_fmri_to_nifti(grouped_dicoms, output_file):
     # Save to disk
     img.to_filename(output_file)
 
-    gc.collect()  # force the collection for conversion of big datasets this is needed
+    if _is_diffusion_imaging(grouped_dicoms[0][0]):
+        # Create the bval en bvec files
+        print('Creating bval en bvec files')
+        base_path = os.path.dirname(output_file)
+        base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
+        print('Creating bval en bvec files')
+        bval_file = '%s/%s.bval' % (base_path, base_name)
+        bvec_file = '%s/%s.bvec' % (base_path, base_name)
+
+        _create_bvals(grouped_dicoms, bval_file)
+        _create_bvecs(grouped_dicoms, bvec_file)
+
+        return {'NII_FILE': output_file,
+                'BVAL_FILE': bval_file,
+                'BVEC_FILE': bvec_file}
+
     return {'NII_FILE': output_file}
 
 
-def _classic_get_grouped_dicoms(dicom_directory, fast_read=False):
+def _classic_get_grouped_dicoms(dicom_input):
     """
     Search all dicoms in the dicom directory, sort and validate them
 
     fast_read = True will only read the headers not the data
     """
     # Loop overall files and build dict
-    dicoms = []
-    for root, _, file_names in os.walk(dicom_directory):
-        # go over all the files and try to read the dicom header
-        for file_name in file_names:
-            file_path = os.path.join(root, file_name)
-            if common.is_dicom_file(file_path):
-                # Read each dicom file and put in dict
-                dicoms.append(dicom.read_file(file_path, stop_before_pixels=fast_read))
-
     # Order all dicom files by InstanceNumber
-    dicoms = sorted(dicoms, key=lambda x: x.InstanceNumber)
+    dicoms = sorted(dicom_input, key=lambda x: x.InstanceNumber)
 
     # now group per stack
     grouped_dicoms = []
@@ -279,7 +250,10 @@ def _classic_get_grouped_dicoms(dicom_directory, fast_read=False):
     stack_position_tag = Tag(0x0020, 0x0012)  # in this case it is the acquisition number
     for index in range(0, len(dicoms)):
         dicom_ = dicoms[index]
-        stack_index = dicom_[stack_position_tag].value - 1
+        if stack_position_tag not in dicom_:
+            stack_index = 0
+        else:
+            stack_index = dicom_[stack_position_tag].value - 1
         while len(grouped_dicoms) <= stack_index:
             grouped_dicoms.append([])
         grouped_dicoms[stack_index].append(dicom_)
@@ -317,100 +291,6 @@ def _classic_timepoint_to_block(timepoint_dicoms):
     return common.get_volume_pixeldata(timepoint_dicoms)
 
 
-def _mosaic_dti_to_nifti(dicom_directory, output_file):
-    """
-    This function will convert a siemens mosaic dti series to a nifti
-    Some inspiration on which fields can be used was taken from
-    http://slicer.org/doc/html/DICOMDiffusionVolumePlugin_8py_source.html
-    """
-    # Get the sorted mosaics
-    print('Sorting dicom slices')
-    sorted_mosaics = _get_sorted_mosaics(dicom_directory)
-    common.validate_orientation(sorted_mosaics)
-
-    # Validate if the software version is high enough and scanned HFS
-    print('Validating DTI dataset')
-    if sorted_mosaics[0].PatientPosition.upper() != 'HFS':
-        raise ConversionValidationError('SIEMENS_DTI_NOT_HFS')
-
-    print('Creating data block')
-    full_block = _mosaic_get_full_block(sorted_mosaics)
-
-    # Create the nifti header info
-    print('Creating affine')
-    affine = _create_affine_siemens_mosaic(dicom_directory)
-
-    # Convert to nifti
-    print('Creating nifti')
-    print('Saving nifti to disk %s' % output_file)
-    img = nibabel.Nifti1Image(full_block, affine)
-    common.set_tr_te(img, float(sorted_mosaics[0].RepetitionTime), float(sorted_mosaics[0].EchoTime))
-    # Create the bval en bvec files
-    print('Creating bval en bvec files')
-    base_path = os.path.dirname(output_file)
-    base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
-    print('Creating bval en bvec files')
-    bval_file = '%s/%s.bval' % (base_path, base_name)
-    bvec_file = '%s/%s.bvec' % (base_path, base_name)
-    _create_bvals(sorted_mosaics, bval_file)
-    _create_bvecs(sorted_mosaics, bvec_file)
-
-    # Save to disk
-    print('Saving nifti to disk %s' % output_file)
-    img.to_filename(output_file)
-
-    gc.collect()  # force the collection for conversion of big datasets this is needed
-    return {'NII_FILE': output_file,
-            'BVAL_FILE': bval_file,
-            'BVEC_FILE': bvec_file}
-
-
-def _classic_dti_to_nifti(grouped_dicoms, output_file):
-    """
-    This function will convert siemens fmri series to a nifti
-    Some inspiration on which fields can be used was taken from
-    http://slicer.org/doc/html/DICOMDiffusionVolumePlugin_8py_source.html
-    """
-    # Get the sorted mosaics
-    all_dicoms = [i for sl in grouped_dicoms for i in sl]  # combine into 1 list for validating
-    common.validate_orientation(all_dicoms)
-
-    # Validate if the software version is high enough and scanned HFS
-    print('Validating DTI dataset')
-    if grouped_dicoms[0][0].PatientPosition.upper() != 'HFS':
-        raise ConversionValidationError('SIEMENS_DTI_NOT_HFS')
-
-    # Create mosaic block
-    print('Creating data block')
-    full_block = _classic_get_full_block(grouped_dicoms)
-    # Create the bval en bvec files
-    print('Creating bval en bvec files')
-    base_path = os.path.dirname(output_file)
-    base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
-    print('Creating bval en bvec files')
-    bval_file = '%s/%s.bval' % (base_path, base_name)
-    bvec_file = '%s/%s.bvec' % (base_path, base_name)
-    _create_bvals(grouped_dicoms, bval_file)
-    _create_bvecs(grouped_dicoms, bvec_file)
-
-    print('Creating affine')
-    # Create the nifti header info
-    affine = common.create_affine(grouped_dicoms[0])
-    print('Creating nifti')
-
-    # Convert to nifti
-    img = nibabel.Nifti1Image(full_block, affine)
-    common.set_tr_te(img, float(grouped_dicoms[0][0].RepetitionTime), float(grouped_dicoms[0][0].EchoTime))
-    print('Saving nifti to disk')
-    # Save to disk
-    img.to_filename(output_file)
-
-    gc.collect()  # force the collection for conversion of big datasets this is needed
-    return {'NII_FILE': output_file,
-            'BVAL_FILE': bval_file,
-            'BVEC_FILE': bvec_file}
-
-
 def _mosaic_get_full_block(sorted_mosaics):
     """
     Generate a full datablock containing all timepoints
@@ -430,34 +310,17 @@ def _mosaic_get_full_block(sorted_mosaics):
         full_block[:, :, :, index] = data_blocks[index]
 
     # Apply the rescaling if needed
-    if 'RescaleSlope' in sorted_mosaics[0] or 'RescaleIntercept' in sorted_mosaics[0]:
-        rescale_slope = 1
-        rescale_offset = 0
-        if 'RescaleSlope' in sorted_mosaics[0]:
-            rescale_slope = sorted_mosaics[0].RescaleSlope
-        if 'RescaleIntercept' in sorted_mosaics[0]:
-            rescale_offset = sorted_mosaics[0].RescaleIntercept
-        common.apply_scaling(full_block, rescale_slope, rescale_offset)
+    common.apply_scaling(full_block, sorted_mosaics[0])
 
     return full_block
 
 
-def _get_sorted_mosaics(dicom_directory):
+def _get_sorted_mosaics(dicom_input):
     """
     Search all mosaics in the dicom directory, sort and validate them
     """
-    # Loop overall files and build dict
-    mosaics = []
-    for root, _, file_names in os.walk(dicom_directory):
-        # go over all the files and try to read the dicom header
-        for file_name in file_names:
-            file_path = os.path.join(root, file_name)
-            if common.is_dicom_file(file_path):
-                # Read each dicom file and put in dict
-                mosaics.append(dicom.read_file(file_path, stop_before_pixels=False))
-
     # Order all dicom files by acquisition number
-    sorted_mosaics = sorted(mosaics, key=lambda x: x.AcquisitionNumber)
+    sorted_mosaics = sorted(dicom_input, key=lambda x: x.AcquisitionNumber)
 
     for index in range(0, len(sorted_mosaics) - 1):
         # Validate that there are no duplicate AcquisitionNumber
@@ -576,13 +439,13 @@ def _mosaic_to_block(mosaic):
     return data_3d
 
 
-def _create_affine_siemens_mosaic(dicom_directory):
+def _create_affine_siemens_mosaic(dicom_input):
     """
     Function to create the affine matrix for a siemens mosaic dataset
-    This will work for siemens dti and fmri if in mosaic format
+    This will work for siemens dti and 4d if in mosaic format
     """
     # read dicom series with pds
-    dicom_header = common.read_first_header(dicom_directory)
+    dicom_header = dicom_input[0]
 
     # Create affine matrix (http://nipy.sourceforge.net/nibabel/dicom/dicom_orientation.html#dicom-slice-affine)
     image_orient1 = numpy.array(dicom_header.ImageOrientationPatient)[0:3]

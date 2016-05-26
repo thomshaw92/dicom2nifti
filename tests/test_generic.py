@@ -13,7 +13,7 @@ import random
 import string
 
 import dicom2nifti.convert_generic as convert_generic
-from dicom2nifti.common import is_dicom_file
+from dicom2nifti.common import is_dicom_file, read_dicom_directory
 import tests.test_data as test_data
 from tests.test_tools import compare_nifti, ground_thruth_filenames
 
@@ -22,7 +22,7 @@ class TestConversionGeneric(unittest.TestCase):
     def test_anatomical(self):
         tmp_output_dir = tempfile.mkdtemp()
         try:
-            results = convert_generic.dicom_to_nifti(test_data.GE_ANATOMICAL,
+            results = convert_generic.dicom_to_nifti(read_dicom_directory(test_data.GE_ANATOMICAL),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GE_ANATOMICAL)[0]) == True

@@ -6,16 +6,34 @@ dicom2nifti
 """
 from __future__ import print_function
 
-import gc
 import os
 import struct
+
 import dicom
+from dicom.tag import Tag
 import numpy
-from dicom2nifti.exceptions import ConversionError, ConversionValidationError
+
+from dicom2nifti.exceptions import ConversionValidationError
 
 
 # Disable false positive numpy errors
 # pylint: disable=E1101
+def read_dicom_directory(dicom_directory, stop_before_pixels=False):
+    """
+    Read all dicom files in a given directory (stop before pixels)
+    :param stop_before_pixels: Should we stop reading before the pixeldata (handy if we only want header info)
+    :param dicom_directory: Directory with dicom data
+    :return: List of dicom objects
+    """
+    dicom_input = []
+    for root, _, files in os.walk(dicom_directory):
+        for dicom_file in files:
+            file_path = os.path.join(root, dicom_file)
+            if is_dicom_file(file_path):
+                dicom_headers = dicom.read_file(file_path, defer_size=100, stop_before_pixels=stop_before_pixels)
+                dicom_input.append(dicom_headers)
+    return dicom_input
+
 
 def get_volume_pixeldata(sorted_slices):
     """
@@ -27,23 +45,17 @@ def get_volume_pixeldata(sorted_slices):
     combined_dtype = None
     for slice_ in sorted_slices:
         slice_data = _get_slice_pixeldata(slice_)
+        slice_data = slice_data[numpy.newaxis, :, :]
         slices.append(slice_data)
         if combined_dtype is None:
             combined_dtype = slice_data.dtype
         else:
             combined_dtype = numpy.promote_types(combined_dtype, slice_data.dtype)
     # create the new volume with with the correct data
-    shape = [len(sorted_slices), sorted_slices[0].Rows, sorted_slices[0].Columns]
-    vol = numpy.zeros(shape, dtype=combined_dtype)
-
-    # Fill volume
-    for i in range(0, len(slices)):
-        vol[i] = slices[i]
+    vol = numpy.concatenate(slices, axis=0)
 
     # Done
-    gc.collect()
     vol = numpy.transpose(vol, (2, 1, 0))
-
     return vol
 
 
@@ -53,46 +65,7 @@ def _get_slice_pixeldata(dicom_slice):
     we should get the correct dtype that can cover all of them
     """
     data = dicom_slice.pixel_array
-    return _apply_slope_intercept(dicom_slice, data)
-
-
-def _apply_slope_intercept(dicom_slice, data):
-    """
-    Apply the slope and intercept to the data
-    """
-    # only apply if needed
-    if 'RescaleSlope' not in dicom_slice and 'RescaleIntercept' not in dicom_slice:
-        return data
-    # get the slope and intercept
-    slope = 1
-    intercept = 0
-    if 'RescaleSlope' in dicom_slice:
-        slope = dicom_slice.RescaleSlope
-    if 'RescaleIntercept' in dicom_slice:
-        intercept = dicom_slice.RescaleIntercept
-
-    # if the data is already float we do not change the datatype
-    if data.dtype in [numpy.float32, numpy.float64]:
-        pass
-    elif _is_float(slope) or _is_float(intercept):
-        data = data.astype(numpy.float32)
-    else:
-        # use numpy to check the correct datatype
-        min_value = data.min()
-        max_value = data.max()
-        min_value = min([min_value, min_value * slope + intercept, max_value * slope + intercept])
-        max_value = max([max_value, min_value * slope + intercept, max_value * slope + intercept])
-        dtype = numpy.result_type(min_value, max_value)
-        data = data.astype(dtype)
-        # make certain the slope and intercept are int as not to change the datatype
-        slope = int(slope)
-        intercept = int(intercept)
-
-    # rescale the data using the slope and intercept
-    data *= slope
-    data += intercept
-
-    return data
+    return apply_scaling(data, dicom_slice)
 
 
 def _is_float(float_value):
@@ -119,34 +92,13 @@ def is_dicom_file(filename):
     return False
 
 
-def read_first_header(dicom_directory, fast_read=True):
-    """
-    Function to get the first dicom file form a directory and return the header
-    Useful to determine the type of data to convert
-    :param fast_read: if true the [ixel data is not pushed
-    :param dicom_directory: directory with dicom files
-    """
-    # looping over all files
-    for root, _, file_names in os.walk(dicom_directory):
-        # go over all the files and try to read the dicom header
-        for file_name in file_names:
-            file_path = os.path.join(root, file_name)
-            # check wither it is a dicom file
-            if not is_dicom_file(file_path):
-                continue
-            # read the headers
-            return dicom.read_file(file_path, stop_before_pixels=fast_read)
-    # no dicom files found
-    raise ConversionError('NO_DICOM_FILES_FOUND')
-
-
 def get_numpy_type(dicom_header):
     """
     Make NumPy format code, e.g. "uint16", "int32" etc
-     from two pieces of info:
+    from two pieces of info:
         mosaic.PixelRepresentation -- 0 for unsigned, 1 for signed;
         mosaic.BitsAllocated -- 8, 16, or 32
-        :param dicom_header: the read dicom file/headers
+    :param dicom_header: the read dicom file/headers
     """
 
     format_string = '%sint%d' % (('u', '')[dicom_header.PixelRepresentation], dicom_header.BitsAllocated)
@@ -220,22 +172,50 @@ def get_ss_value(tag):
     return tag.value
 
 
-def apply_scaling(data, rescale_slope, rescale_offset):
+def apply_scaling(data, dicom_headers):
     """
     Rescale the data based on the RescaleSlope and RescaleOffset
     Based on the scaling from pydicomseries
-    :param rescale_offset: the offset to apply to the data
-    :param rescale_slope: the scaling to apply to the data
     :param data: the input data
     """
 
+    # Apply the rescaling if needed
+    private_scale_slope_tag = Tag(0x2005, 0x100E)
+    private_scale_intercept_tag = Tag(0x2005, 0x100D)
+    if 'RescaleSlope' in dicom_headers or 'RescaleIntercept' in dicom_headers \
+            or private_scale_slope_tag in dicom_headers or private_scale_intercept_tag in dicom_headers:
+        rescale_slope = 1
+        rescale_intercept = 0
+        private_scale_slope = 1.0
+        private_scale_intercept = 0.0
+        if 'RescaleSlope' in dicom_headers:
+            rescale_slope = dicom_headers.RescaleSlope
+        if 'RescaleIntercept' in dicom_headers:
+            rescale_intercept = dicom_headers.RescaleIntercept
+        if private_scale_slope_tag in dicom_headers:
+            private_scale_slope = dicom_headers[private_scale_slope_tag].value
+        if private_scale_slope_tag in dicom_headers:
+            private_scale_slope = dicom_headers[private_scale_slope_tag].value
+
+        return do_scaling(data, rescale_slope, rescale_intercept, private_scale_slope, private_scale_intercept)
+    else:
+        return data
+
+
+def do_scaling(data, rescale_slope, rescale_intercept, private_scale_slope=1.0, private_scale_intercept = 0.0):
     # Obtain slope and offset
     need_floats = False
 
-    if int(rescale_slope) != rescale_slope or int(rescale_offset) != rescale_offset:
+    if int(rescale_slope) != rescale_slope or int(rescale_intercept) != rescale_intercept or \
+            private_scale_slope != 1.0 or private_scale_intercept != 0.0:
         need_floats = True
+
     if not need_floats:
-        rescale_slope, rescale_offset = int(rescale_slope), int(rescale_offset)
+        rescale_slope = int(rescale_slope)
+        rescale_intercept = int(rescale_intercept)
+    else:
+        private_scale_slope = float(private_scale_slope)
+        private_scale_intercept = float(private_scale_intercept)
 
     # Maybe we need to change the datatype?
     if data.dtype in [numpy.float32, numpy.float64]:
@@ -245,10 +225,10 @@ def apply_scaling(data, rescale_slope, rescale_offset):
     else:
         # Determine required range
         minimum_required, maximum_required = data.min(), data.max()
-        minimum_required = min([minimum_required, minimum_required * rescale_slope + rescale_offset,
-                                maximum_required * rescale_slope + rescale_offset])
-        maximum_required = max([maximum_required, minimum_required * rescale_slope + rescale_offset,
-                                maximum_required * rescale_slope + rescale_offset])
+        minimum_required = min([minimum_required, minimum_required * rescale_slope + rescale_intercept,
+                                maximum_required * rescale_slope + rescale_intercept])
+        maximum_required = max([maximum_required, minimum_required * rescale_slope + rescale_intercept,
+                                maximum_required * rescale_slope + rescale_intercept])
 
         # Determine required datatype from that
         if minimum_required < 0:
@@ -277,11 +257,19 @@ def apply_scaling(data, rescale_slope, rescale_offset):
         if dtype != data.dtype:
             data = data.astype(dtype)
 
-        # Apply rescale_slope and rescale_offset
-        data *= rescale_slope
-        data += rescale_offset
+    # Apply rescale_slope and rescale_intercept
+    # Scaling according to ISMRM2013_PPM_scaling_reminder
+    # The actual scaling is not does the scaling the same way as the next code example
+    # and https://github.com/fedorov/DICOMPhilipsRescalePlugin/blob/master/DICOMPhilipsRescalePlugin.py
+    # FOR DEFAULT DATA
+    # RESULT_DATA = (STORED_VALUE * RESCALE_SLOPE) + RESCALE_INTERCEPT
+    # FOR PHILIPS DATA
+    # RESULT_DATA = (STORED_VALUE * PRIVATE_SCALE_SLOPE) + PRIVATE_SCALE_INTERCEPT
+    if private_scale_slope == 1.0 and private_scale_intercept == 0.0:
+        data = (data * rescale_slope) + rescale_intercept
+    else:
+        data = (data * private_scale_slope) + private_scale_intercept
 
-    # Done
     return data
 
 

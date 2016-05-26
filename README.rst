@@ -19,6 +19,13 @@ Python library for converting dicom files to nifti
    pip install dicom2nifti
 
 ---------------
+ Updating
+---------------
+.. code-block:: bash
+
+   pip install dicom2nifti --upgrade
+
+---------------
  Usage
 ---------------
 Command line
@@ -59,24 +66,25 @@ Most anatomical data for CT and MR should be supported as long as they are in cl
 
 Try avoiding "Implicit VR Endian" if possible as this makes converting non anatomical (i.e. DTI, fMRI, ...) much more difficult.
 
-There is some vendor specific support, more specifically for DTI and fMRI
+There is some vendor specific support, more specifically for 4D imaging like fMRI and DTI/DKI
 
 GE MR
 ^^^^^^
 Anatomical data should all be support.
-Both DTI(and similar) and fMRI(and similar) are supported.
+4D images like fMRI and DTI/DKI are supported.
 
 Siemens MR
 ^^^^^^^^^^^
 Anatomical data should all be support.
-Both DTI(and similar) and fMRI(and similar) are supported.
+4D images like fMRI and DTI/DKI are supported.
 
 Philips MR
 ^^^^^^^^^^^
-For classical dicom files dicom2nifti support anatomical, DTI(and similar) and fMRI(and similar).
+For classic dicom files dicom2nifti support anatomical.
+For classic dicom files 4D images like fMRI and DTI/DKI are supported.
 
 For "Philips Enhanced Dicom" there is no support for "Implicit VR Endian" transfer syntax.
-For the others we support anatomical, DTI(and similar) and fMRI(and similar).
+For the others we support anatomical and 4D images like fMRI and DTI/DKI.
 
 ------------------
  Unsupported data

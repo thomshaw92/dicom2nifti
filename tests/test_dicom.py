@@ -11,6 +11,7 @@ import shutil
 import os
 
 import dicom2nifti.convert_dicom as convert_dicom
+from dicom2nifti.common import read_dicom_directory
 import tests.test_data as test_data
 from tests.test_tools import compare_nifti, ground_thruth_filenames
 
@@ -84,18 +85,18 @@ class TestConversionDicom(unittest.TestCase):
             shutil.rmtree(tmp_output_dir)
 
     def test_are_imaging_dicoms(self):
-        assert convert_dicom.are_imaging_dicoms(test_data.SIEMENS_ANATOMICAL)
+        assert convert_dicom.are_imaging_dicoms(read_dicom_directory(test_data.SIEMENS_ANATOMICAL))
 
     def test_get_vendor(self):
         assert convert_dicom._get_vendor(
-            test_data.SIEMENS_ANATOMICAL) == convert_dicom.Vendor.SIEMENS
-        assert convert_dicom._get_vendor(test_data.GE_ANATOMICAL) == convert_dicom.Vendor.GE
+            read_dicom_directory(test_data.SIEMENS_ANATOMICAL)) == convert_dicom.Vendor.SIEMENS
+        assert convert_dicom._get_vendor(read_dicom_directory(test_data.GE_ANATOMICAL)) == convert_dicom.Vendor.GE
         assert convert_dicom._get_vendor(
-            test_data.PHILIPS_ANATOMICAL) == convert_dicom.Vendor.PHILIPS
+            read_dicom_directory(test_data.PHILIPS_ANATOMICAL)) == convert_dicom.Vendor.PHILIPS
         assert convert_dicom._get_vendor(
-            test_data.PHILIPS_ENHANCED_ANATOMICAL) == convert_dicom.Vendor.PHILIPS
+            read_dicom_directory(test_data.PHILIPS_ENHANCED_ANATOMICAL)) == convert_dicom.Vendor.PHILIPS
         assert convert_dicom._get_vendor(
-            test_data.GENERIC_ANATOMICAL) == convert_dicom.Vendor.GENERIC
+            read_dicom_directory(test_data.GENERIC_ANATOMICAL)) == convert_dicom.Vendor.GENERIC
 
     def test_is_compressed(self):
         assert convert_dicom.is_compressed(test_data.GENERIC_COMPRESSED) == True

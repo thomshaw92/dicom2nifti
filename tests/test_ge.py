@@ -12,14 +12,15 @@ import os
 
 import tests.test_data as test_data
 import dicom2nifti.convert_ge as convert_ge
+from dicom2nifti.common import read_dicom_directory
 from tests.test_tools import compare_nifti, compare_bval, compare_bvec, ground_thruth_filenames
 
 
 class TestConversionGE(unittest.TestCase):
-    def test_dti(self):
+    def test_diffusion_images(self):
         tmp_output_dir = tempfile.mkdtemp()
         try:
-            results = convert_ge.dicom_to_nifti(test_data.GE_DTI,
+            results = convert_ge.dicom_to_nifti(read_dicom_directory(test_data.GE_DTI),
                                                 os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GE_DTI)[0]) == True
@@ -28,7 +29,7 @@ class TestConversionGE(unittest.TestCase):
             assert compare_bvec(results['BVEC_FILE'],
                                 ground_thruth_filenames(test_data.GE_DTI)[3]) == True
 
-            convert_ge.dicom_to_nifti(test_data.GE_DTI_IMPLICIT,
+            convert_ge.dicom_to_nifti(read_dicom_directory(test_data.GE_DTI_IMPLICIT),
                                       os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GE_DTI_IMPLICIT)[0]) == True
@@ -39,14 +40,14 @@ class TestConversionGE(unittest.TestCase):
         finally:
             shutil.rmtree(tmp_output_dir)
 
-    def test_fmri(self):
+    def test_4d(self):
         tmp_output_dir = tempfile.mkdtemp()
         try:
-            results = convert_ge.dicom_to_nifti(test_data.GE_FMRI,
+            results = convert_ge.dicom_to_nifti(read_dicom_directory(test_data.GE_FMRI),
                                       os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GE_FMRI)[0]) == True
-            results = convert_ge.dicom_to_nifti(test_data.GE_FMRI_IMPLICIT,
+            results = convert_ge.dicom_to_nifti(read_dicom_directory(test_data.GE_FMRI_IMPLICIT),
                                       os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GE_FMRI_IMPLICIT)[0]) == True
@@ -56,11 +57,11 @@ class TestConversionGE(unittest.TestCase):
     def test_anatomical(self):
         tmp_output_dir = tempfile.mkdtemp()
         try:
-            results = convert_ge.dicom_to_nifti(test_data.GE_ANATOMICAL,
+            results = convert_ge.dicom_to_nifti(read_dicom_directory(test_data.GE_ANATOMICAL),
                                       os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GE_ANATOMICAL)[0]) == True
-            results = convert_ge.dicom_to_nifti(test_data.GE_ANATOMICAL_IMPLICIT,
+            results = convert_ge.dicom_to_nifti(read_dicom_directory(test_data.GE_ANATOMICAL_IMPLICIT),
                                       os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GE_ANATOMICAL_IMPLICIT)[0]) == True
@@ -68,25 +69,25 @@ class TestConversionGE(unittest.TestCase):
             shutil.rmtree(tmp_output_dir)
 
     def test_is_ge(self):
-        assert not convert_ge.is_ge(test_data.SIEMENS_ANATOMICAL)
-        assert convert_ge.is_ge(test_data.GE_ANATOMICAL)
-        assert not convert_ge.is_ge(test_data.PHILIPS_ANATOMICAL)
+        assert not convert_ge.is_ge(read_dicom_directory(test_data.SIEMENS_ANATOMICAL))
+        assert convert_ge.is_ge(read_dicom_directory(test_data.GE_ANATOMICAL))
+        assert not convert_ge.is_ge(read_dicom_directory(test_data.PHILIPS_ANATOMICAL))
 
-    def test_is_frmi(self):
-        dti_group = convert_ge._get_grouped_dicoms(test_data.GE_DTI)
-        fmri_group = convert_ge._get_grouped_dicoms(test_data.GE_FMRI)
-        anatomical_group = convert_ge._get_grouped_dicoms(test_data.GE_ANATOMICAL)
-        assert not convert_ge._is_frmi(dti_group)
-        assert convert_ge._is_frmi(fmri_group)
-        assert not convert_ge._is_frmi(anatomical_group)
+    def test_is_4d(self):
+        diffusion_group = convert_ge._get_grouped_dicoms(read_dicom_directory(test_data.GE_DTI))
+        _4d_group = convert_ge._get_grouped_dicoms(read_dicom_directory(test_data.GE_FMRI))
+        anatomical_group = convert_ge._get_grouped_dicoms(read_dicom_directory(test_data.GE_ANATOMICAL))
+        assert convert_ge._is_4d(diffusion_group)
+        assert convert_ge._is_4d(_4d_group)
+        assert not convert_ge._is_4d(anatomical_group)
 
-    def test_is_dti(self):
-        dti_group = convert_ge._get_grouped_dicoms(test_data.GE_DTI)
-        fmri_group = convert_ge._get_grouped_dicoms(test_data.GE_FMRI)
-        anatomical_group = convert_ge._get_grouped_dicoms(test_data.GE_ANATOMICAL)
-        assert convert_ge._is_dti(dti_group)
-        assert not convert_ge._is_dti(fmri_group)
-        assert not convert_ge._is_dti(anatomical_group)
+    def test_is_diffusion_imaging(self):
+        diffusion_group = convert_ge._get_grouped_dicoms(read_dicom_directory(test_data.GE_DTI))
+        _4d_group = convert_ge._get_grouped_dicoms(read_dicom_directory(test_data.GE_FMRI))
+        anatomical_group = convert_ge._get_grouped_dicoms(read_dicom_directory(test_data.GE_ANATOMICAL))
+        assert convert_ge._is_diffusion_imaging(diffusion_group)
+        assert not convert_ge._is_diffusion_imaging(_4d_group)
+        assert not convert_ge._is_diffusion_imaging(anatomical_group)
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@ dicom2nifti
 import dicom
 import os
 import numpy
-from dicom2nifti.convert_philips import _is_multiframe_dti, _is_multiframe_fmri
+from dicom2nifti.convert_philips import _is_multiframe_diffusion_imaging, _is_multiframe_4d
 import dicom2nifti.common as common
 
 
@@ -19,7 +19,7 @@ def shrink_multiframe(input_file, output_file=None, slice_count=8, timepoint_cou
     # Load dicom_file_in
     dicom_in = dicom.read_file(input_file)
 
-    if _is_multiframe_dti(os.path.dirname(input_file)) or _is_multiframe_fmri(os.path.dirname(input_file)):
+    if _is_multiframe_diffusion_imaging(os.path.dirname(input_file)) or _is_multiframe_4d(os.path.dirname(input_file)):
 
         number_of_stack_slices = int(common.get_ss_value(dicom_in[(0x2001, 0x105f)][0][(0x2001, 0x102d)]))
         number_of_stacks = int(int(dicom_in.NumberOfFrames) / number_of_stack_slices)

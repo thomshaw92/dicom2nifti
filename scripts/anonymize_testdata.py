@@ -81,9 +81,12 @@ def anonymize_directory(input_directory, output_directory=None):
                       (0x7fe0, 0x0010): None}
 
     if is_philips(input_directory):
-        philips_fields = {(0x2001, 0x100a): None,
+        philips_fields = {
+                          (0x2001, 0x100a): None,
                           (0x2001, 0x1003): None,
                           (0x2001, 0x105f): None,
+                          (0x2005, 0x100d): None,
+                          (0x2005, 0x100e): None,
                           (0x2005, 0x10b0): None,
                           (0x2005, 0x10b1): None,
                           (0x2005, 0x10b2): None,

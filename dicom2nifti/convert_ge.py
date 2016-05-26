@@ -6,26 +6,27 @@ dicom2nifti
 """
 
 from __future__ import print_function
-import dicom
-import os
-import numpy
-import nibabel
-from dicom.tag import Tag
+
 import itertools
-import gc
-from six import string_types
+import os
 from math import pow
+
+import nibabel
+import numpy
+from dicom.tag import Tag
+from six import string_types
+
 import dicom2nifti.common as common
 import dicom2nifti.convert_generic as convert_generic
 
 
-def is_ge(dicom_directory):
+def is_ge(dicom_input):
     """
     Use this function to detect if a dicom series is a GE dataset
-    :param dicom_directory: the directory containing the dicom files
+    :param dicom_input: list with dicom objects
     """
     # read dicom header
-    header = common.read_first_header(dicom_directory)
+    header = dicom_input[0]
 
     if 'Manufacturer' not in header or 'Modality' not in header:
         return False  # we try generic conversion in these cases
@@ -41,35 +42,31 @@ def is_ge(dicom_directory):
     return True
 
 
-def dicom_to_nifti(dicom_directory, output_file):
+def dicom_to_nifti(dicom_input, output_file):
     """
     This is the main dicom to nifti conversion fuction for ge images.
     As input ge images are required. It will then determine the type of images and do the correct conversion
 
     Examples: See unit test
     :param output_file: the filepath to the output nifti file
-    :param dicom_directory: the directory containing the dicom files (only 1 single scan)
+    :param dicom_input: list with dicom objects
     """
-    assert is_ge(dicom_directory)
+    assert is_ge(dicom_input)
 
     print('Reading and sorting dicom files')
-    grouped_dicoms = _get_grouped_dicoms(dicom_directory)
+    grouped_dicoms = _get_grouped_dicoms(dicom_input)
 
-    if _is_dti(grouped_dicoms):
-        print('Found sequence type: DTI')
-        return _dti_to_nifti(grouped_dicoms, output_file)
-
-    if _is_frmi(grouped_dicoms):
-        print('Found sequence type: FMRI')
-        return _fmri_to_nifti(grouped_dicoms, output_file)
+    if _is_4d(grouped_dicoms):
+        print('Found sequence type: 4D')
+        return _4d_to_nifti(grouped_dicoms, output_file)
 
     print('Assuming anatomical data')
-    return convert_generic.dicom_to_nifti(dicom_directory, output_file)
+    return convert_generic.dicom_to_nifti(dicom_input, output_file)
 
 
-def _is_frmi(grouped_dicoms):
+def _is_4d(grouped_dicoms):
     """
-    Use this function to detect if a dicom series is a ge fmri dataset
+    Use this function to detect if a dicom series is a ge 4d dataset
     NOTE: Only the first slice will be checked so you can only provide an already sorted dicom directory
     (containing one series)
     """
@@ -82,37 +79,17 @@ def _is_frmi(grouped_dicoms):
 
     # check if contains multiple stacks
     if len(grouped_dicoms) <= 1:
-        return False
-
-    # check if contains no dti bval information
-    bval_tag = Tag(0x0043, 0x1039)  # put this there as this is a slow step and used a lot
-    found_bval = False
-    for header in list(itertools.chain.from_iterable(grouped_dicoms)):
-        if bval_tag in header and int(header[bval_tag].value[0]) != 0:
-            found_bval = True
-            break
-    if found_bval:
         return False
 
     return True
 
 
-def _is_dti(grouped_dicoms):
+def _is_diffusion_imaging(grouped_dicoms):
     """
     Use this function to detect if a dicom series is a ge dti dataset
-    NOTE: Only the first slice will be checked so you can only provide an already sorted dicom directory
-    (containing one series)
+    NOTE: We already assume this is a 4D dataset
     """
-    # read dicom header
-    header = grouped_dicoms[0][0]
-
-    # check if the dicom contains stack information
-    if Tag(0x0020, 0x9056) not in header or Tag(0x0020, 0x9057) not in header:
-        return False
-
-    # check if contains multiple stacks
-    if len(grouped_dicoms) <= 1:
-        return False
+    # we already assume 4D images as input
 
     # check if contains dti bval information
     bval_tag = Tag(0x0043, 0x1039)  # put this there as this is a slow step and used a lot
@@ -127,9 +104,9 @@ def _is_dti(grouped_dicoms):
     return True
 
 
-def _fmri_to_nifti(grouped_dicoms, output_file):
+def _4d_to_nifti(grouped_dicoms, output_file):
     """
-    This function will convert ge fmri series to a nifti
+    This function will convert ge 4d series to a nifti
     """
 
     # Create mosaic block
@@ -149,43 +126,20 @@ def _fmri_to_nifti(grouped_dicoms, output_file):
     # Save to disk
     img.to_filename(output_file)
 
-    gc.collect()  # force the collection for conversion of big datasets this is needed
+    if _is_diffusion_imaging(grouped_dicoms):
+        # Create the bval en bevec files
+        base_path = os.path.dirname(output_file)
+        base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
+
+        print('Creating bval en bvec files')
+        bval_file = '%s/%s.bval' % (base_path, base_name)
+        bvec_file = '%s/%s.bvec' % (base_path, base_name)
+        _create_bvals_bvecs(grouped_dicoms, bval_file, bvec_file)
+        return {'NII_FILE': output_file,
+                'BVAL_FILE': bval_file,
+                'BVEC_FILE': bvec_file}
+
     return {'NII_FILE': output_file}
-
-
-def _dti_to_nifti(grouped_dicoms, output_file):
-    """
-    This function will convert a ge dti series to a nifti
-    """
-
-    print('Creating data block')
-    full_block = _get_full_block(grouped_dicoms)
-
-    print('Creating affine')
-    # Create the nifti header info
-    affine = common.create_affine(grouped_dicoms[0])
-
-    print('Creating nifti')
-    # Convert to nifti
-    img = nibabel.Nifti1Image(full_block, affine)
-    common.set_tr_te(img, float(grouped_dicoms[0][0].RepetitionTime),
-                     float(grouped_dicoms[0][0].EchoTime))
-    # Create the bval en bevec files
-    base_path = os.path.dirname(output_file)
-    base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
-    print('Creating bval en bvec files')
-    bval_file = '%s/%s.bval' % (base_path, base_name)
-    bvec_file = '%s/%s.bvec' % (base_path, base_name)
-    _create_bvals_bvecs(grouped_dicoms, bval_file, bvec_file)
-
-    # Save to disk
-    print('Saving nifti to disk %s' % output_file)
-    img.to_filename(output_file)
-
-    gc.collect()  # force the collection for conversion of big datasets this is needed
-    return {'NII_FILE': output_file,
-            'BVAL_FILE': bval_file,
-            'BVEC_FILE': bvec_file}
 
 
 def _get_full_block(grouped_dicoms):
@@ -218,24 +172,15 @@ def _timepoint_to_block(timepoint_dicoms):
     return common.get_volume_pixeldata(timepoint_dicoms)
 
 
-def _get_grouped_dicoms(dicom_directory, fast_read=False):
+def _get_grouped_dicoms(dicom_input):
     """
     Search all dicoms in the dicom directory, sort and validate them
 
     fast_read = True will only read the headers not the data
     """
-    # Loop overall files and build dict
-    dicoms = []
-    for root, _, file_names in os.walk(dicom_directory):
-        # go over all the files and try to read the dicom header
-        for file_name in file_names:
-            file_path = os.path.join(root, file_name)
-            if common.is_dicom_file(file_path):
-                # Read each dicom file and put in dict
-                dicoms.append(dicom.read_file(file_path, stop_before_pixels=fast_read))
 
     # Order all dicom files by InstanceNumber
-    dicoms = sorted(dicoms, key=lambda x: x.InstanceNumber)
+    dicoms = sorted(dicom_input, key=lambda x: x.InstanceNumber)
 
     # now group per stack
     grouped_dicoms = [[]]  # list with first element a list
@@ -257,16 +202,6 @@ def _get_grouped_dicoms(dicom_directory, fast_read=False):
         previous_stack_position = stack_position
 
     return grouped_dicoms
-
-
-def get_bvals_bvecs(dicom_directory):
-    """
-    Function to only retrieve the bvals and bvecs from a dicom set
-    :param dicom_directory: directory with dicom files for 1 single scan
-    """
-    grouped_dicoms = _get_grouped_dicoms(dicom_directory, fast_read=True)
-    bvals, bvecs = _get_bvals_bvecs(grouped_dicoms)
-    return bvals, bvecs
 
 
 def _get_bvals_bvecs(grouped_dicoms):

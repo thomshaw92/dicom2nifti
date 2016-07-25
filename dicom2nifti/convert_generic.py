@@ -17,7 +17,7 @@ import dicom2nifti.settings as settings
 from dicom2nifti.exceptions import ConversionError
 
 
-def dicom_to_nifti(dicom_input, output_file, perform_checks=True):
+def dicom_to_nifti(dicom_input, output_file):
     """
     This function will convert an anatomical dicom series to a nifti
 
@@ -29,23 +29,22 @@ def dicom_to_nifti(dicom_input, output_file, perform_checks=True):
     if len(dicom_input) <= 0:
         raise ConversionError('NO_DICOM_FILES_FOUND')
 
-    if perform_checks:
-        # remove localizers based on image type
-        dicom_input = _remove_localizers_by_imagetype(dicom_input)
-        # remove_localizers based on image orientation
-        dicom_input = _remove_localizers_by_orientation(dicom_input)
-        if settings.VALIDATE_SLICECOUNT:
-            # validate all the dicom files for correct orientations
-            common.validate_slicecount(dicom_input)
-        if settings.VALIDATE_ORIENTATION:
-            # validate that all slices have the same orientation
-            common.validate_orientation(dicom_input)
-        if settings.VALIDATE_ORTHOGONAL:
-            # validate that we have an orthogonal image (to detect gantry tilting etc)
-            common.validate_orthogonal(dicom_input)
-        if settings.VALIDATE_SLICEINCREMENT:
-            # validate that all slices have a consistent slice increment
-            common.validate_sliceincrement(dicom_input)
+    # remove localizers based on image type
+    dicom_input = _remove_localizers_by_imagetype(dicom_input)
+    # remove_localizers based on image orientation
+    dicom_input = _remove_localizers_by_orientation(dicom_input)
+    if settings.VALIDATE_SLICECOUNT:
+        # validate all the dicom files for correct orientations
+        common.validate_slicecount(dicom_input)
+    if settings.VALIDATE_ORIENTATION:
+        # validate that all slices have the same orientation
+        common.validate_orientation(dicom_input)
+    if settings.VALIDATE_ORTHOGONAL:
+        # validate that we have an orthogonal image (to detect gantry tilting etc)
+        common.validate_orthogonal(dicom_input)
+    if settings.VALIDATE_SLICEINCREMENT:
+        # validate that all slices have a consistent slice increment
+        common.validate_sliceincrement(dicom_input)
 
     dicom_input = sorted(dicom_input, key=lambda k: k.InstanceNumber)
 

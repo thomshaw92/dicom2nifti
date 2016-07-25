@@ -17,7 +17,7 @@ from dicom2nifti.common import read_dicom_directory, \
     validate_slicecount, \
     validate_orthogonal, \
     validate_orientation
-from convert_generic import dicom_to_nifti
+from dicom2nifti.convert_generic import dicom_to_nifti
 import tests.test_data as test_data
 
 

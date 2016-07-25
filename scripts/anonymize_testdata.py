@@ -147,7 +147,13 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
 
     # Add the data elements
     for (field_key, field_value) in iteritems(fields_to_keep):
-        if field_value is None:
+        print(field_key)
+        if field_key == (0x7fe0, 0x0010):
+            # anonimize the dicom pixeldata
+            random_data = numpy.random.randint(0, 255, dicom_in.pixel_array.shape).astype(dicom_in.pixel_array.dtype)
+            dicom_out.PixelData = random_data.tostring()  # = byte array (see pydicom docs)
+            dicom_out[0x7fe0, 0x0010].VR = 'OB'
+        elif field_value is None:
             try:
                 if isinstance(field_key, string_types):
                     dicom_out.add(dicom_in.data_element(field_key))
@@ -158,11 +164,6 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
         else:
             setattr(dicom_out, field_key, field_value)
 
-    #anonimize the dicom pixeldata
-    print(dicom_in.pixel_array.shape, dicom_in.pixel_array.dtype)
-    random_data = numpy.random.randint(0, 255, dicom_in.pixel_array.shape).astype(dicom_in.pixel_array.dtype)
-    print(random_data.shape)
-    #dicom_in.PixelData = random_data.tostring()
 
     # Save dicom_file_out
     # Make sure we have a directory
@@ -212,3 +213,4 @@ def _anonymize_files(dicom_directory_in, dicom_directory_out, fields_to_keep):
     if original_compressed:
         print('Compressing files')
         compress_directory(dicom_directory_out)
+

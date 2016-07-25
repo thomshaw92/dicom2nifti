@@ -10,8 +10,10 @@ from __future__ import print_function
 import nibabel
 import numpy
 from dicom.tag import Tag
+import six
 
 import dicom2nifti.common as common
+import dicom2nifti.settings as settings
 from dicom2nifti.exceptions import ConversionError
 
 
@@ -32,13 +34,18 @@ def dicom_to_nifti(dicom_input, output_file, perform_checks=True):
         dicom_input = _remove_localizers_by_imagetype(dicom_input)
         # remove_localizers based on image orientation
         dicom_input = _remove_localizers_by_orientation(dicom_input)
-
-        # validate all the dicom files for correct orientations
-        common.validate_slicecount(dicom_input)
-        # validate that all slices have the same orientation
-        common.validate_orientation(dicom_input)
-        # validate that we have an orthogonal image (to detect gantry tilting etc)
-        common.validate_orthogonal(dicom_input)
+        if settings.VALIDATE_SLICECOUNT:
+            # validate all the dicom files for correct orientations
+            common.validate_slicecount(dicom_input)
+        if settings.VALIDATE_ORIENTATION:
+            # validate that all slices have the same orientation
+            common.validate_orientation(dicom_input)
+        if settings.VALIDATE_ORTHOGONAL:
+            # validate that we have an orthogonal image (to detect gantry tilting etc)
+            common.validate_orthogonal(dicom_input)
+        if settings.VALIDATE_SLICEINCREMENT:
+            # validate that all slices have a consistent slice increment
+            common.validate_sliceincrement(dicom_input)
 
     dicom_input = sorted(dicom_input, key=lambda k: k.InstanceNumber)
 
@@ -108,8 +115,12 @@ def _remove_localizers_by_orientation(dicoms):
 
     # if there are multiple possible orientations delete orientations where there are less than 4 files
     # we don't convert anything less that that anyway
-    filtered_dicoms = []
-    for orientation in sorted_dicoms.keys():
-        if len(sorted_dicoms[orientation]) > 4:
-            filtered_dicoms.extend(sorted_dicoms[orientation])
-    return filtered_dicoms
+
+    if len(sorted_dicoms.keys()) > 1:
+        filtered_dicoms = []
+        for orientation in sorted_dicoms.keys():
+            if len(sorted_dicoms[orientation]) >= 4:
+                filtered_dicoms.extend(sorted_dicoms[orientation])
+        return filtered_dicoms
+    else:
+        return six.next(six.itervalues(sorted_dicoms))

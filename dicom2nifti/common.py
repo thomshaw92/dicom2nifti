@@ -202,12 +202,12 @@ def apply_scaling(data, dicom_headers):
         return data
 
 
-def do_scaling(data, rescale_slope, rescale_intercept, private_scale_slope=1.0, private_scale_intercept = 0.0):
+def do_scaling(data, rescale_slope, rescale_intercept, private_scale_slope=1.0, private_scale_intercept=0.0):
     # Obtain slope and offset
     need_floats = False
 
     if int(rescale_slope) != rescale_slope or int(rescale_intercept) != rescale_intercept or \
-            private_scale_slope != 1.0 or private_scale_intercept != 0.0:
+                    private_scale_slope != 1.0 or private_scale_intercept != 0.0:
         need_floats = True
 
     if not need_floats:
@@ -354,6 +354,27 @@ def validate_orthogonal(dicoms):
         print(combined_dir)
         print('---------------------------------------------------------')
         raise ConversionValidationError('NON_CUBICAL_IMAGE/GANTRY_TILT')
+
+
+def validate_sliceincrement(dicoms):
+    """
+    Validate that the distance between all slices is equal (of very close to)
+    :param dicoms: list of dicoms
+    """
+    first_image_position = numpy.array(dicoms[0].ImagePositionPatient)
+    previous_image_position = numpy.array(dicoms[1].ImagePositionPatient)
+    increment = first_image_position - previous_image_position
+    for dicom_ in dicoms[2:]:
+        current_image_position = numpy.array(dicom_.ImagePositionPatient)
+        current_increment = previous_image_position - current_image_position
+        if not numpy.allclose(increment, current_increment, rtol=0.05, atol=0.05):
+            print('Slice increment not consistent through all slices')
+            print('---------------------------------------------------------')
+            print(previous_image_position, increment)
+            print(current_image_position, current_increment)
+            print('---------------------------------------------------------')
+            raise ConversionValidationError('SLICE_INCREMENT_INCONSISTENT')
+        previous_image_position = current_image_position
 
 
 def validate_slicecount(dicoms):

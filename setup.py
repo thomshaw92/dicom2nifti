@@ -9,7 +9,7 @@ For MR specifically there is support for most 4D data (like DTI and fMRI)
 setup(
     name='dicom2nifti',
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
-    version='1.1.0',
+    version='1.1.1',
     description='package for converting dicom files to nifti',
     long_description=long_description,
     license='MIT',

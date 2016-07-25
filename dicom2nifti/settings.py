@@ -1,37 +1,45 @@
 # allow to disable validations
-VALIDATE_SLICECOUNT = True
-VALIDATE_ORIENTATION = True
-VALIDATE_ORTHOGONAL = True
-VALIDATE_SLICEINCREMENT = True
+validate_slicecount = True
+validate_orientation = True
+validate_orthogonal = True
+validate_sliceincrement = True
+
 
 def disable_validate_sliceincrement():
-    global VALIDATE_SLICEINCREMENT
-    VALIDATE_SLICEINCREMENT = False
+    global validate_sliceincrement
+    validate_sliceincrement = False
+
 
 def disable_validate_orientation():
-    global VALIDATE_ORIENTATION
-    VALIDATE_ORIENTATION = False
+    global validate_orientation
+    validate_orientation = False
+
 
 def disable_validate_orthogonal():
-    global VALIDATE_ORTHOGONAL
-    VALIDATE_ORTHOGONAL = False
+    global validate_orthogonal
+    validate_orthogonal = False
+
 
 def disable_validate_slicecount():
-    global VALIDATE_SLICECOUNT
-    VALIDATE_SLICECOUNT = False
+    global validate_slicecount
+    validate_slicecount = False
+
 
 def enable_validate_sliceincrement():
-    global VALIDATE_SLICEINCREMENT
-    VALIDATE_SLICEINCREMENT = True
+    global validate_sliceincrement
+    validate_sliceincrement = True
+
 
 def enable_validate_orientation():
-    global VALIDATE_ORIENTATION
-    VALIDATE_ORIENTATION = True
+    global validate_orientation
+    validate_orientation = True
+
 
 def enable_validate_orthogonal():
-    global VALIDATE_ORTHOGONAL
-    VALIDATE_ORTHOGONAL = True
+    global validate_orthogonal
+    validate_orthogonal = True
+
 
 def enable_validate_slicecount():
-    global VALIDATE_SLICECOUNT
-    VALIDATE_SLICECOUNT = True
+    global validate_slicecount
+    validate_slicecount = True

@@ -24,7 +24,6 @@ def dicom_to_nifti(dicom_input, output_file):
     Examples: See unit test
     :param output_file: filepath to the output nifti
     :param dicom_input: directory with the dicom files for a single scan, or list of read in dicoms
-    :param perform_checks: performs highly relevant consistency checks on data
     """
     if len(dicom_input) <= 0:
         raise ConversionError('NO_DICOM_FILES_FOUND')
@@ -33,16 +32,16 @@ def dicom_to_nifti(dicom_input, output_file):
     dicom_input = _remove_localizers_by_imagetype(dicom_input)
     # remove_localizers based on image orientation
     dicom_input = _remove_localizers_by_orientation(dicom_input)
-    if settings.VALIDATE_SLICECOUNT:
+    if settings.validate_slicecount:
         # validate all the dicom files for correct orientations
         common.validate_slicecount(dicom_input)
-    if settings.VALIDATE_ORIENTATION:
+    if settings.validate_orientation:
         # validate that all slices have the same orientation
         common.validate_orientation(dicom_input)
-    if settings.VALIDATE_ORTHOGONAL:
+    if settings.validate_orthogonal:
         # validate that we have an orthogonal image (to detect gantry tilting etc)
         common.validate_orthogonal(dicom_input)
-    if settings.VALIDATE_SLICEINCREMENT:
+    if settings.validate_sliceincrement:
         # validate that all slices have a consistent slice increment
         common.validate_sliceincrement(dicom_input)
 
@@ -50,8 +49,6 @@ def dicom_to_nifti(dicom_input, output_file):
 
     # Get data; originally z,y,x, transposed to x,y,z
     data = common.get_volume_pixeldata(dicom_input)
-
-
 
     affine = common.create_affine(dicom_input)
 

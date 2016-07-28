@@ -22,6 +22,7 @@ import dicom2nifti.convert_ge as convert_ge
 import dicom2nifti.convert_philips as convert_philips
 import dicom2nifti.common as common
 import dicom2nifti.image_reorientation as image_reorientation
+import dicom2nifti.settings as settings
 
 
 # Disable this warning as there is not reason for an init class in an enum
@@ -189,7 +190,7 @@ def decompress_directory(dicom_directory):
     if not is_compressed(dicom_directory):
         return
 
-    if _which('gdcmconv') is None and _which('gdcmconv.exe') is None:
+    if settings.gdcmconv_path is None and _which('gdcmconv') is None and _which('gdcmconv.exe') is None:
         raise ConversionError('GDCMCONV_NOT_FOUND')
 
     print('Decompressing dicom files in %s' % dicom_directory)
@@ -205,7 +206,9 @@ def compress_dicom(input_file):
 
     :param input_file: single dicom file to compress
     """
-    gdcmconv_executable = _which('gdcmconv')
+    gdcmconv_executable = settings.gdcmconv_path
+    if gdcmconv_executable is None:
+        gdcmconv_executable = _which('gdcmconv')
     if gdcmconv_executable is None:
         gdcmconv_executable = _which('gdcmconv.exe')
 

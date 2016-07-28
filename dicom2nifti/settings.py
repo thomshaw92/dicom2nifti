@@ -3,6 +3,7 @@ validate_slicecount = True
 validate_orientation = True
 validate_orthogonal = True
 validate_sliceincrement = True
+gdcmconv_path = None
 
 
 def disable_validate_sliceincrement():
@@ -77,3 +78,12 @@ def enable_validate_slicecount():
     """
     global validate_slicecount
     validate_slicecount = True
+
+def set_gdcmconv_path( path ):
+    """
+    Set where the filepath to the gdcmconv executable (needed is it is not found in your PATH)
+
+    :param path: the file path to the gdcmconv executable
+    """
+    global gdcmconv_path
+    gdcmconv_path = path

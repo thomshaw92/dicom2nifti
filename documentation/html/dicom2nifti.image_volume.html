@@ -1,0 +1,213 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dicom2nifti.image_volume module &mdash; dicom2nifti  documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="dicom2nifti  documentation" href="index.html" />
+    <link rel="up" title="dicom2nifti package" href="dicom2nifti.html" />
+    <link rel="next" title="dicom2nifti.settings module" href="dicom2nifti.settings.html" />
+    <link rel="prev" title="dicom2nifti.image_reorientation module" href="dicom2nifti.image_reorientation.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.settings.html" title="dicom2nifti.settings module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.image_reorientation.html" title="dicom2nifti.image_reorientation module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" accesskey="U">dicom2nifti package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dicom2nifti.image_volume">
+<span id="dicom2nifti-image-volume-module"></span><h1>dicom2nifti.image_volume module<a class="headerlink" href="#module-dicom2nifti.image_volume" title="Permalink to this headline">¶</a></h1>
+<p>Created on Fri Jun  7 07:40:20 2013</p>
+<p>&#64;author: abrys</p>
+<dl class="class">
+<dt id="dicom2nifti.image_volume.ImageVolume">
+<em class="property">class </em><code class="descclassname">dicom2nifti.image_volume.</code><code class="descname">ImageVolume</code><span class="sig-paren">(</span><em>input_nifti</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/image_volume.html#ImageVolume"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.image_volume.ImageVolume" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class representing an imagevolume.
+You can provide it with a nifti and can be used to get slices in a certain direction
+It will take the affine matrix into account to find the correct orientation</p>
+<dl class="method">
+<dt id="dicom2nifti.image_volume.ImageVolume.get_slice">
+<code class="descname">get_slice</code><span class="sig-paren">(</span><em>slice_type</em>, <em>slice_number</em>, <em>time_point=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/image_volume.html#ImageVolume.get_slice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.image_volume.ImageVolume.get_slice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a slice of the dataset.
+slice.data contains the window/levelled values, in uint8
+slice.original_data contains the original data for this slice
+:param time_point: in case of 4d nifti the 4th dimension
+:param slice_number: the slice number
+:param slice_type: tye slice type (AXIAL, SAGITAL, CORONAL)</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dicom2nifti.image_volume.Slice">
+<em class="property">class </em><code class="descclassname">dicom2nifti.image_volume.</code><code class="descname">Slice</code><a class="reference internal" href="_modules/dicom2nifti/image_volume.html#Slice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.image_volume.Slice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class containing all data for a single slice in an image volume</p>
+<dl class="attribute">
+<dt id="dicom2nifti.image_volume.Slice.original_data">
+<code class="descname">original_data</code><em class="property"> = None</em><a class="headerlink" href="#dicom2nifti.image_volume.Slice.original_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dicom2nifti.image_volume.Slice.slice_orientation">
+<code class="descname">slice_orientation</code><em class="property"> = None</em><a class="headerlink" href="#dicom2nifti.image_volume.Slice.slice_orientation" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dicom2nifti.image_volume.SliceOrientation">
+<em class="property">class </em><code class="descclassname">dicom2nifti.image_volume.</code><code class="descname">SliceOrientation</code><a class="reference internal" href="_modules/dicom2nifti/image_volume.html#SliceOrientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.image_volume.SliceOrientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Class containing the orientation of a slice</p>
+<dl class="attribute">
+<dt id="dicom2nifti.image_volume.SliceOrientation.normal_component">
+<code class="descname">normal_component</code><em class="property"> = None</em><a class="headerlink" href="#dicom2nifti.image_volume.SliceOrientation.normal_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dicom2nifti.image_volume.SliceOrientation.x_component">
+<code class="descname">x_component</code><em class="property"> = None</em><a class="headerlink" href="#dicom2nifti.image_volume.SliceOrientation.x_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dicom2nifti.image_volume.SliceOrientation.x_inverted">
+<code class="descname">x_inverted</code><em class="property"> = False</em><a class="headerlink" href="#dicom2nifti.image_volume.SliceOrientation.x_inverted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dicom2nifti.image_volume.SliceOrientation.y_component">
+<code class="descname">y_component</code><em class="property"> = None</em><a class="headerlink" href="#dicom2nifti.image_volume.SliceOrientation.y_component" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dicom2nifti.image_volume.SliceOrientation.y_inverted">
+<code class="descname">y_inverted</code><em class="property"> = False</em><a class="headerlink" href="#dicom2nifti.image_volume.SliceOrientation.y_inverted" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dicom2nifti.image_volume.SliceType">
+<em class="property">class </em><code class="descclassname">dicom2nifti.image_volume.</code><code class="descname">SliceType</code><a class="reference internal" href="_modules/dicom2nifti/image_volume.html#SliceType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.image_volume.SliceType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>ENUM like container for the slice types</p>
+<dl class="attribute">
+<dt id="dicom2nifti.image_volume.SliceType.AXIAL">
+<code class="descname">AXIAL</code><em class="property"> = 1</em><a class="headerlink" href="#dicom2nifti.image_volume.SliceType.AXIAL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dicom2nifti.image_volume.SliceType.CORONAL">
+<code class="descname">CORONAL</code><em class="property"> = 3</em><a class="headerlink" href="#dicom2nifti.image_volume.SliceType.CORONAL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dicom2nifti.image_volume.SliceType.SAGITAL">
+<code class="descname">SAGITAL</code><em class="property"> = 2</em><a class="headerlink" href="#dicom2nifti.image_volume.SliceType.SAGITAL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dicom2nifti.image_reorientation.html"
+                        title="previous chapter">dicom2nifti.image_reorientation module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="dicom2nifti.settings.html"
+                        title="next chapter">dicom2nifti.settings module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/dicom2nifti.image_volume.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.settings.html" title="dicom2nifti.settings module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.image_reorientation.html" title="dicom2nifti.image_reorientation module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" >dicom2nifti package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, icometrix.
+    </div>
+  </body>
+</html>

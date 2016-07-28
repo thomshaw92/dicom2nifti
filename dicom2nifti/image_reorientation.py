@@ -21,17 +21,9 @@ def reorient_image(input_image, output_image):
     x will represent the coronal plane, y the sagital and z the axial plane.
     x increases from Right (R) to Left (L), y from Posterior (P) to Anterior (A) and z from Inferior (I) to Superior (S)
 
-    inputs:
-        input_image:     The full pathname of the image whose data orientation may need to change
-        output_image:    The full pathname of the LAS oriented image
-
-    output:
-        The output image in nibabel form
-        :param output_image: filepath to the nibabel image
-        :param input_image: filepath to the nibabel image
-
-
-
+    :returns: The output image in nibabel form
+    :param output_image: filepath to the nibabel image
+    :param input_image: filepath to the nibabel image
     """
     # Use the imageVolume module to find which coordinate corresponds to each plane
     # and get the image data in RAS orientation

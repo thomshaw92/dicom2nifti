@@ -22,6 +22,7 @@ def dicom_to_nifti(dicom_input, output_file):
     This function will convert an anatomical dicom series to a nifti
 
     Examples: See unit test
+
     :param output_file: filepath to the output nifti
     :param dicom_input: directory with the dicom files for a single scan, or list of read in dicoms
     """

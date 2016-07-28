@@ -1,0 +1,172 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dicom2nifti.convert_siemens module &mdash; dicom2nifti  documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="dicom2nifti  documentation" href="index.html" />
+    <link rel="up" title="dicom2nifti package" href="dicom2nifti.html" />
+    <link rel="next" title="dicom2nifti.exceptions module" href="dicom2nifti.exceptions.html" />
+    <link rel="prev" title="dicom2nifti.convert_philips module" href="dicom2nifti.convert_philips.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.exceptions.html" title="dicom2nifti.exceptions module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.convert_philips.html" title="dicom2nifti.convert_philips module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" accesskey="U">dicom2nifti package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dicom2nifti.convert_siemens">
+<span id="dicom2nifti-convert-siemens-module"></span><h1>dicom2nifti.convert_siemens module<a class="headerlink" href="#module-dicom2nifti.convert_siemens" title="Permalink to this headline">¶</a></h1>
+<p>dicom2nifti</p>
+<p>&#64;author: abrys</p>
+<dl class="class">
+<dt id="dicom2nifti.convert_siemens.MosaicType">
+<em class="property">class </em><code class="descclassname">dicom2nifti.convert_siemens.</code><code class="descname">MosaicType</code><a class="reference internal" href="_modules/dicom2nifti/convert_siemens.html#MosaicType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.convert_siemens.MosaicType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>Enum for the possible types of mosaic data</p>
+<dl class="attribute">
+<dt id="dicom2nifti.convert_siemens.MosaicType.ASCENDING">
+<code class="descname">ASCENDING</code><em class="property"> = 1</em><a class="headerlink" href="#dicom2nifti.convert_siemens.MosaicType.ASCENDING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="dicom2nifti.convert_siemens.MosaicType.DESCENDING">
+<code class="descname">DESCENDING</code><em class="property"> = 2</em><a class="headerlink" href="#dicom2nifti.convert_siemens.MosaicType.DESCENDING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.convert_siemens.dicom_to_nifti">
+<code class="descclassname">dicom2nifti.convert_siemens.</code><code class="descname">dicom_to_nifti</code><span class="sig-paren">(</span><em>dicom_input</em>, <em>output_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/convert_siemens.html#dicom_to_nifti"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.convert_siemens.dicom_to_nifti" title="Permalink to this definition">¶</a></dt>
+<dd><p>This is the main dicom to nifti conversion function for ge images.
+As input ge images are required. It will then determine the type of images and do the correct conversion</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>output_file</strong> &#8211; filepath to the output nifti</li>
+<li><strong>dicom_input</strong> &#8211; directory with dicom files for 1 scan</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.convert_siemens.is_siemens">
+<code class="descclassname">dicom2nifti.convert_siemens.</code><code class="descname">is_siemens</code><span class="sig-paren">(</span><em>dicom_input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/convert_siemens.html#is_siemens"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.convert_siemens.is_siemens" title="Permalink to this definition">¶</a></dt>
+<dd><p>Use this function to detect if a dicom series is a siemens dataset</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dicom_input</strong> &#8211; directory with dicom files for 1 scan</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dicom2nifti.convert_philips.html"
+                        title="previous chapter">dicom2nifti.convert_philips module</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="dicom2nifti.exceptions.html"
+                        title="next chapter">dicom2nifti.exceptions module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/dicom2nifti.convert_siemens.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.exceptions.html" title="dicom2nifti.exceptions module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.convert_philips.html" title="dicom2nifti.convert_philips module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" >dicom2nifti package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, icometrix.
+    </div>
+  </body>
+</html>

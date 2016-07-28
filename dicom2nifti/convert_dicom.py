@@ -57,6 +57,7 @@ def dicom_series_to_nifti(original_dicom_directory, output_file, reorient_nifti=
 
     Inspired by http://nipy.sourceforge.net/nibabel/dicom/spm_dicom.html
     Inspired by http://code.google.com/p/pydicom/source/browse/source/dicom/contrib/pydicom_series.py
+
     :param reorient_nifti: if True the nifti affine and data will be updated so the data is stored LAS oriented
     :param output_file: file path to write to
     :param original_dicom_directory: directory with the dicom files for a single series/scan
@@ -96,6 +97,7 @@ def dicom_array_to_nifti(dicom_list, output_file, reorient_nifti=True):
 
     Inspired by http://nipy.sourceforge.net/nibabel/dicom/spm_dicom.html
     Inspired by http://code.google.com/p/pydicom/source/browse/source/dicom/contrib/pydicom_series.py
+
     :param reorient_nifti: if True the nifti affine and data will be updated so the data is stored LAS oriented
     :param output_file: file path to write to
     :param dicom_list: list with uncompressed dicom objects as read by pydicom
@@ -126,6 +128,7 @@ def are_imaging_dicoms(dicom_input):
     """
     This function will check the dicom headers to see which type of series it is
     Possibilities are fMRI, DTI, Anatomical (if no clear type is found anatomical is used)
+
     :param dicom_input: directory with dicom files or a list of dicom objects
     """
 
@@ -167,6 +170,7 @@ def _get_vendor(dicom_input):
 def decompress_dicom(input_file):
     """
     This function can be used to convert a jpeg compressed image to an uncompressed one for further conversion
+
     :param input_file: single dicom file to decompress
     """
     gdcmconv_executable = _which('gdcmconv')
@@ -179,6 +183,7 @@ def decompress_dicom(input_file):
 def decompress_directory(dicom_directory):
     """
     This function can be used to convert a folder of jpeg compressed images to an uncompressed ones
+
     :param dicom_directory: directory with dicom files to decompress
     """
     if not is_compressed(dicom_directory):
@@ -197,6 +202,7 @@ def decompress_directory(dicom_directory):
 def compress_dicom(input_file):
     """
     This function can be used to convert a jpeg compressed image to an uncompressed one for further conversion
+
     :param input_file: single dicom file to compress
     """
     gdcmconv_executable = _which('gdcmconv')
@@ -209,6 +215,7 @@ def compress_dicom(input_file):
 def compress_directory(dicom_directory):
     """
     This function can be used to convert a folder of jpeg compressed images to an uncompressed ones
+
     :param dicom_directory: directory of dicom files to compress
     """
     if is_compressed(dicom_directory):
@@ -227,6 +234,7 @@ def compress_directory(dicom_directory):
 def is_compressed(dicom_input):
     """
     Check if dicoms are compressed or not
+
     :param dicom_input: directory with dicom files for 1 scan or a single dicom file
     """
     # read dicom header
@@ -249,6 +257,7 @@ def _get_first_header(dicom_directory):
     """
     Function to get the first dicom file form a directory and return the header
     Useful to determine the type of data to convert
+
     :param dicom_directory: directory with dicom files
     """
     # looping over all files

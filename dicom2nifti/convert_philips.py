@@ -25,6 +25,7 @@ dicom.config.enforce_valid_values = False
 def is_philips(dicom_input):
     """
     Use this function to detect if a dicom series is a philips dataset
+
     :param dicom_input: directory with dicom files for 1 scan of a dicom_header
     """
     # read dicom header
@@ -50,6 +51,7 @@ def dicom_to_nifti(dicom_input, output_file):
     As input philips images are required. It will then determine the type of images and do the correct conversion
 
     Examples: See unit test
+
     :param output_file: file path to the output nifti
     :param dicom_input: directory with dicom files for 1 scan
     """
@@ -91,6 +93,7 @@ def is_multiframe_dicom(dicom_input):
     Use this function to detect if a dicom series is a siemens 4D dataset
     NOTE: Only the first slice will be checked so you can only provide an already sorted dicom directory
     (containing one series)
+
     :param dicom_input: directory with dicom files for 1 scan
     """
     # read dicom header

@@ -1,0 +1,420 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dicom2nifti.common module &mdash; dicom2nifti  documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="dicom2nifti  documentation" href="index.html" />
+    <link rel="up" title="dicom2nifti package" href="dicom2nifti.html" />
+    <link rel="next" title="dicom2nifti.convert_dicom module" href="dicom2nifti.convert_dicom.html" />
+    <link rel="prev" title="dicom2nifti package" href="dicom2nifti.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.convert_dicom.html" title="dicom2nifti.convert_dicom module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.html" title="dicom2nifti package"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" accesskey="U">dicom2nifti package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dicom2nifti.common">
+<span id="dicom2nifti-common-module"></span><h1>dicom2nifti.common module<a class="headerlink" href="#module-dicom2nifti.common" title="Permalink to this headline">¶</a></h1>
+<p>dicom2nifti</p>
+<p>&#64;author: abrys</p>
+<dl class="function">
+<dt id="dicom2nifti.common.apply_scaling">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">apply_scaling</code><span class="sig-paren">(</span><em>data</em>, <em>dicom_headers</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#apply_scaling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.apply_scaling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rescale the data based on the RescaleSlope and RescaleOffset
+Based on the scaling from pydicomseries</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>dicom_headers</strong> &#8211; dicom headers to use to retreive the scaling factors</li>
+<li><strong>data</strong> &#8211; the input data</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.create_affine">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">create_affine</code><span class="sig-paren">(</span><em>sorted_dicoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#create_affine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.create_affine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Function to generate the affine matrix for a dicom series
+This method was based on (<a class="reference external" href="http://nipy.org/nibabel/dicom/dicom_orientation.html">http://nipy.org/nibabel/dicom/dicom_orientation.html</a>)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sorted_dicoms</strong> &#8211; list with sorted dicom files</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.do_scaling">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">do_scaling</code><span class="sig-paren">(</span><em>data</em>, <em>rescale_slope</em>, <em>rescale_intercept</em>, <em>private_scale_slope=1.0</em>, <em>private_scale_intercept=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#do_scaling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.do_scaling" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.get_fd_array_value">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">get_fd_array_value</code><span class="sig-paren">(</span><em>tag</em>, <em>count</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#get_fd_array_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.get_fd_array_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Getters for data that also work with implicit transfersyntax</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>count</strong> &#8211; number of items in the array</li>
+<li><strong>tag</strong> &#8211; the tag to read</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.get_fd_value">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">get_fd_value</code><span class="sig-paren">(</span><em>tag</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#get_fd_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.get_fd_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Getters for data that also work with implicit transfersyntax</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tag</strong> &#8211; the tag to read</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.get_fl_value">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">get_fl_value</code><span class="sig-paren">(</span><em>tag</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#get_fl_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.get_fl_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Getters for data that also work with implicit transfersyntax</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tag</strong> &#8211; the tag to read</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.get_is_value">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">get_is_value</code><span class="sig-paren">(</span><em>tag</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#get_is_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.get_is_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Getters for data that also work with implicit transfersyntax</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tag</strong> &#8211; the tag to read</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.get_numpy_type">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">get_numpy_type</code><span class="sig-paren">(</span><em>dicom_header</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#get_numpy_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.get_numpy_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Make NumPy format code, e.g. &#8220;uint16&#8221;, &#8220;int32&#8221; etc
+from two pieces of info:
+mosaic.PixelRepresentation &#8211; 0 for unsigned, 1 for signed;
+mosaic.BitsAllocated &#8211; 8, 16, or 32</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dicom_header</strong> &#8211; the read dicom file/headers</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">numpy format string</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.get_ss_value">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">get_ss_value</code><span class="sig-paren">(</span><em>tag</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#get_ss_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.get_ss_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Getters for data that also work with implicit transfersyntax</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>tag</strong> &#8211; the tag to read</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.get_volume_pixeldata">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">get_volume_pixeldata</code><span class="sig-paren">(</span><em>sorted_slices</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#get_volume_pixeldata"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.get_volume_pixeldata" title="Permalink to this definition">¶</a></dt>
+<dd><p>the slice and intercept calculation can cause the slices to have different dtypes
+we should get the correct dtype that can cover all of them</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>sorted_slices</strong> (<em>list of slices</em>) &#8211; sliced sored in the correct order to create volume</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.is_dicom_file">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">is_dicom_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#is_dicom_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.is_dicom_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Util function to check if file is a dicom file
+the first 128 bytes are preamble
+the next 4 bytes should contain DICM otherwise it is not a dicom</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> (<em>six.string_types</em>) &#8211; file to check for the DICM header block</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if it is a dicom file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.read_dicom_directory">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">read_dicom_directory</code><span class="sig-paren">(</span><em>dicom_directory</em>, <em>stop_before_pixels=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#read_dicom_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.read_dicom_directory" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read all dicom files in a given directory (stop before pixels)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>stop_before_pixels</strong> (<em>bool</em>) &#8211; Should we stop reading before the pixeldata (handy if we only want header info)</li>
+<li><strong>dicom_directory</strong> (<em>six.string_types</em>) &#8211; Directory with dicom data</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">List of dicom objects</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.set_tr_te">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">set_tr_te</code><span class="sig-paren">(</span><em>nifti_image</em>, <em>repetition_time</em>, <em>echo_time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#set_tr_te"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.set_tr_te" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the tr and te in the nifti headers</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>echo_time</strong> &#8211; echo time</li>
+<li><strong>repetition_time</strong> &#8211; repetition time</li>
+<li><strong>nifti_image</strong> &#8211; nifti image to set the info to</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.validate_orientation">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">validate_orientation</code><span class="sig-paren">(</span><em>dicoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#validate_orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.validate_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate that all dicoms have the same orientation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dicoms</strong> &#8211; list of dicoms</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.validate_orthogonal">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">validate_orthogonal</code><span class="sig-paren">(</span><em>dicoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#validate_orthogonal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.validate_orthogonal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate that volume is orthonormal</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dicoms</strong> &#8211; check that we have a volume without skewing</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.validate_slicecount">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">validate_slicecount</code><span class="sig-paren">(</span><em>dicoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#validate_slicecount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.validate_slicecount" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate that volume is big enough to create a meaningfull volume
+This will also skip localizers and alike</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dicoms</strong> &#8211; list of dicoms</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.validate_sliceincrement">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">validate_sliceincrement</code><span class="sig-paren">(</span><em>dicoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#validate_sliceincrement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.validate_sliceincrement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Validate that the distance between all slices is equal (of very close to)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dicoms</strong> &#8211; list of dicoms</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.write_bval_file">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">write_bval_file</code><span class="sig-paren">(</span><em>bvals</em>, <em>bval_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#write_bval_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.write_bval_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write an array of bvals to a bval file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>bvals</strong> &#8211; array with the values</li>
+<li><strong>bval_file</strong> &#8211; filepath to write to</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.write_bvec_file">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">write_bvec_file</code><span class="sig-paren">(</span><em>bvecs</em>, <em>bvec_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#write_bvec_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.write_bvec_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write an array of bvecs to a bvec file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>bvecs</strong> &#8211; array with the vectors</li>
+<li><strong>bvec_file</strong> &#8211; filepath to write to</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dicom2nifti.html"
+                        title="previous chapter">dicom2nifti package</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="dicom2nifti.convert_dicom.html"
+                        title="next chapter">dicom2nifti.convert_dicom module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/dicom2nifti.common.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.convert_dicom.html" title="dicom2nifti.convert_dicom module"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.html" title="dicom2nifti package"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" >dicom2nifti package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, icometrix.
+    </div>
+  </body>
+</html>

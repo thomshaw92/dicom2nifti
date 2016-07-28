@@ -57,3 +57,5 @@ docs/_build/
 target/
 .idea
 README.html
+.buildinfo
+documentation/html/.doctrees

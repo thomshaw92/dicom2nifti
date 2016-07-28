@@ -1,0 +1,214 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dicom2nifti.convert_generic &mdash; dicom2nifti  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="dicom2nifti  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dicom2nifti.convert_generic</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">dicom2nifti</span>
+
+<span class="sd">@author: abrys</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">nibabel</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
+<span class="kn">import</span> <span class="nn">six</span>
+
+<span class="kn">import</span> <span class="nn">dicom2nifti.common</span> <span class="k">as</span> <span class="nn">common</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.settings</span> <span class="k">as</span> <span class="nn">settings</span>
+<span class="kn">from</span> <span class="nn">dicom2nifti.exceptions</span> <span class="k">import</span> <span class="n">ConversionError</span>
+
+
+<div class="viewcode-block" id="dicom_to_nifti"><a class="viewcode-back" href="../../dicom2nifti.convert_generic.html#dicom2nifti.convert_generic.dicom_to_nifti">[docs]</a><span class="k">def</span> <span class="nf">dicom_to_nifti</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function will convert an anatomical dicom series to a nifti</span>
+
+<span class="sd">    Examples: See unit test</span>
+
+<span class="sd">    :param output_file: filepath to the output nifti</span>
+<span class="sd">    :param dicom_input: directory with the dicom files for a single scan, or list of read in dicoms</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;NO_DICOM_FILES_FOUND&#39;</span><span class="p">)</span>
+
+    <span class="c1"># remove localizers based on image type</span>
+    <span class="n">dicom_input</span> <span class="o">=</span> <span class="n">_remove_localizers_by_imagetype</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+    <span class="c1"># remove_localizers based on image orientation</span>
+    <span class="n">dicom_input</span> <span class="o">=</span> <span class="n">_remove_localizers_by_orientation</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">validate_slicecount</span><span class="p">:</span>
+        <span class="c1"># validate all the dicom files for correct orientations</span>
+        <span class="n">common</span><span class="o">.</span><span class="n">validate_slicecount</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">validate_orientation</span><span class="p">:</span>
+        <span class="c1"># validate that all slices have the same orientation</span>
+        <span class="n">common</span><span class="o">.</span><span class="n">validate_orientation</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">validate_orthogonal</span><span class="p">:</span>
+        <span class="c1"># validate that we have an orthogonal image (to detect gantry tilting etc)</span>
+        <span class="n">common</span><span class="o">.</span><span class="n">validate_orthogonal</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">validate_sliceincrement</span><span class="p">:</span>
+        <span class="c1"># validate that all slices have a consistent slice increment</span>
+        <span class="n">common</span><span class="o">.</span><span class="n">validate_sliceincrement</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+
+    <span class="n">dicom_input</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="o">.</span><span class="n">InstanceNumber</span><span class="p">)</span>
+
+    <span class="c1"># Get data; originally z,y,x, transposed to x,y,z</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_volume_pixeldata</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+
+    <span class="n">affine</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">create_affine</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+
+    <span class="c1"># Convert to nifti</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">affine</span><span class="p">)</span>
+
+    <span class="c1"># Set TR and TE if available</span>
+    <span class="k">if</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x0081</span><span class="p">)</span> <span class="ow">in</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x0081</span><span class="p">)</span> <span class="ow">in</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+        <span class="n">common</span><span class="o">.</span><span class="n">set_tr_te</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">RepetitionTime</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">EchoTime</span><span class="p">))</span>
+
+    <span class="c1"># Save to disk</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving nifti to disk </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">output_file</span><span class="p">)</span>
+    <span class="n">img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;NII_FILE&#39;</span><span class="p">:</span> <span class="n">output_file</span><span class="p">}</span></div>
+
+
+<span class="k">def</span> <span class="nf">_remove_localizers_by_imagetype</span><span class="p">(</span><span class="n">dicoms</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Search dicoms for localizers and delete them</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Loop overall files and build dict</span>
+    <span class="n">filtered_dicoms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">dicom_</span> <span class="ow">in</span> <span class="n">dicoms</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;ImageType&#39;</span> <span class="ow">in</span> <span class="n">dicom_</span> <span class="ow">and</span> <span class="s1">&#39;LOCALIZER&#39;</span> <span class="ow">in</span> <span class="n">dicom_</span><span class="o">.</span><span class="n">ImageType</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="c1"># &#39;Projection Image&#39; are Localizers for CT only see MSMET-234</span>
+        <span class="k">if</span> <span class="s1">&#39;CT&#39;</span> <span class="ow">in</span> <span class="n">dicom_</span><span class="o">.</span><span class="n">Modality</span> <span class="ow">and</span> <span class="s1">&#39;ImageType&#39;</span> <span class="ow">in</span> <span class="n">dicom_</span> <span class="ow">and</span> <span class="s1">&#39;PROJECTION IMAGE&#39;</span> <span class="ow">in</span> <span class="n">dicom_</span><span class="o">.</span><span class="n">ImageType</span><span class="p">:</span>
+            <span class="k">continue</span>
+        <span class="n">filtered_dicoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dicom_</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">filtered_dicoms</span>
+
+
+<span class="k">def</span> <span class="nf">_remove_localizers_by_orientation</span><span class="p">(</span><span class="n">dicoms</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Removing localizers based on the orientation.</span>
+<span class="sd">    This is needed as in some cases with ct data there are some localizer/projection type images that cannot</span>
+<span class="sd">    be distiguished by the dicom headers. This is why we kick out all orientations that do not have more than 4 files</span>
+<span class="sd">    4 is the limit anyway for converting to nifti on our case</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">orientations</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">sorted_dicoms</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># Loop overall files and build dict</span>
+    <span class="k">for</span> <span class="n">dicom_header</span> <span class="ow">in</span> <span class="n">dicoms</span><span class="p">:</span>
+        <span class="c1"># Create affine matrix (http://nipy.sourceforge.net/nibabel/dicom/dicom_orientation.html#dicom-slice-affine)</span>
+        <span class="n">image_orient1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dicom_header</span><span class="o">.</span><span class="n">ImageOrientationPatient</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">image_orient2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dicom_header</span><span class="o">.</span><span class="n">ImageOrientationPatient</span><span class="p">)[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>
+        <span class="n">image_orient_combined</span> <span class="o">=</span> <span class="p">(</span><span class="n">image_orient1</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span> <span class="n">image_orient2</span><span class="o">.</span><span class="n">tolist</span><span class="p">())</span>
+        <span class="n">found_orientation</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">orientation</span> <span class="ow">in</span> <span class="n">orientations</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">image_orient_combined</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">orientation</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span> \
+                    <span class="ow">and</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">image_orient_combined</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">orientation</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span>
+                                       <span class="n">atol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
+                <span class="n">sorted_dicoms</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">orientation</span><span class="p">)]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dicom_header</span><span class="p">)</span>
+                <span class="n">found_orientation</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="k">break</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">found_orientation</span><span class="p">:</span>
+            <span class="n">orientations</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">image_orient_combined</span><span class="p">)</span>
+            <span class="n">sorted_dicoms</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">image_orient_combined</span><span class="p">)]</span> <span class="o">=</span> <span class="p">[</span><span class="n">dicom_header</span><span class="p">]</span>
+
+    <span class="c1"># if there are multiple possible orientations delete orientations where there are less than 4 files</span>
+    <span class="c1"># we don&#39;t convert anything less that that anyway</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_dicoms</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">filtered_dicoms</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">orientation</span> <span class="ow">in</span> <span class="n">sorted_dicoms</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_dicoms</span><span class="p">[</span><span class="n">orientation</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>
+                <span class="n">filtered_dicoms</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">sorted_dicoms</span><span class="p">[</span><span class="n">orientation</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">filtered_dicoms</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">six</span><span class="o">.</span><span class="n">next</span><span class="p">(</span><span class="n">six</span><span class="o">.</span><span class="n">itervalues</span><span class="p">(</span><span class="n">sorted_dicoms</span><span class="p">))</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, icometrix.
+    </div>
+  </body>
+</html>

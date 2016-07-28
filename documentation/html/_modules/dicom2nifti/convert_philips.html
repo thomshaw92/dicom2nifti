@@ -1,0 +1,710 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dicom2nifti.convert_philips &mdash; dicom2nifti  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="dicom2nifti  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dicom2nifti.convert_philips</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">dicom2nifti</span>
+
+<span class="sd">@author: abrys</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+
+<span class="kn">import</span> <span class="nn">dicom</span>
+<span class="kn">import</span> <span class="nn">nibabel</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
+
+<span class="kn">import</span> <span class="nn">dicom2nifti.common</span> <span class="k">as</span> <span class="nn">common</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.convert_generic</span> <span class="k">as</span> <span class="nn">convert_generic</span>
+<span class="kn">from</span> <span class="nn">dicom2nifti.exceptions</span> <span class="k">import</span> <span class="n">ConversionError</span>
+
+<span class="n">dicom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">enforce_valid_values</span> <span class="o">=</span> <span class="kc">False</span>
+
+
+<div class="viewcode-block" id="is_philips"><a class="viewcode-back" href="../../dicom2nifti.convert_philips.html#dicom2nifti.convert_philips.is_philips">[docs]</a><span class="k">def</span> <span class="nf">is_philips</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use this function to detect if a dicom series is a philips dataset</span>
+
+<span class="sd">    :param dicom_input: directory with dicom files for 1 scan of a dicom_header</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># read dicom header</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="s1">&#39;Manufacturer&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span> <span class="ow">or</span> <span class="s1">&#39;Modality&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># we try generic conversion in these cases</span>
+
+    <span class="c1"># check if manufacturer is Philips</span>
+    <span class="k">if</span> <span class="s1">&#39;PHILIPS&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="o">.</span><span class="n">Manufacturer</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># check if Modality is mr</span>
+    <span class="k">if</span> <span class="n">header</span><span class="o">.</span><span class="n">Modality</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;MR&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="dicom_to_nifti"><a class="viewcode-back" href="../../dicom2nifti.convert_philips.html#dicom2nifti.convert_philips.dicom_to_nifti">[docs]</a><span class="k">def</span> <span class="nf">dicom_to_nifti</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This is the main dicom to nifti conversion fuction for philips images.</span>
+<span class="sd">    As input philips images are required. It will then determine the type of images and do the correct conversion</span>
+
+<span class="sd">    Examples: See unit test</span>
+
+<span class="sd">    :param output_file: file path to the output nifti</span>
+<span class="sd">    :param dicom_input: directory with dicom files for 1 scan</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">assert</span> <span class="n">is_philips</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">is_multiframe_dicom</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+        <span class="n">_assert_explicit_vr</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found multiframe dicom&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_is_multiframe_4d</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found sequence type: MULTIFRAME 4D&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_multiframe_to_nifti</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">_is_multiframe_anatomical</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found sequence type: MULTIFRAME ANATOMICAL&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_multiframe_to_nifti</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found singleframe dicom&#39;</span><span class="p">)</span>
+        <span class="n">grouped_dicoms</span> <span class="o">=</span> <span class="n">_get_grouped_dicoms</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">_is_singleframe_4d</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found sequence type: SINGLEFRAME 4D&#39;</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">_singleframe_to_nifti</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Assuming anatomical data&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">convert_generic</span><span class="o">.</span><span class="n">dicom_to_nifti</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_assert_explicit_vr</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Assert that explicit vr is used</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">header</span><span class="o">.</span><span class="n">file_meta</span><span class="p">[</span><span class="mh">0x0002</span><span class="p">,</span> <span class="mh">0x0010</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;1.2.840.10008.1.2&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;IMPLICIT_VR_ENHANCED_DICOM&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="is_multiframe_dicom"><a class="viewcode-back" href="../../dicom2nifti.convert_philips.html#dicom2nifti.convert_philips.is_multiframe_dicom">[docs]</a><span class="k">def</span> <span class="nf">is_multiframe_dicom</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use this function to detect if a dicom series is a siemens 4D dataset</span>
+<span class="sd">    NOTE: Only the first slice will be checked so you can only provide an already sorted dicom directory</span>
+<span class="sd">    (containing one series)</span>
+
+<span class="sd">    :param dicom_input: directory with dicom files for 1 scan</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># read dicom header</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="n">header</span><span class="o">.</span><span class="n">file_meta</span><span class="p">[</span><span class="mh">0x0002</span><span class="p">,</span> <span class="mh">0x0002</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;1.2.840.10008.5.1.4.1.1.4.1&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<span class="k">def</span> <span class="nf">_is_multiframe_diffusion_imaging</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use this function to detect if a dicom series is a philips multiframe dti dataset</span>
+<span class="sd">    NOTE: We already assue this is a 4D dataset as input</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="s2">&quot;PerFrameFunctionalGroupsSequence&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># check if there is diffusion info in the frame</span>
+    <span class="n">found_diffusion</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">diffusion_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x9117</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">header</span><span class="o">.</span><span class="n">PerFrameFunctionalGroupsSequence</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">diffusion_tag</span> <span class="ow">in</span> <span class="n">frame</span><span class="p">:</span>
+            <span class="n">found_diffusion</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">break</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">found_diffusion</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span> <span class="nf">_is_multiframe_4d</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use this function to detect if a dicom series is a philips multiframe 4D dataset</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># check if it is multi frame dicom</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_multiframe_dicom</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">header</span> <span class="o">=</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># check if there are multiple stacks</span>
+    <span class="n">number_of_stack_slices</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_ss_value</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x2001</span><span class="p">,</span> <span class="mh">0x105f</span><span class="p">)][</span><span class="mi">0</span><span class="p">][</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x2001</span><span class="p">,</span> <span class="mh">0x102d</span><span class="p">)])</span>
+    <span class="n">number_of_stacks</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">NumberOfFrames</span><span class="p">)</span> <span class="o">/</span> <span class="n">number_of_stack_slices</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">number_of_stacks</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span> <span class="nf">_is_multiframe_anatomical</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use this function to detect if a dicom series is a philips multiframe anatomical dataset</span>
+<span class="sd">    NOTE: Only the first slice will be checked so you can only provide an already sorted dicom directory</span>
+<span class="sd">    (containing one series)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># check if it is multi frame dicom</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_multiframe_dicom</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="n">header</span> <span class="o">=</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># check if there are multiple stacks</span>
+    <span class="n">number_of_stack_slices</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_ss_value</span><span class="p">(</span><span class="n">header</span><span class="p">[</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x2001</span><span class="p">,</span> <span class="mh">0x105f</span><span class="p">)][</span><span class="mi">0</span><span class="p">][</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x2001</span><span class="p">,</span> <span class="mh">0x102d</span><span class="p">)])</span>
+    <span class="n">number_of_stacks</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">header</span><span class="o">.</span><span class="n">NumberOfFrames</span><span class="p">)</span> <span class="o">/</span> <span class="n">number_of_stack_slices</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">number_of_stacks</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span> <span class="nf">_is_singleframe_4d</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use this function to detect if a dicom series is a philips singleframe 4D dataset</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># check if there are stack information</span>
+    <span class="n">slice_number_mr_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2001</span><span class="p">,</span> <span class="mh">0x100a</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">slice_number_mr_tag</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># check if there are multiple timepoints</span>
+    <span class="n">grouped_dicoms</span> <span class="o">=</span> <span class="n">_get_grouped_dicoms</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span> <span class="nf">_is_singleframe_diffusion_imaging</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Use this function to detect if a dicom series is a philips singleframe dti dataset</span>
+<span class="sd">    NOTE: We already assume singleframe 4D input</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># check that there is bval information</span>
+    <span class="k">if</span> <span class="n">_is_bval_type_b</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">_is_bval_type_a</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span> <span class="nf">_is_bval_type_a</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the bvals are stored in the first of 2 currently known ways for single frame dti</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bval_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2001</span><span class="p">,</span> <span class="mh">0x1003</span><span class="p">)</span>
+    <span class="n">bvec_x_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x10b0</span><span class="p">)</span>
+    <span class="n">bvec_y_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x10b1</span><span class="p">)</span>
+    <span class="n">bvec_z_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x10b2</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">grouped_dicoms</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">bvec_x_tag</span> <span class="ow">in</span> <span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">_is_float</span><span class="p">(</span><span class="n">common</span><span class="o">.</span><span class="n">get_fl_value</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">bvec_x_tag</span><span class="p">]))</span> <span class="ow">and</span> \
+                        <span class="n">bvec_y_tag</span> <span class="ow">in</span> <span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">_is_float</span><span class="p">(</span><span class="n">common</span><span class="o">.</span><span class="n">get_fl_value</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">bvec_y_tag</span><span class="p">]))</span> <span class="ow">and</span> \
+                        <span class="n">bvec_z_tag</span> <span class="ow">in</span> <span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">_is_float</span><span class="p">(</span><span class="n">common</span><span class="o">.</span><span class="n">get_fl_value</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">bvec_z_tag</span><span class="p">]))</span> <span class="ow">and</span> \
+                        <span class="n">bval_tag</span> <span class="ow">in</span> <span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">_is_float</span><span class="p">(</span><span class="n">common</span><span class="o">.</span><span class="n">get_fl_value</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">bval_tag</span><span class="p">]))</span> <span class="ow">and</span> \
+                        <span class="n">common</span><span class="o">.</span><span class="n">get_fl_value</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">bval_tag</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span> <span class="nf">_is_bval_type_b</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if the bvals are stored in the second of 2 currently known ways for single frame dti</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bval_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x9087</span><span class="p">)</span>
+    <span class="n">bvec_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x9089</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">group</span> <span class="ow">in</span> <span class="n">grouped_dicoms</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">bvec_tag</span> <span class="ow">in</span> <span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">and</span> <span class="n">bval_tag</span> <span class="ow">in</span> <span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">bvec</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_fd_array_value</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">bvec_tag</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span>
+            <span class="n">bval</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_fd_value</span><span class="p">(</span><span class="n">group</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="n">bval_tag</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">_is_float</span><span class="p">(</span><span class="n">bvec</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="n">_is_float</span><span class="p">(</span><span class="n">bvec</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="ow">and</span> <span class="n">_is_float</span><span class="p">(</span><span class="n">bvec</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="ow">and</span> <span class="n">_is_float</span><span class="p">(</span><span class="n">bval</span><span class="p">)</span> <span class="ow">and</span> <span class="n">bval</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span> <span class="nf">_is_float</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if float</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="nb">float</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span> <span class="nf">_multiframe_to_nifti</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function will convert philips 4D or anatomical multiframe series to a nifti</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Read the multiframe dicom file</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Read dicom file&#39;</span><span class="p">)</span>
+    <span class="n">multiframe_dicom</span> <span class="o">=</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># Create mosaic block</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating data block&#39;</span><span class="p">)</span>
+    <span class="n">full_block</span> <span class="o">=</span> <span class="n">_multiframe_to_block</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating affine&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Create the nifti header info</span>
+    <span class="n">affine</span> <span class="o">=</span> <span class="n">_create_affine_multiframe</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating nifti&#39;</span><span class="p">)</span>
+
+    <span class="c1"># Convert to nifti</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">full_block</span><span class="p">,</span> <span class="n">affine</span><span class="p">)</span>
+    <span class="n">timing_parameters</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">SharedFunctionalGroupsSequence</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">MRTimingAndRelatedParametersSequence</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">first_frame</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="p">[</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x5200</span><span class="p">,</span> <span class="mh">0x9230</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">common</span><span class="o">.</span><span class="n">set_tr_te</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">timing_parameters</span><span class="o">.</span><span class="n">RepetitionTime</span><span class="p">),</span>
+                     <span class="nb">float</span><span class="p">(</span><span class="n">first_frame</span><span class="p">[</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x140f</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">EchoTime</span><span class="p">))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving nifti to disk&#39;</span><span class="p">)</span>
+    <span class="c1"># Save to disk</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving nifti to disk </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">output_file</span><span class="p">)</span>
+    <span class="n">img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">_is_multiframe_diffusion_imaging</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+        <span class="c1"># Create the bval en bvec files</span>
+        <span class="n">base_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
+        <span class="n">base_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">output_file</span><span class="p">))[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating bval en bvec files&#39;</span><span class="p">)</span>
+        <span class="n">bval_file</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">.bval&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">base_path</span><span class="p">,</span> <span class="n">base_name</span><span class="p">)</span>
+        <span class="n">bvec_file</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">.bvec&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">base_path</span><span class="p">,</span> <span class="n">base_name</span><span class="p">)</span>
+        <span class="n">bval_file</span><span class="p">,</span> <span class="n">bvec_file</span> <span class="o">=</span> <span class="n">_create_bvals_bvecs</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">,</span> <span class="n">bval_file</span><span class="p">,</span> <span class="n">bvec_file</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;NII_FILE&#39;</span><span class="p">:</span> <span class="n">output_file</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">bval_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;BVAL_FILE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bval_file</span>
+        <span class="k">if</span> <span class="n">bvec_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;BVEC_FILE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bvec_file</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;NII_FILE&#39;</span><span class="p">:</span> <span class="n">output_file</span><span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">_singleframe_to_nifti</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function will convert a philips singleframe series to a nifti</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Create mosaic block</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating data block&#39;</span><span class="p">)</span>
+    <span class="n">full_block</span> <span class="o">=</span> <span class="n">_singleframe_to_block</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating affine&#39;</span><span class="p">)</span>
+    <span class="c1"># Create the nifti header info</span>
+    <span class="n">affine</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">create_affine</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating nifti&#39;</span><span class="p">)</span>
+    <span class="c1"># Convert to nifti</span>
+    <span class="n">img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">full_block</span><span class="p">,</span> <span class="n">affine</span><span class="p">)</span>
+    <span class="n">common</span><span class="o">.</span><span class="n">set_tr_te</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">RepetitionTime</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">EchoTime</span><span class="p">))</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving nifti to disk </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">output_file</span><span class="p">)</span>
+    <span class="c1"># Save to disk</span>
+    <span class="n">img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">_is_singleframe_diffusion_imaging</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">):</span>
+        <span class="c1"># Create the bval en bvec files</span>
+        <span class="n">base_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">output_file</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">base_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.nii&#39;</span><span class="p">):</span>
+            <span class="n">base_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">base_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating bval en bvec files&#39;</span><span class="p">)</span>
+        <span class="n">bval_file</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.bval&#39;</span> <span class="o">%</span> <span class="n">base_name</span>
+        <span class="n">bvec_file</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.bvec&#39;</span> <span class="o">%</span> <span class="n">base_name</span>
+        <span class="n">bval_file</span><span class="p">,</span> <span class="n">bvec_file</span> <span class="o">=</span> <span class="n">_create_singleframe_bvals_bvecs</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">,</span> <span class="n">bval_file</span><span class="p">,</span> <span class="n">bvec_file</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;NII_FILE&#39;</span><span class="p">:</span> <span class="n">output_file</span><span class="p">}</span>
+        <span class="k">if</span> <span class="n">bval_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;BVAL_FILE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bval_file</span>
+        <span class="k">if</span> <span class="n">bvec_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">result</span><span class="p">[</span><span class="s1">&#39;BVEC_FILE&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bvec_file</span>
+        <span class="k">return</span> <span class="n">result</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;NII_FILE&#39;</span><span class="p">:</span> <span class="n">output_file</span><span class="p">}</span>
+
+
+<span class="k">def</span> <span class="nf">_singleframe_to_block</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a full datablock containing all timepoints</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># For each slice / mosaic create a data volume block</span>
+    <span class="n">data_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating block </span><span class="si">%s</span><span class="s1"> of </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)))</span>
+        <span class="n">current_block</span> <span class="o">=</span> <span class="n">_stack_to_block</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
+        <span class="n">current_block</span> <span class="o">=</span> <span class="n">current_block</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+        <span class="n">data_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_block</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">full_block</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">data_blocks</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="k">except</span><span class="p">:</span>
+        <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+        <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s2">&quot;MISSING_DICOM_FILES&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Apply the rescaling if needed</span>
+    <span class="n">common</span><span class="o">.</span><span class="n">apply_scaling</span><span class="p">(</span><span class="n">full_block</span><span class="p">,</span> <span class="n">grouped_dicoms</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="n">full_block</span>
+
+
+<span class="k">def</span> <span class="nf">_stack_to_block</span><span class="p">(</span><span class="n">timepoint_dicoms</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a mosaic slice to a block of data by reading the headers, splitting the mosaic and appending</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">common</span><span class="o">.</span><span class="n">get_volume_pixeldata</span><span class="p">(</span><span class="n">timepoint_dicoms</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_get_grouped_dicoms</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Search all dicoms in the dicom directory, sort and validate them</span>
+
+<span class="sd">    fast_read = True will only read the headers not the data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Order all dicom files by InstanceNumber</span>
+    <span class="n">dicoms</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">InstanceNumber</span><span class="p">)</span>
+
+    <span class="c1"># now group per stack</span>
+    <span class="n">grouped_dicoms</span> <span class="o">=</span> <span class="p">[[]]</span>  <span class="c1"># list with first element a list</span>
+    <span class="n">timepoint_index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">previous_stack_position</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+    <span class="c1"># loop over all sorted dicoms</span>
+    <span class="n">stack_position_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2001</span><span class="p">,</span> <span class="mh">0x100a</span><span class="p">)</span>  <span class="c1"># put this there as this is a slow step and used a lot</span>
+    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dicoms</span><span class="p">)):</span>
+        <span class="n">dicom_</span> <span class="o">=</span> <span class="n">dicoms</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="n">stack_position</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="n">stack_position_tag</span> <span class="ow">in</span> <span class="n">dicom_</span><span class="p">:</span>
+            <span class="n">stack_position</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_is_value</span><span class="p">(</span><span class="n">dicom_</span><span class="p">[</span><span class="n">stack_position_tag</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">previous_stack_position</span> <span class="o">==</span> <span class="n">stack_position</span><span class="p">:</span>
+            <span class="c1"># if the stack number is the same we move to the next timepoint</span>
+            <span class="n">timepoint_index</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">timepoint_index</span><span class="p">:</span>
+                <span class="n">grouped_dicoms</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># if it changes move back to the first timepoint</span>
+            <span class="n">timepoint_index</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">grouped_dicoms</span><span class="p">[</span><span class="n">timepoint_index</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dicom_</span><span class="p">)</span>
+        <span class="n">previous_stack_position</span> <span class="o">=</span> <span class="n">stack_position</span>
+
+    <span class="k">return</span> <span class="n">grouped_dicoms</span>
+
+
+<span class="k">def</span> <span class="nf">_create_affine_multiframe</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to create the affine matrix for a siemens mosaic dataset</span>
+<span class="sd">    This will work for siemens dti and 4D if in mosaic format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">first_frame</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="p">[</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x5200</span><span class="p">,</span> <span class="mh">0x9230</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># Create affine matrix (http://nipy.sourceforge.net/nibabel/dicom/dicom_orientation.html#dicom-slice-affine)</span>
+    <span class="n">image_orient1</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">first_frame</span><span class="o">.</span><span class="n">PlaneOrientationSequence</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ImageOrientationPatient</span><span class="p">)[</span><span class="mi">0</span><span class="p">:</span><span class="mi">3</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">image_orient2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">first_frame</span><span class="o">.</span><span class="n">PlaneOrientationSequence</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ImageOrientationPatient</span><span class="p">)[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">normal</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">image_orient1</span><span class="p">,</span> <span class="n">image_orient2</span><span class="p">)</span>
+
+    <span class="n">delta_r</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">first_frame</span><span class="p">[</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x140f</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">PixelSpacing</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="n">delta_c</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">first_frame</span><span class="p">[</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x140f</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">PixelSpacing</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">image_pos</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">first_frame</span><span class="o">.</span><span class="n">PlanePositionSequence</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>
+
+    <span class="n">delta_s</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">SpacingBetweenSlices</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">matrix</span><span class="p">(</span>
+        <span class="p">[[</span><span class="o">-</span><span class="n">image_orient1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">delta_r</span><span class="p">,</span> <span class="o">-</span><span class="n">image_orient2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">delta_c</span><span class="p">,</span> <span class="o">-</span><span class="n">delta_s</span> <span class="o">*</span> <span class="n">normal</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="o">-</span><span class="n">image_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+         <span class="p">[</span><span class="o">-</span><span class="n">image_orient1</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">delta_r</span><span class="p">,</span> <span class="o">-</span><span class="n">image_orient2</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">delta_c</span><span class="p">,</span> <span class="o">-</span><span class="n">delta_s</span> <span class="o">*</span> <span class="n">normal</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="o">-</span><span class="n">image_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+         <span class="p">[</span><span class="n">image_orient1</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">delta_r</span><span class="p">,</span> <span class="n">image_orient2</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">delta_c</span><span class="p">,</span> <span class="n">delta_s</span> <span class="o">*</span> <span class="n">normal</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">image_pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+         <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+
+
+<span class="k">def</span> <span class="nf">_multiframe_to_block</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate a full datablock containing all stacks</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Calculate the amount of stacks and slices in the stack</span>
+    <span class="n">number_of_stack_slices</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">common</span><span class="o">.</span><span class="n">get_ss_value</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">[</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x2001</span><span class="p">,</span> <span class="mh">0x105f</span><span class="p">)][</span><span class="mi">0</span><span class="p">][</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x2001</span><span class="p">,</span> <span class="mh">0x102d</span><span class="p">)]))</span>
+    <span class="n">number_of_stacks</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">NumberOfFrames</span><span class="p">)</span> <span class="o">/</span> <span class="n">number_of_stack_slices</span><span class="p">)</span>
+
+    <span class="c1"># We create a numpy array</span>
+    <span class="n">size_x</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">pixel_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">size_y</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">pixel_array</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">size_z</span> <span class="o">=</span> <span class="n">number_of_stack_slices</span>
+    <span class="n">size_t</span> <span class="o">=</span> <span class="n">number_of_stacks</span>
+    <span class="c1"># get the format</span>
+    <span class="n">format_string</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_numpy_type</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">)</span>
+
+    <span class="c1"># get header info needed for ordering</span>
+    <span class="n">frame_info</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="p">[</span><span class="mh">0x5200</span><span class="p">,</span> <span class="mh">0x9230</span><span class="p">]</span>
+
+    <span class="n">data_4d</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">size_z</span><span class="p">,</span> <span class="n">size_y</span><span class="p">,</span> <span class="n">size_x</span><span class="p">,</span> <span class="n">size_t</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">format_string</span><span class="p">)</span>
+
+    <span class="c1"># loop over each slice and insert in datablock</span>
+    <span class="n">t_location_index</span> <span class="o">=</span> <span class="n">_get_t_position_index</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">slice_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size_t</span> <span class="o">*</span> <span class="n">size_z</span><span class="p">):</span>
+
+        <span class="n">z_location</span> <span class="o">=</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">]</span><span class="o">.</span><span class="n">FrameContentSequence</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">InStackPositionNumber</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">if</span> <span class="n">t_location_index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">t_location</span> <span class="o">=</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">]</span><span class="o">.</span><span class="n">FrameContentSequence</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">TemporalPositionIndex</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">t_location</span> <span class="o">=</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">]</span><span class="o">.</span><span class="n">FrameContentSequence</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">DimensionIndexValues</span><span class="p">[</span><span class="n">t_location_index</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+
+        <span class="n">block_data</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">pixel_array</span><span class="p">[</span><span class="n">slice_index</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span>
+        <span class="c1"># apply scaling</span>
+        <span class="n">rescale_intercept</span> <span class="o">=</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">]</span><span class="o">.</span><span class="n">PixelValueTransformationSequence</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">RescaleIntercept</span>
+        <span class="n">rescale_slope</span> <span class="o">=</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">]</span><span class="o">.</span><span class="n">PixelValueTransformationSequence</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">RescaleSlope</span>
+        <span class="n">private_scale_slope</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="n">private_scale_intercept</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="n">private_sequence_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x140f</span><span class="p">)</span>
+        <span class="n">private_scale_intercept_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x100d</span><span class="p">)</span>
+        <span class="n">private_scale_slope_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x100e</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">private_sequence_tag</span> <span class="ow">in</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="n">private_scale_intercept_tag</span> <span class="ow">in</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">][</span><span class="n">private_sequence_tag</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">private_scale_intercept</span> <span class="o">=</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">][</span><span class="n">private_sequence_tag</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span>
+                    <span class="n">private_scale_intercept_tag</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+            <span class="k">if</span> <span class="n">private_scale_slope_tag</span> <span class="ow">in</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">][</span><span class="n">private_sequence_tag</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span>
+                <span class="n">private_scale_slope</span> <span class="o">=</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">][</span><span class="n">private_sequence_tag</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">private_scale_slope_tag</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+        <span class="n">block_data</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">do_scaling</span><span class="p">(</span><span class="n">block_data</span><span class="p">,</span>
+                                       <span class="n">rescale_slope</span><span class="p">,</span> <span class="n">rescale_intercept</span><span class="p">,</span>
+                                       <span class="n">private_scale_slope</span><span class="p">,</span> <span class="n">private_scale_intercept</span><span class="p">)</span>
+        <span class="c1"># switch to float if needed</span>
+        <span class="k">if</span> <span class="n">block_data</span><span class="o">.</span><span class="n">dtype</span> <span class="o">!=</span> <span class="n">data_4d</span><span class="o">.</span><span class="n">dtype</span><span class="p">:</span>
+            <span class="n">data_4d</span> <span class="o">=</span> <span class="n">data_4d</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">block_data</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">data_4d</span><span class="p">[</span><span class="n">z_location</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">t_location</span><span class="p">]</span> <span class="o">=</span> <span class="n">block_data</span>
+
+    <span class="n">full_block</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">size_x</span><span class="p">,</span> <span class="n">size_y</span><span class="p">,</span> <span class="n">size_z</span><span class="p">,</span> <span class="n">size_t</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">data_4d</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="c1"># loop over each stack and reorganize the data</span>
+    <span class="k">for</span> <span class="n">t_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size_t</span><span class="p">):</span>
+        <span class="c1"># transpose the block so the directions are correct</span>
+        <span class="n">data_3d</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">data_4d</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">t_index</span><span class="p">],</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+        <span class="c1"># add the block the the full data</span>
+        <span class="n">full_block</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">t_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">data_3d</span>
+
+    <span class="k">return</span> <span class="n">full_block</span>
+
+<span class="k">def</span> <span class="nf">_get_t_position_index</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">):</span>
+    <span class="c1"># First try temporal position index itself</span>
+    <span class="k">if</span> <span class="s1">&#39;DimensionIndexSequence&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">multiframe_dicom</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span>
+
+    <span class="k">for</span> <span class="n">current_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">)):</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">[</span><span class="n">current_index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;Temporal Position Index&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">DimensionDescriptionLabel</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">current_index</span>
+
+    <span class="c1"># This seems to work for most dti</span>
+    <span class="k">for</span> <span class="n">current_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">)):</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">[</span><span class="n">current_index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;Diffusion Gradient Orientation&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">DimensionDescriptionLabel</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">current_index</span>
+
+    <span class="c1"># This seems to work for 3D grace sequences</span>
+    <span class="k">for</span> <span class="n">current_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">)):</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">[</span><span class="n">current_index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;Effective Echo Time&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">DimensionDescriptionLabel</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">current_index</span>
+
+    <span class="c1"># First try trigger delay time (inspired by http://www.dclunie.com/papers/SCAR_20040522_CTMRMF.pdf)</span>
+    <span class="k">for</span> <span class="n">current_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">)):</span>
+        <span class="n">item</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">[</span><span class="n">current_index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="s1">&#39;Trigger Delay Time&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">DimensionDescriptionLabel</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">current_index</span>
+
+    <span class="k">return</span> <span class="kc">None</span>
+
+<span class="k">def</span> <span class="nf">_create_bvals_bvecs</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">,</span> <span class="n">bval_file</span><span class="p">,</span> <span class="n">bvec_file</span><span class="p">,</span> <span class="n">nifti</span><span class="p">,</span> <span class="n">nifti_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write the bvals from the sorted dicom files to a bval file</span>
+<span class="sd">    Inspired by https://github.com/IBIC/ibicUtils/blob/master/ibicBvalsBvecs.py</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># create the empty arrays</span>
+    <span class="n">number_of_stack_slices</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_ss_value</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">[</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x2001</span><span class="p">,</span> <span class="mh">0x105f</span><span class="p">)][</span><span class="mi">0</span><span class="p">][</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x2001</span><span class="p">,</span> <span class="mh">0x102d</span><span class="p">)])</span>
+    <span class="n">number_of_stacks</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">NumberOfFrames</span><span class="p">)</span> <span class="o">/</span> <span class="n">number_of_stack_slices</span><span class="p">)</span>
+
+    <span class="n">bvals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">number_of_stacks</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="n">bvecs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">number_of_stacks</span><span class="p">,</span> <span class="mi">3</span><span class="p">])</span>
+
+    <span class="c1"># loop over all timepoints and create a list with all bvals and bvecs</span>
+    <span class="k">for</span> <span class="n">stack_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">number_of_stacks</span><span class="p">):</span>
+        <span class="n">stack</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="p">[</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x5200</span><span class="p">,</span> <span class="mh">0x9230</span><span class="p">)][</span><span class="n">stack_index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="nb">str</span><span class="p">(</span><span class="n">stack</span><span class="p">[</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x9117</span><span class="p">)][</span><span class="mi">0</span><span class="p">][</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x9075</span><span class="p">)]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span> <span class="o">==</span> <span class="s1">&#39;DIRECTIONAL&#39;</span><span class="p">:</span>
+            <span class="n">bvals</span><span class="p">[</span><span class="n">stack_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_fd_value</span><span class="p">(</span><span class="n">stack</span><span class="p">[</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x9117</span><span class="p">)][</span><span class="mi">0</span><span class="p">][</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x9087</span><span class="p">)])</span>
+            <span class="n">bvecs</span><span class="p">[</span><span class="n">stack_index</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_fd_array_value</span><span class="p">(</span><span class="n">stack</span><span class="p">[</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x9117</span><span class="p">)][</span><span class="mi">0</span><span class="p">]</span>
+                                                              <span class="p">[</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x9076</span><span class="p">)][</span><span class="mi">0</span><span class="p">][</span><span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x9089</span><span class="p">)],</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="c1"># truncate nifti if needed</span>
+    <span class="n">nifti</span><span class="p">,</span> <span class="n">bvals</span><span class="p">,</span> <span class="n">bvecs</span> <span class="o">=</span> <span class="n">_fix_diffusion_images</span><span class="p">(</span><span class="n">bvals</span><span class="p">,</span> <span class="n">bvecs</span><span class="p">,</span> <span class="n">nifti</span><span class="p">,</span> <span class="n">nifti_file</span><span class="p">)</span>
+
+    <span class="c1"># save the found bvecs to the file</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">bvals</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">bvecs</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">common</span><span class="o">.</span><span class="n">write_bval_file</span><span class="p">(</span><span class="n">bvals</span><span class="p">,</span> <span class="n">bval_file</span><span class="p">)</span>
+        <span class="n">common</span><span class="o">.</span><span class="n">write_bvec_file</span><span class="p">(</span><span class="n">bvecs</span><span class="p">,</span> <span class="n">bvec_file</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">bval_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">bvec_file</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">return</span> <span class="n">bval_file</span><span class="p">,</span> <span class="n">bvec_file</span>
+
+
+<span class="k">def</span> <span class="nf">_fix_diffusion_images</span><span class="p">(</span><span class="n">bvals</span><span class="p">,</span> <span class="n">bvecs</span><span class="p">,</span> <span class="n">nifti</span><span class="p">,</span> <span class="n">nifti_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function will remove the last timepoint from the nifti, bvals and bvecs if the last vector is 0,0,0</span>
+<span class="sd">    This is sometimes added at the end by philips</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># if all zero continue of if the last bvec is not all zero continue</span>
+    <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">bvecs</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">bvecs</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="c1"># nothing needs to be done here</span>
+        <span class="k">return</span> <span class="n">nifti</span><span class="p">,</span> <span class="n">bvals</span><span class="p">,</span> <span class="n">bvecs</span>
+    <span class="c1"># remove last elements from bvals and bvecs</span>
+    <span class="n">bvals</span> <span class="o">=</span> <span class="n">bvals</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">bvecs</span> <span class="o">=</span> <span class="n">bvecs</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># remove last elements from the nifti</span>
+    <span class="n">new_nifti</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">nifti</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">nifti</span><span class="o">.</span><span class="n">get_affine</span><span class="p">())</span>
+    <span class="n">new_nifti</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="n">nifti_file</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">new_nifti</span><span class="p">,</span> <span class="n">bvals</span><span class="p">,</span> <span class="n">bvecs</span>
+
+
+<span class="k">def</span> <span class="nf">_create_singleframe_bvals_bvecs</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">,</span> <span class="n">bval_file</span><span class="p">,</span> <span class="n">bvec_file</span><span class="p">,</span> <span class="n">nifti</span><span class="p">,</span> <span class="n">nifti_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Write the bvals from the sorted dicom files to a bval file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># create the empty arrays</span>
+    <span class="n">bvals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span>
+    <span class="n">bvecs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">),</span> <span class="mi">3</span><span class="p">])</span>
+
+    <span class="c1"># loop over all timepoints and create a list with all bvals and bvecs</span>
+    <span class="k">if</span> <span class="n">_is_bval_type_a</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">):</span>
+        <span class="n">bval_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2001</span><span class="p">,</span> <span class="mh">0x1003</span><span class="p">)</span>
+        <span class="n">bvec_x_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x10b0</span><span class="p">)</span>
+        <span class="n">bvec_y_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x10b1</span><span class="p">)</span>
+        <span class="n">bvec_z_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x10b2</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">stack_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)):</span>
+            <span class="n">bvals</span><span class="p">[</span><span class="n">stack_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_fl_value</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="n">stack_index</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">bval_tag</span><span class="p">])</span>
+            <span class="n">bvecs</span><span class="p">[</span><span class="n">stack_index</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="p">[</span><span class="n">common</span><span class="o">.</span><span class="n">get_fl_value</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="n">stack_index</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">bvec_x_tag</span><span class="p">]),</span>
+                                     <span class="n">common</span><span class="o">.</span><span class="n">get_fl_value</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="n">stack_index</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">bvec_y_tag</span><span class="p">]),</span>
+                                     <span class="n">common</span><span class="o">.</span><span class="n">get_fl_value</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="n">stack_index</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">bvec_z_tag</span><span class="p">])]</span>
+    <span class="k">elif</span> <span class="n">_is_bval_type_b</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">):</span>
+        <span class="n">bval_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x9087</span><span class="p">)</span>
+        <span class="n">bvec_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x0018</span><span class="p">,</span> <span class="mh">0x9089</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">stack_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)):</span>
+            <span class="n">bvals</span><span class="p">[</span><span class="n">stack_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_fd_value</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="n">stack_index</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">bval_tag</span><span class="p">])</span>
+            <span class="n">bvecs</span><span class="p">[</span><span class="n">stack_index</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_fd_array_value</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="n">stack_index</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">bvec_tag</span><span class="p">],</span> <span class="mi">3</span><span class="p">)</span>
+
+    <span class="c1"># truncate nifti if needed</span>
+    <span class="n">nifti</span><span class="p">,</span> <span class="n">bvals</span><span class="p">,</span> <span class="n">bvecs</span> <span class="o">=</span> <span class="n">_fix_diffusion_images</span><span class="p">(</span><span class="n">bvals</span><span class="p">,</span> <span class="n">bvecs</span><span class="p">,</span> <span class="n">nifti</span><span class="p">,</span> <span class="n">nifti_file</span><span class="p">)</span>
+
+    <span class="c1"># save the found bvecs to the file</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">bvals</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">bvecs</span><span class="p">,</span> <span class="mi">0</span><span class="p">):</span>
+        <span class="n">common</span><span class="o">.</span><span class="n">write_bval_file</span><span class="p">(</span><span class="n">bvals</span><span class="p">,</span> <span class="n">bval_file</span><span class="p">)</span>
+        <span class="n">common</span><span class="o">.</span><span class="n">write_bvec_file</span><span class="p">(</span><span class="n">bvecs</span><span class="p">,</span> <span class="n">bvec_file</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">bval_file</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">bvec_file</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">return</span> <span class="n">bval_file</span><span class="p">,</span> <span class="n">bvec_file</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, icometrix.
+    </div>
+  </body>
+</html>

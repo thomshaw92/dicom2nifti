@@ -1,0 +1,170 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dicom2nifti.settings &mdash; dicom2nifti  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="dicom2nifti  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dicom2nifti.settings</h1><div class="highlight"><pre>
+<span></span><span class="c1"># allow to disable validations</span>
+<span class="n">validate_slicecount</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">validate_orientation</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">validate_orthogonal</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">validate_sliceincrement</span> <span class="o">=</span> <span class="kc">True</span>
+
+
+<div class="viewcode-block" id="disable_validate_sliceincrement"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.disable_validate_sliceincrement">[docs]</a><span class="k">def</span> <span class="nf">disable_validate_sliceincrement</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Disable the validation of the slice increment.</span>
+<span class="sd">    This allows for converting data where the slice increment is not consistent.</span>
+<span class="sd">    USE WITH CAUTION!</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">validate_sliceincrement</span>
+    <span class="n">validate_sliceincrement</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="disable_validate_orientation"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.disable_validate_orientation">[docs]</a><span class="k">def</span> <span class="nf">disable_validate_orientation</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Disable the validation of the slice orientation.</span>
+<span class="sd">    This validation checks that all slices have the same orientation (are parallel).</span>
+<span class="sd">    USE WITH CAUTION!</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">validate_orientation</span>
+    <span class="n">validate_orientation</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="disable_validate_orthogonal"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.disable_validate_orthogonal">[docs]</a><span class="k">def</span> <span class="nf">disable_validate_orthogonal</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Disable the validation whether the volume is orthogonal (so without gantry tilting or alike).</span>
+<span class="sd">    This allows for converting gantry tilted data.</span>
+<span class="sd">    The gantry tilting will be reflected in the affine matrix and not in the data</span>
+<span class="sd">    USE WITH CAUTION!</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">validate_orthogonal</span>
+    <span class="n">validate_orthogonal</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="disable_validate_slicecount"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.disable_validate_slicecount">[docs]</a><span class="k">def</span> <span class="nf">disable_validate_slicecount</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Disable the validation of the minimal slice count of 4 slices.</span>
+<span class="sd">    This allows for converting data with less slices.</span>
+<span class="sd">    Usually less than 4 could be considered localizer or similar thus ignoring these scans by default</span>
+<span class="sd">    USE WITH CAUTION!</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">validate_slicecount</span>
+    <span class="n">validate_slicecount</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="enable_validate_sliceincrement"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.enable_validate_sliceincrement">[docs]</a><span class="k">def</span> <span class="nf">enable_validate_sliceincrement</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enable the slice increment validation again (DEFAULT ENABLED)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">validate_sliceincrement</span>
+    <span class="n">validate_sliceincrement</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="enable_validate_orientation"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.enable_validate_orientation">[docs]</a><span class="k">def</span> <span class="nf">enable_validate_orientation</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enable the slice orientation validation again (DEFAULT ENABLED)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">validate_orientation</span>
+    <span class="n">validate_orientation</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="enable_validate_orthogonal"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.enable_validate_orthogonal">[docs]</a><span class="k">def</span> <span class="nf">enable_validate_orthogonal</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enable the validation whether the volume is orthogonal again (DEFAULT ENABLED)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">validate_orthogonal</span>
+    <span class="n">validate_orthogonal</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="enable_validate_slicecount"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.enable_validate_slicecount">[docs]</a><span class="k">def</span> <span class="nf">enable_validate_slicecount</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enable the validation of the minimal slice count of 4 slices again (DEFAULT ENABLED)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">validate_slicecount</span>
+    <span class="n">validate_slicecount</span> <span class="o">=</span> <span class="kc">True</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, icometrix.
+    </div>
+  </body>
+</html>

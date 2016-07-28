@@ -1,0 +1,385 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dicom2nifti.convert_dicom &mdash; dicom2nifti  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="dicom2nifti  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dicom2nifti.convert_dicom</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">dicom2nifti</span>
+
+<span class="sd">@author: abrys</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">shutil</span>
+
+<span class="kn">import</span> <span class="nn">six</span>
+<span class="kn">import</span> <span class="nn">dicom</span>
+<span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
+
+<span class="kn">from</span> <span class="nn">dicom2nifti.exceptions</span> <span class="k">import</span> <span class="n">ConversionValidationError</span><span class="p">,</span> <span class="n">ConversionError</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.convert_generic</span> <span class="k">as</span> <span class="nn">convert_generic</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.convert_siemens</span> <span class="k">as</span> <span class="nn">convert_siemens</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.convert_ge</span> <span class="k">as</span> <span class="nn">convert_ge</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.convert_philips</span> <span class="k">as</span> <span class="nn">convert_philips</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.common</span> <span class="k">as</span> <span class="nn">common</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.image_reorientation</span> <span class="k">as</span> <span class="nn">image_reorientation</span>
+
+
+<span class="c1"># Disable this warning as there is not reason for an init class in an enum</span>
+<span class="c1"># pylint: disable=w0232, r0903, C0103</span>
+
+
+<div class="viewcode-block" id="Vendor"><a class="viewcode-back" href="../../dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.Vendor">[docs]</a><span class="k">class</span> <span class="nc">Vendor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enum with the vendor</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">GENERIC</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">SIEMENS</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">GE</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">PHILIPS</span> <span class="o">=</span> <span class="mi">3</span></div>
+
+
+<span class="c1"># pylint: enable=w0232, r0903, C0103</span>
+<div class="viewcode-block" id="dicom_series_to_nifti"><a class="viewcode-back" href="../../dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.dicom_series_to_nifti">[docs]</a><span class="k">def</span> <span class="nf">dicom_series_to_nifti</span><span class="p">(</span><span class="n">original_dicom_directory</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">reorient_nifti</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Converts dicom single series (see pydicom) to nifty, mimicking SPM</span>
+
+<span class="sd">    Examples: See unit test</span>
+
+
+<span class="sd">    will return a dictionary containing</span>
+<span class="sd">    - the NIFTI under key &#39;NIFTI&#39;</span>
+<span class="sd">    - the NIFTI file path under &#39;NII_FILE&#39;</span>
+<span class="sd">    - the BVAL file path under &#39;BVAL_FILE&#39; (only for dti)</span>
+<span class="sd">    - the BVEC file path under &#39;BVEC_FILE&#39; (only for dti)</span>
+
+<span class="sd">    IMPORTANT:</span>
+<span class="sd">    If no specific sequence type can be found it will default to anatomical and try to convert.</span>
+<span class="sd">    You should check that the data you are trying to convert is supported by this code</span>
+
+<span class="sd">    Inspired by http://nipy.sourceforge.net/nibabel/dicom/spm_dicom.html</span>
+<span class="sd">    Inspired by http://code.google.com/p/pydicom/source/browse/source/dicom/contrib/pydicom_series.py</span>
+
+<span class="sd">    :param reorient_nifti: if True the nifti affine and data will be updated so the data is stored LAS oriented</span>
+<span class="sd">    :param output_file: file path to write to</span>
+<span class="sd">    :param original_dicom_directory: directory with the dicom files for a single series/scan</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># copy files so we can can modify without altering the original</span>
+    <span class="n">temp_directory</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkdtemp</span><span class="p">()</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">dicom_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">temp_directory</span><span class="p">,</span> <span class="s1">&#39;dicom&#39;</span><span class="p">)</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">copytree</span><span class="p">(</span><span class="n">original_dicom_directory</span><span class="p">,</span> <span class="n">dicom_directory</span><span class="p">)</span>
+
+        <span class="n">decompress_directory</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">)</span>
+
+        <span class="n">dicom_input</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">read_dicom_directory</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">dicom_array_to_nifti</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">reorient_nifti</span><span class="p">)</span>
+
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="c1"># remove the copied data</span>
+        <span class="n">shutil</span><span class="o">.</span><span class="n">rmtree</span><span class="p">(</span><span class="n">temp_directory</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="dicom_array_to_nifti"><a class="viewcode-back" href="../../dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.dicom_array_to_nifti">[docs]</a><span class="k">def</span> <span class="nf">dicom_array_to_nifti</span><span class="p">(</span><span class="n">dicom_list</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">reorient_nifti</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Converts dicom single series (see pydicom) to nifty, mimicking SPM</span>
+
+<span class="sd">    Examples: See unit test</span>
+
+
+<span class="sd">    will return a dictionary containing</span>
+<span class="sd">    - the NIFTI under key &#39;NIFTI&#39;</span>
+<span class="sd">    - the NIFTI file path under &#39;NII_FILE&#39;</span>
+<span class="sd">    - the BVAL file path under &#39;BVAL_FILE&#39; (only for dti)</span>
+<span class="sd">    - the BVEC file path under &#39;BVEC_FILE&#39; (only for dti)</span>
+
+<span class="sd">    IMPORTANT:</span>
+<span class="sd">    If no specific sequence type can be found it will default to anatomical and try to convert.</span>
+<span class="sd">    You should check that the data you are trying to convert is supported by this code</span>
+
+<span class="sd">    Inspired by http://nipy.sourceforge.net/nibabel/dicom/spm_dicom.html</span>
+<span class="sd">    Inspired by http://code.google.com/p/pydicom/source/browse/source/dicom/contrib/pydicom_series.py</span>
+
+<span class="sd">    :param reorient_nifti: if True the nifti affine and data will be updated so the data is stored LAS oriented</span>
+<span class="sd">    :param output_file: file path to write to</span>
+<span class="sd">    :param dicom_list: list with uncompressed dicom objects as read by pydicom</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># copy files so we can can modify without altering the original</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">are_imaging_dicoms</span><span class="p">(</span><span class="n">dicom_list</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">ConversionValidationError</span><span class="p">(</span><span class="s1">&#39;NON_IMAGING_DICOM_FILES&#39;</span><span class="p">)</span>
+
+    <span class="n">vendor</span> <span class="o">=</span> <span class="n">_get_vendor</span><span class="p">(</span><span class="n">dicom_list</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">vendor</span> <span class="o">==</span> <span class="n">Vendor</span><span class="o">.</span><span class="n">GENERIC</span><span class="p">:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">convert_generic</span><span class="o">.</span><span class="n">dicom_to_nifti</span><span class="p">(</span><span class="n">dicom_list</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">vendor</span> <span class="o">==</span> <span class="n">Vendor</span><span class="o">.</span><span class="n">SIEMENS</span><span class="p">:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">convert_siemens</span><span class="o">.</span><span class="n">dicom_to_nifti</span><span class="p">(</span><span class="n">dicom_list</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">vendor</span> <span class="o">==</span> <span class="n">Vendor</span><span class="o">.</span><span class="n">GE</span><span class="p">:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">convert_ge</span><span class="o">.</span><span class="n">dicom_to_nifti</span><span class="p">(</span><span class="n">dicom_list</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">vendor</span> <span class="o">==</span> <span class="n">Vendor</span><span class="o">.</span><span class="n">PHILIPS</span><span class="p">:</span>
+        <span class="n">results</span> <span class="o">=</span> <span class="n">convert_philips</span><span class="o">.</span><span class="n">dicom_to_nifti</span><span class="p">(</span><span class="n">dicom_list</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConversionValidationError</span><span class="p">(</span><span class="s2">&quot;UNSUPPORTED_DATA&quot;</span><span class="p">)</span>
+
+    <span class="c1"># do image reorientation if needed</span>
+    <span class="k">if</span> <span class="n">reorient_nifti</span><span class="p">:</span>
+        <span class="n">image_reorientation</span><span class="o">.</span><span class="n">reorient_image</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;NII_FILE&#39;</span><span class="p">],</span> <span class="n">results</span><span class="p">[</span><span class="s1">&#39;NII_FILE&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">results</span></div>
+
+
+<div class="viewcode-block" id="are_imaging_dicoms"><a class="viewcode-back" href="../../dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.are_imaging_dicoms">[docs]</a><span class="k">def</span> <span class="nf">are_imaging_dicoms</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function will check the dicom headers to see which type of series it is</span>
+<span class="sd">    Possibilities are fMRI, DTI, Anatomical (if no clear type is found anatomical is used)</span>
+
+<span class="sd">    :param dicom_input: directory with dicom files or a list of dicom objects</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># if it is philips and multiframe dicom then we assume it is ok</span>
+    <span class="k">if</span> <span class="n">convert_philips</span><span class="o">.</span><span class="n">is_philips</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">six</span><span class="o">.</span><span class="n">string_types</span><span class="p">):</span>  <span class="c1"># in case it is a directory</span>
+            <span class="c1"># in case of philips we need the actual uncompressed data for the check</span>
+            <span class="n">decompress_directory</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">convert_philips</span><span class="o">.</span><span class="n">is_multiframe_dicom</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="c1"># for all others if there is image position patient we assume it is ok</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x0020</span><span class="p">,</span> <span class="mh">0x0037</span><span class="p">)</span> <span class="ow">in</span> <span class="n">header</span></div>
+
+
+<span class="k">def</span> <span class="nf">_get_vendor</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function will check the dicom headers to see which type of series it is</span>
+<span class="sd">    Possibilities are fMRI, DTI, Anatomical (if no clear type is found anatomical is used)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># check if it is siemens frmi</span>
+    <span class="k">if</span> <span class="n">convert_siemens</span><span class="o">.</span><span class="n">is_siemens</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found manufacturer: SIEMENS&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Vendor</span><span class="o">.</span><span class="n">SIEMENS</span>
+    <span class="c1"># check if it is ge frmi</span>
+    <span class="k">if</span> <span class="n">convert_ge</span><span class="o">.</span><span class="n">is_ge</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found manufacturer: GE&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Vendor</span><span class="o">.</span><span class="n">GE</span>
+    <span class="c1"># check if it is ge frmi</span>
+    <span class="k">if</span> <span class="n">convert_philips</span><span class="o">.</span><span class="n">is_philips</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found manufacturer: PHILIPS&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Vendor</span><span class="o">.</span><span class="n">PHILIPS</span>
+    <span class="c1"># check if it is siemens dti</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;WARNING: Assuming generic vendor conversion (ANATOMICAL)&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Vendor</span><span class="o">.</span><span class="n">GENERIC</span>
+
+
+<div class="viewcode-block" id="decompress_dicom"><a class="viewcode-back" href="../../dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.decompress_dicom">[docs]</a><span class="k">def</span> <span class="nf">decompress_dicom</span><span class="p">(</span><span class="n">input_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function can be used to convert a jpeg compressed image to an uncompressed one for further conversion</span>
+
+<span class="sd">    :param input_file: single dicom file to decompress</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">gdcmconv_executable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv.exe&#39;</span><span class="p">)</span>
+
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="n">gdcmconv_executable</span><span class="p">,</span> <span class="s1">&#39;-w&#39;</span><span class="p">,</span> <span class="n">input_file</span><span class="p">,</span> <span class="n">input_file</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="decompress_directory"><a class="viewcode-back" href="../../dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.decompress_directory">[docs]</a><span class="k">def</span> <span class="nf">decompress_directory</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function can be used to convert a folder of jpeg compressed images to an uncompressed ones</span>
+
+<span class="sd">    :param dicom_directory: directory with dicom files to decompress</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">is_compressed</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv.exe&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;GDCMCONV_NOT_FOUND&#39;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Decompressing dicom files in </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">dicom_directory</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">dicom_file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">common</span><span class="o">.</span><span class="n">is_dicom_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">)):</span>
+                <span class="n">decompress_dicom</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="compress_dicom"><a class="viewcode-back" href="../../dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.compress_dicom">[docs]</a><span class="k">def</span> <span class="nf">compress_dicom</span><span class="p">(</span><span class="n">input_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function can be used to convert a jpeg compressed image to an uncompressed one for further conversion</span>
+
+<span class="sd">    :param input_file: single dicom file to compress</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">gdcmconv_executable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv.exe&#39;</span><span class="p">)</span>
+
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="n">gdcmconv_executable</span><span class="p">,</span> <span class="s1">&#39;-K&#39;</span><span class="p">,</span> <span class="n">input_file</span><span class="p">,</span> <span class="n">input_file</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="compress_directory"><a class="viewcode-back" href="../../dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.compress_directory">[docs]</a><span class="k">def</span> <span class="nf">compress_directory</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function can be used to convert a folder of jpeg compressed images to an uncompressed ones</span>
+
+<span class="sd">    :param dicom_directory: directory of dicom files to compress</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">is_compressed</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv.exe&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;GDCMCONV_NOT_FOUND&#39;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Compressing dicom files in </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">dicom_directory</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">dicom_file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">common</span><span class="o">.</span><span class="n">is_dicom_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">)):</span>
+                <span class="n">compress_dicom</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="is_compressed"><a class="viewcode-back" href="../../dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.is_compressed">[docs]</a><span class="k">def</span> <span class="nf">is_compressed</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if dicoms are compressed or not</span>
+
+<span class="sd">    :param dicom_input: directory with dicom files for 1 scan or a single dicom file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># read dicom header</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">dicom</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">_get_first_header</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
+
+    <span class="n">uncompressed_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;1.2.840.10008.1.2&quot;</span><span class="p">,</span>
+                          <span class="s2">&quot;1.2.840.10008.1.2.1&quot;</span><span class="p">,</span>
+                          <span class="s2">&quot;1.2.840.10008.1.2.1.99&quot;</span><span class="p">,</span>
+                          <span class="s2">&quot;1.2.840.10008.1.2.2&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="s1">&#39;TransferSyntaxUID&#39;</span> <span class="ow">in</span> <span class="n">header</span><span class="o">.</span><span class="n">file_meta</span> <span class="ow">and</span> <span class="n">header</span><span class="o">.</span><span class="n">file_meta</span><span class="o">.</span><span class="n">TransferSyntaxUID</span> <span class="ow">in</span> <span class="n">uncompressed_types</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<span class="k">def</span> <span class="nf">_get_first_header</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to get the first dicom file form a directory and return the header</span>
+<span class="sd">    Useful to determine the type of data to convert</span>
+
+<span class="sd">    :param dicom_directory: directory with dicom files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># looping over all files</span>
+    <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">file_names</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
+        <span class="c1"># go over all the files and try to read the dicom header</span>
+        <span class="k">for</span> <span class="n">file_name</span> <span class="ow">in</span> <span class="n">file_names</span><span class="p">:</span>
+            <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">file_name</span><span class="p">)</span>
+            <span class="c1"># check wither it is a dicom file</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">common</span><span class="o">.</span><span class="n">is_dicom_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="c1"># read the headers</span>
+            <span class="k">return</span> <span class="n">dicom</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">stop_before_pixels</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># no dicom files found</span>
+    <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;NO_DICOM_FILES_FOUND&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_which</span><span class="p">(</span><span class="n">program</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+
+    <span class="k">def</span> <span class="nf">is_exe</span><span class="p">(</span><span class="n">executable_file</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">executable_file</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">executable_file</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">X_OK</span><span class="p">)</span>
+
+    <span class="n">file_path</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">file_path</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_exe</span><span class="p">(</span><span class="n">program</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">program</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;PATH&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
+            <span class="n">exe_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">program</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">is_exe</span><span class="p">(</span><span class="n">exe_file</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">exe_file</span>
+
+    <span class="k">return</span> <span class="kc">None</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, icometrix.
+    </div>
+  </body>
+</html>

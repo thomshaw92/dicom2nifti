@@ -8,6 +8,7 @@ from __future__ import print_function
 
 import os
 import struct
+import six
 
 import dicom
 from dicom.tag import Tag
@@ -18,9 +19,12 @@ from dicom2nifti.exceptions import ConversionValidationError
 
 # Disable false positive numpy errors
 # pylint: disable=E1101
-def read_dicom_directory(dicom_directory, stop_before_pixels=False):
+def read_dicom_directory(dicom_directory, stop_before_pixels = False):
     """
     Read all dicom files in a given directory (stop before pixels)
+
+    :type stop_before_pixels: bool
+    :type dicom_directory: six.string_types
     :param stop_before_pixels: Should we stop reading before the pixeldata (handy if we only want header info)
     :param dicom_directory: Directory with dicom data
     :return: List of dicom objects
@@ -39,6 +43,8 @@ def get_volume_pixeldata(sorted_slices):
     """
     the slice and intercept calculation can cause the slices to have different dtypes
     we should get the correct dtype that can cover all of them
+    
+    :type sorted_slices: list of slices
     :param sorted_slices: sliced sored in the correct order to create volume
     """
     slices = []
@@ -63,6 +69,9 @@ def _get_slice_pixeldata(dicom_slice):
     """
     the slice and intercept calculation can cause the slices to have different dtypes
     we should get the correct dtype that can cover all of them
+
+    :type dicom_slice: pydicom object
+    :param dicom_slice: slice to get the pixeldata for
     """
     data = dicom_slice.pixel_array
     return apply_scaling(data, dicom_slice)
@@ -71,6 +80,10 @@ def _get_slice_pixeldata(dicom_slice):
 def _is_float(float_value):
     """
     Check if a number is actually a float
+
+    :type float_value: int or float
+    :param float_value: number to check
+    :return True if it is not an integer number
     """
     if int(float_value) != float_value:
         return True
@@ -81,7 +94,10 @@ def is_dicom_file(filename):
     Util function to check if file is a dicom file
     the first 128 bytes are preamble
     the next 4 bytes should contain DICM otherwise it is not a dicom
+
     :param filename: file to check for the DICM header block
+    :type filename: six.string_types
+    :returns: True if it is a dicom file
     """
     file_stream = open(filename, 'rb')
     file_stream.seek(128)
@@ -96,9 +112,11 @@ def get_numpy_type(dicom_header):
     """
     Make NumPy format code, e.g. "uint16", "int32" etc
     from two pieces of info:
-        mosaic.PixelRepresentation -- 0 for unsigned, 1 for signed;
-        mosaic.BitsAllocated -- 8, 16, or 32
+    mosaic.PixelRepresentation -- 0 for unsigned, 1 for signed;
+    mosaic.BitsAllocated -- 8, 16, or 32
+
     :param dicom_header: the read dicom file/headers
+    :returns: numpy format string
     """
 
     format_string = '%sint%d' % (('u', '')[dicom_header.PixelRepresentation], dicom_header.BitsAllocated)
@@ -113,6 +131,7 @@ def get_numpy_type(dicom_header):
 def get_fd_array_value(tag, count):
     """
     Getters for data that also work with implicit transfersyntax
+
     :param count: number of items in the array
     :param tag: the tag to read
     """
@@ -129,6 +148,7 @@ def get_fd_array_value(tag, count):
 def get_fd_value(tag):
     """
     Getters for data that also work with implicit transfersyntax
+
     :param tag: the tag to read
     """
     if tag.VR == 'OB' or tag.VR == 'UN':
@@ -140,6 +160,7 @@ def get_fd_value(tag):
 def get_fl_value(tag):
     """
     Getters for data that also work with implicit transfersyntax
+
     :param tag: the tag to read
     """
     if tag.VR == 'OB' or tag.VR == 'UN':
@@ -151,6 +172,7 @@ def get_fl_value(tag):
 def get_is_value(tag):
     """
     Getters for data that also work with implicit transfersyntax
+
     :param tag: the tag to read
     """
     # data is int formatted as string so convert te string first and cast to int
@@ -163,6 +185,7 @@ def get_is_value(tag):
 def get_ss_value(tag):
     """
     Getters for data that also work with implicit transfersyntax
+
     :param tag: the tag to read
     """
     # data is int formatted as string so convert te string first and cast to int
@@ -176,6 +199,7 @@ def apply_scaling(data, dicom_headers):
     """
     Rescale the data based on the RescaleSlope and RescaleOffset
     Based on the scaling from pydicomseries
+
     :param dicom_headers: dicom headers to use to retreive the scaling factors
     :param data: the input data
     """
@@ -277,6 +301,7 @@ def do_scaling(data, rescale_slope, rescale_intercept, private_scale_slope=1.0, 
 def write_bvec_file(bvecs, bvec_file):
     """
     Write an array of bvecs to a bvec file
+
     :param bvecs: array with the vectors
     :param bvec_file: filepath to write to
     """
@@ -291,6 +316,7 @@ def write_bvec_file(bvecs, bvec_file):
 def write_bval_file(bvals, bval_file):
     """
     Write an array of bvals to a bval file
+
     :param bvals: array with the values
     :param bval_file: filepath to write to
     """
@@ -304,6 +330,7 @@ def create_affine(sorted_dicoms):
     """
     Function to generate the affine matrix for a dicom series
     This method was based on (http://nipy.org/nibabel/dicom/dicom_orientation.html)
+
     :param sorted_dicoms: list with sorted dicom files
     """
 
@@ -333,6 +360,7 @@ def create_affine(sorted_dicoms):
 def validate_orthogonal(dicoms):
     """
     Validate that volume is orthonormal
+
     :param dicoms: check that we have a volume without skewing
     """
     first_image_orient1 = numpy.array(dicoms[0].ImageOrientationPatient)[0:3]
@@ -360,6 +388,7 @@ def validate_orthogonal(dicoms):
 def validate_sliceincrement(dicoms):
     """
     Validate that the distance between all slices is equal (of very close to)
+
     :param dicoms: list of dicoms
     """
     first_image_position = numpy.array(dicoms[0].ImagePositionPatient)
@@ -382,6 +411,7 @@ def validate_slicecount(dicoms):
     """
     Validate that volume is big enough to create a meaningfull volume
     This will also skip localizers and alike
+
     :param dicoms: list of dicoms
     """
     if len(dicoms) <= 3:
@@ -393,6 +423,7 @@ def validate_slicecount(dicoms):
 def validate_orientation(dicoms):
     """
     Validate that all dicoms have the same orientation
+
     :param dicoms: list of dicoms
     """
     first_image_orient1 = numpy.array(dicoms[0].ImageOrientationPatient)[0:3]
@@ -414,6 +445,7 @@ def validate_orientation(dicoms):
 def set_tr_te(nifti_image, repetition_time, echo_time):
     """
     Set the tr and te in the nifti headers
+
     :param echo_time: echo time
     :param repetition_time: repetition time
     :param nifti_image: nifti image to set the info to

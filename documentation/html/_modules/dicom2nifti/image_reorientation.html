@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dicom2nifti.image_reorientation &mdash; dicom2nifti  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="dicom2nifti  documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dicom2nifti.image_reorientation</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Thu Aug  1 16:10:56 2013</span>
+
+<span class="sd">@author: vterzopoulos, abrys</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># To ignore numpy errors:</span>
+<span class="c1">#     pylint: disable=E1101</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span> <span class="nn">nibabel</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="kn">from</span> <span class="nn">dicom2nifti.image_volume</span> <span class="k">import</span> <span class="n">ImageVolume</span><span class="p">,</span> <span class="n">SliceType</span>
+
+
+<div class="viewcode-block" id="reorient_image"><a class="viewcode-back" href="../../dicom2nifti.image_reorientation.html#dicom2nifti.image_reorientation.reorient_image">[docs]</a><span class="k">def</span> <span class="nf">reorient_image</span><span class="p">(</span><span class="n">input_image</span><span class="p">,</span> <span class="n">output_image</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Change the orientation of the Image data in order to be in LAS space</span>
+<span class="sd">    x will represent the coronal plane, y the sagital and z the axial plane.</span>
+<span class="sd">    x increases from Right (R) to Left (L), y from Posterior (P) to Anterior (A) and z from Inferior (I) to Superior (S)</span>
+
+<span class="sd">    :returns: The output image in nibabel form</span>
+<span class="sd">    :param output_image: filepath to the nibabel image</span>
+<span class="sd">    :param input_image: filepath to the nibabel image</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Use the imageVolume module to find which coordinate corresponds to each plane</span>
+    <span class="c1"># and get the image data in RAS orientation</span>
+    <span class="c1"># print &#39;Reading nifti&#39;</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">ImageVolume</span><span class="p">(</span><span class="n">input_image</span><span class="p">)</span>
+
+    <span class="c1"># 4d have a different conversion to 3d</span>
+    <span class="c1"># print &#39;Reorganizing data&#39;</span>
+    <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">nifti_data</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">4</span><span class="p">:</span>
+        <span class="n">new_image</span> <span class="o">=</span> <span class="n">_reorient_4d</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">image</span><span class="o">.</span><span class="n">nifti_data</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span><span class="o">.</span><span class="n">ndim</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+        <span class="n">new_image</span> <span class="o">=</span> <span class="n">_reorient_3d</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Only 3d and 4d images are supported&#39;</span><span class="p">)</span>
+
+    <span class="c1"># print &#39;Recreating affine&#39;</span>
+    <span class="n">affine</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">nifti</span><span class="o">.</span><span class="n">get_affine</span><span class="p">()</span>
+    <span class="c1"># Based on VolumeImage.py where slice orientation 1 represents the axial plane</span>
+    <span class="c1"># Flipping on the data may be needed based on x_inverted, y_inverted, ZInverted</span>
+
+    <span class="c1"># Create new affine header by changing the order of the columns of the input image header</span>
+    <span class="c1"># the last column with the origin depends on the origin of the original image, the size and the direction of x,y,z</span>
+
+    <span class="n">new_affine</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">affine</span><span class="p">[:,</span> <span class="n">image</span><span class="o">.</span><span class="n">sagital_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span>
+    <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">affine</span><span class="p">[:,</span> <span class="n">image</span><span class="o">.</span><span class="n">coronal_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span>
+    <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">affine</span><span class="p">[:,</span> <span class="n">image</span><span class="o">.</span><span class="n">axial_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span>
+    <span class="n">point</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="c1"># If the orientation of coordinates is inverted, then the origin of the &quot;new&quot; image</span>
+    <span class="c1"># would correspond to the last voxel of the original image</span>
+    <span class="c1"># First we need to find which point is the origin point in image coordinates</span>
+    <span class="c1"># and then transform it in world coordinates</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">image</span><span class="o">.</span><span class="n">axial_orientation</span><span class="o">.</span><span class="n">x_inverted</span><span class="p">:</span>
+        <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="n">point</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">sagital_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span>
+                                                                <span class="n">image</span><span class="o">.</span><span class="n">sagital_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="c1"># new_affine[0, 3] = - new_affine[0, 3]</span>
+    <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">axial_orientation</span><span class="o">.</span><span class="n">y_inverted</span><span class="p">:</span>
+        <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+        <span class="n">point</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">coronal_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span>
+                                                                <span class="n">image</span><span class="o">.</span><span class="n">coronal_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="c1"># new_affine[1, 3] = - new_affine[1, 3]</span>
+    <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">coronal_orientation</span><span class="o">.</span><span class="n">y_inverted</span><span class="p">:</span>
+        <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span>
+        <span class="n">point</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">axial_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">axial_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="c1"># new_affine[2, 3] = - new_affine[2, 3]</span>
+
+    <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">affine</span><span class="p">,</span> <span class="n">point</span><span class="p">)</span>
+
+    <span class="c1"># DONE: Needs to update new_affine, so that there is no translation difference between the original</span>
+    <span class="c1"># and created image (now there is 1-2 voxels translation)</span>
+    <span class="c1"># print &#39;Creating new nifti image&#39;</span>
+    <span class="n">nibabel</span><span class="o">.</span><span class="n">nifti1</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">new_image</span><span class="p">,</span> <span class="n">new_affine</span><span class="p">)</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="n">output_image</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_reorient_4d</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reorganize the data for a 4d nifti</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># print &#39;converting 4d image&#39;</span>
+    <span class="c1"># Create empty array where x,y,z correspond to LR (sagital), PA (coronal), IS (axial) directions and the size</span>
+    <span class="c1"># of the array in each direction is the same with the corresponding direction of the input image.</span>
+    <span class="n">new_image</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">sagital_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">],</span>
+                             <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">coronal_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">],</span>
+                             <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">axial_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">],</span>
+                             <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">3</span><span class="p">]],</span>
+                            <span class="n">dtype</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">nifti_data</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="c1"># loop over all timepoints</span>
+    <span class="k">for</span> <span class="n">timepoint</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">3</span><span class="p">]):</span>
+        <span class="c1"># Fill the new image with the values of the input image but with mathicng the orientation with x,y,z</span>
+        <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">coronal_orientation</span><span class="o">.</span><span class="n">y_inverted</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">new_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+                <span class="n">new_image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">timepoint</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fliplr</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">get_slice</span><span class="p">(</span><span class="n">SliceType</span><span class="o">.</span><span class="n">AXIAL</span><span class="p">,</span>
+                                                                                           <span class="n">new_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">,</span>
+                                                                                           <span class="n">timepoint</span><span class="p">)</span><span class="o">.</span><span class="n">original_data</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">new_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+                <span class="n">new_image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">,</span> <span class="n">timepoint</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fliplr</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">get_slice</span><span class="p">(</span><span class="n">SliceType</span><span class="o">.</span><span class="n">AXIAL</span><span class="p">,</span>
+                                                                                           <span class="n">i</span><span class="p">,</span> <span class="n">timepoint</span><span class="p">)</span><span class="o">.</span><span class="n">original_data</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">new_image</span>
+
+
+<span class="k">def</span> <span class="nf">_reorient_3d</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Reorganize the data for a 3d nifti</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Create empty array where x,y,z correspond to LR (sagital), PA (coronal), IS (axial) directions and the size</span>
+    <span class="c1"># of the array in each direction is the same with the corresponding direction of the input image.</span>
+    <span class="n">new_image</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">sagital_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">],</span>
+                             <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">coronal_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">],</span>
+                             <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">axial_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]],</span>
+                            <span class="n">dtype</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">nifti_data</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+
+    <span class="c1"># Fill the new image with the values of the input image but with matching the orientation with x,y,z</span>
+    <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">coronal_orientation</span><span class="o">.</span><span class="n">y_inverted</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">new_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+            <span class="n">new_image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fliplr</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">get_slice</span><span class="p">(</span><span class="n">SliceType</span><span class="o">.</span><span class="n">AXIAL</span><span class="p">,</span>
+                                                                            <span class="n">new_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">original_data</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">new_image</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">2</span><span class="p">]):</span>
+            <span class="n">new_image</span><span class="p">[:,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fliplr</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">image</span><span class="o">.</span><span class="n">get_slice</span><span class="p">(</span><span class="n">SliceType</span><span class="o">.</span><span class="n">AXIAL</span><span class="p">,</span>
+                                                                            <span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">original_data</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">new_image</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, icometrix.
+    </div>
+  </body>
+</html>

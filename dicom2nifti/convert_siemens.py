@@ -38,6 +38,7 @@ class MosaicType(object):
 def is_siemens(dicom_input):
     """
     Use this function to detect if a dicom series is a siemens dataset
+
     :param dicom_input: directory with dicom files for 1 scan
     """
     # read dicom header
@@ -61,6 +62,7 @@ def dicom_to_nifti(dicom_input, output_file):
     """
     This is the main dicom to nifti conversion function for ge images.
     As input ge images are required. It will then determine the type of images and do the correct conversion
+
     :param output_file: filepath to the output nifti
     :param dicom_input: directory with dicom files for 1 scan
     """

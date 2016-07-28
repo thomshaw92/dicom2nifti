@@ -1,0 +1,168 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dicom2nifti.settings module &mdash; dicom2nifti  documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="dicom2nifti  documentation" href="index.html" />
+    <link rel="up" title="dicom2nifti package" href="dicom2nifti.html" />
+    <link rel="prev" title="dicom2nifti.image_volume module" href="dicom2nifti.image_volume.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.image_volume.html" title="dicom2nifti.image_volume module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" accesskey="U">dicom2nifti package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dicom2nifti.settings">
+<span id="dicom2nifti-settings-module"></span><h1>dicom2nifti.settings module<a class="headerlink" href="#module-dicom2nifti.settings" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="dicom2nifti.settings.disable_validate_orientation">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">disable_validate_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#disable_validate_orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.disable_validate_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable the validation of the slice orientation.
+This validation checks that all slices have the same orientation (are parallel).
+USE WITH CAUTION!</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.settings.disable_validate_orthogonal">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">disable_validate_orthogonal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#disable_validate_orthogonal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.disable_validate_orthogonal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable the validation whether the volume is orthogonal (so without gantry tilting or alike).
+This allows for converting gantry tilted data.
+The gantry tilting will be reflected in the affine matrix and not in the data
+USE WITH CAUTION!</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.settings.disable_validate_slicecount">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">disable_validate_slicecount</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#disable_validate_slicecount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.disable_validate_slicecount" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable the validation of the minimal slice count of 4 slices.
+This allows for converting data with less slices.
+Usually less than 4 could be considered localizer or similar thus ignoring these scans by default
+USE WITH CAUTION!</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.settings.disable_validate_sliceincrement">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">disable_validate_sliceincrement</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#disable_validate_sliceincrement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.disable_validate_sliceincrement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable the validation of the slice increment.
+This allows for converting data where the slice increment is not consistent.
+USE WITH CAUTION!</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.settings.enable_validate_orientation">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">enable_validate_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#enable_validate_orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.enable_validate_orientation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable the slice orientation validation again (DEFAULT ENABLED)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.settings.enable_validate_orthogonal">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">enable_validate_orthogonal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#enable_validate_orthogonal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.enable_validate_orthogonal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable the validation whether the volume is orthogonal again (DEFAULT ENABLED)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.settings.enable_validate_slicecount">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">enable_validate_slicecount</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#enable_validate_slicecount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.enable_validate_slicecount" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable the validation of the minimal slice count of 4 slices again (DEFAULT ENABLED)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.settings.enable_validate_sliceincrement">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">enable_validate_sliceincrement</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#enable_validate_sliceincrement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.enable_validate_sliceincrement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable the slice increment validation again (DEFAULT ENABLED)</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dicom2nifti.image_volume.html"
+                        title="previous chapter">dicom2nifti.image_volume module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/dicom2nifti.settings.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.image_volume.html" title="dicom2nifti.image_volume module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li>
+          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" >dicom2nifti package</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, icometrix.
+    </div>
+  </body>
+</html>

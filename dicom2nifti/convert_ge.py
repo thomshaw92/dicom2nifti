@@ -23,6 +23,7 @@ import dicom2nifti.convert_generic as convert_generic
 def is_ge(dicom_input):
     """
     Use this function to detect if a dicom series is a GE dataset
+
     :param dicom_input: list with dicom objects
     """
     # read dicom header
@@ -48,6 +49,7 @@ def dicom_to_nifti(dicom_input, output_file):
     As input ge images are required. It will then determine the type of images and do the correct conversion
 
     Examples: See unit test
+
     :param output_file: the filepath to the output nifti file
     :param dicom_input: list with dicom objects
     """

@@ -26,6 +26,7 @@ import dicom2nifti.convert_philips as convert_philips
 def convert_directory(dicom_directory, output_folder, compression=True, reorient=True):
     """
     This function will order all dicom files by series and order them one by one
+
     :param compression: enable or disable gzip compression
     :param reorient: reorient the dicoms according to LAS orientation
     :param output_folder: folder to write the nifti files to

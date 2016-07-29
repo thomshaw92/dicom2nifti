@@ -113,7 +113,7 @@ def _remove_localizers_by_orientation(dicoms):
     # if there are multiple possible orientations delete orientations where there are less than 4 files
     # we don't convert anything less that that anyway
 
-    if len(sorted_dicoms.keys()) > 1:
+    if len(sorted_dicoms) > 1:
         filtered_dicoms = []
         for orientation in sorted_dicoms.keys():
             if len(sorted_dicoms[orientation]) >= 4:

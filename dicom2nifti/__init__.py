@@ -5,6 +5,7 @@ dicom2nifti
 @author: abrys
 """
 
+# noinspection PyUnresolvedReferences
 from .settings import disable_validate_sliceincrement, \
     disable_validate_orientation, \
     disable_validate_orthogonal, \
@@ -13,5 +14,7 @@ from .settings import disable_validate_sliceincrement, \
     enable_validate_orthogonal, \
     enable_validate_slicecount, \
     enable_validate_sliceincrement
+# noinspection PyUnresolvedReferences
 from .convert_dicom import dicom_series_to_nifti
+# noinspection PyUnresolvedReferences
 from .convert_dir import convert_directory

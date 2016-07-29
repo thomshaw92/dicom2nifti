@@ -26,10 +26,11 @@ def main():
             print(dir_path)
             output_file = dir_path + '_ground_truth.nii.gz'
             reoriented_file = dir_path + '_ground_truth_reoriented.nii.gz'
+            # noinspection PyBroadException
             try:
                 dicom2nifti.dicom_series_to_nifti(dir_path, output_file, False)
                 image_reorientation.reorient_image(output_file, reoriented_file)
-            except:
+            except:  # explicitly capturing everything here
                 pass
 
 

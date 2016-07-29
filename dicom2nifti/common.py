@@ -8,18 +8,17 @@ from __future__ import print_function
 
 import os
 import struct
-import six
 
 import dicom
-from dicom.tag import Tag
 import numpy
+from dicom.tag import Tag
 
 from dicom2nifti.exceptions import ConversionValidationError
 
 
 # Disable false positive numpy errors
 # pylint: disable=E1101
-def read_dicom_directory(dicom_directory, stop_before_pixels = False):
+def read_dicom_directory(dicom_directory, stop_before_pixels=False):
     """
     Read all dicom files in a given directory (stop before pixels)
 

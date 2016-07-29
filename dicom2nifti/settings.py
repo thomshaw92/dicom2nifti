@@ -79,7 +79,7 @@ def enable_validate_slicecount():
     global validate_slicecount
     validate_slicecount = True
 
-def set_gdcmconv_path( path ):
+def set_gdcmconv_path(path):
     """
     Set where the filepath to the gdcmconv executable (needed is it is not found in your PATH)
 

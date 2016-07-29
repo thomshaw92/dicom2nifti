@@ -10,7 +10,7 @@ from __future__ import print_function
 import os
 import traceback
 
-import dicom
+import dicom.config
 import nibabel
 import numpy
 from dicom.tag import Tag
@@ -494,6 +494,7 @@ def _multiframe_to_block(multiframe_dicom):
 
     return full_block
 
+
 def _get_t_position_index(multiframe_dicom):
     # First try temporal position index itself
     if 'DimensionIndexSequence' not in multiframe_dicom:
@@ -524,6 +525,7 @@ def _get_t_position_index(multiframe_dicom):
 
     return None
 
+
 def _create_bvals_bvecs(multiframe_dicom, bval_file, bvec_file, nifti, nifti_file):
     """
     Write the bvals from the sorted dicom files to a bval file
@@ -549,7 +551,7 @@ def _create_bvals_bvecs(multiframe_dicom, bval_file, bvec_file, nifti, nifti_fil
     nifti, bvals, bvecs = _fix_diffusion_images(bvals, bvecs, nifti, nifti_file)
 
     # save the found bvecs to the file
-    if not numpy.allclose(bvals, 0) or not numpy.allclose(bvecs, 0):
+    if numpy.count_nonzero(bvals) > 0 or numpy.count_nonzero(bvecs) > 0:
         common.write_bval_file(bvals, bval_file)
         common.write_bvec_file(bvecs, bvec_file)
     else:
@@ -565,7 +567,7 @@ def _fix_diffusion_images(bvals, bvecs, nifti, nifti_file):
     This is sometimes added at the end by philips
     """
     # if all zero continue of if the last bvec is not all zero continue
-    if numpy.allclose(bvecs, 0) or not numpy.allclose(bvecs[-1], 0):
+    if numpy.count_nonzero(bvecs) == 0 or not numpy.count_nonzero(bvals[-1]) == 0:
         # nothing needs to be done here
         return nifti, bvals, bvecs
     # remove last elements from bvals and bvecs
@@ -610,7 +612,7 @@ def _create_singleframe_bvals_bvecs(grouped_dicoms, bval_file, bvec_file, nifti,
     nifti, bvals, bvecs = _fix_diffusion_images(bvals, bvecs, nifti, nifti_file)
 
     # save the found bvecs to the file
-    if not numpy.allclose(bvals, 0) or not numpy.allclose(bvecs, 0):
+    if numpy.count_nonzero(bvals) > 0 or numpy.count_nonzero(bvecs) > 0:
         common.write_bval_file(bvals, bval_file)
         common.write_bvec_file(bvecs, bvec_file)
     else:

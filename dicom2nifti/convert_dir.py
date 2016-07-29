@@ -14,7 +14,7 @@ import unicodedata
 
 import dicom
 import six
-from builtins import bytes
+from future.builtins import bytes
 from dicom.tag import Tag
 from six import iteritems
 
@@ -37,6 +37,7 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
     for root, _, files in os.walk(dicom_directory):
         for dicom_file in files:
             file_path = os.path.join(root, dicom_file)
+            # noinspection PyBroadException
             try:
                 if common.is_dicom_file(file_path):
                     # read the dicom as fast as possible
@@ -52,13 +53,14 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
                     if dicom_headers.SeriesInstanceUID not in dicom_series:
                         dicom_series[dicom_headers.SeriesInstanceUID] = []
                     dicom_series[dicom_headers.SeriesInstanceUID].append(dicom_headers)
-            except:
+            except:  # Explicitly capturing all errors here to be able to continue processing all the rest
                 print("Unable to read: %s" % file_path)
                 traceback.print_exc()
 
     # start converting one by one
     for series_id, dicom_input in iteritems(dicom_series):
         base_filename = ""
+        # noinspection PyBroadException
         try:
             # construct the filename for the nifti
             base_filename = _remove_accents('%s' % dicom_input[0].SeriesNumber)
@@ -76,7 +78,7 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
                 nifti_file = os.path.join(output_folder, base_filename + '.nii')
             convert_dicom.dicom_array_to_nifti(dicom_input, nifti_file, reorient)
             gc.collect()
-        except:
+        except:  # Explicitly capturing app exceptions here to be able to continue processing
             print("Unable to convert: %s" % base_filename)
             traceback.print_exc()
 
@@ -108,9 +110,10 @@ def _remove_accents(filename):
     Function that will try to remove accents from a unicode string to be used in a filename.
     input filename should be either an ascii or unicode string
     """
+    # noinspection PyBroadException
     try:
         filename = filename.replace(" ", "_")
-        if type(filename) is type(six.u('')):
+        if isinstance(filename, type(six.u(''))):
             unicode_filename = filename
         else:
             unicode_filename = six.u(filename)
@@ -122,6 +125,7 @@ def _remove_accents(filename):
         return cleaned_filename
     except:
         traceback.print_exc()
+        return filename
 
 
 def _remove_accents_(filename):

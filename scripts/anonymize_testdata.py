@@ -7,6 +7,8 @@ dicom2nifti
 from __future__ import print_function
 
 import dicom
+import dicom.UID
+import dicom.dataset
 import numpy
 import os
 import datetime
@@ -22,8 +24,8 @@ def anonymize_directory(input_directory, output_directory=None):
     if output_directory is None:
         output_directory = input_directory
 
-    study_uid = dicom.UID.generate_uid();
-    series_uid = dicom.UID.generate_uid();
+    study_uid = dicom.UID.generate_uid()
+    series_uid = dicom.UID.generate_uid()
     date = datetime.datetime.now().strftime("%Y%m%d")
     time = datetime.datetime.now().strftime("%H%M%S.000000")
 
@@ -82,18 +84,18 @@ def anonymize_directory(input_directory, output_directory=None):
 
     if is_philips(input_directory):
         philips_fields = {
-                          (0x2001, 0x100a): None,
-                          (0x2001, 0x1003): None,
-                          (0x2001, 0x105f): None,
-                          (0x2005, 0x100d): None,
-                          (0x2005, 0x100e): None,
-                          (0x2005, 0x10b0): None,
-                          (0x2005, 0x10b1): None,
-                          (0x2005, 0x10b2): None,
-                          (0x0018, 0x9087): None,
-                          (0x0018, 0x9089): None,
-                          (0x5200, 0x9230): None,
-                          'SharedFunctionalGroupsSequence': None}
+            (0x2001, 0x100a): None,
+            (0x2001, 0x1003): None,
+            (0x2001, 0x105f): None,
+            (0x2005, 0x100d): None,
+            (0x2005, 0x100e): None,
+            (0x2005, 0x10b0): None,
+            (0x2005, 0x10b1): None,
+            (0x2005, 0x10b2): None,
+            (0x0018, 0x9087): None,
+            (0x0018, 0x9089): None,
+            (0x5200, 0x9230): None,
+            'SharedFunctionalGroupsSequence': None}
         fields_to_keep.update(philips_fields)
 
     if is_siemens(input_directory):
@@ -152,6 +154,7 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
             # anonimize the dicom pixeldata
             random_data = numpy.random.randint(0, 255, dicom_in.pixel_array.shape).astype(dicom_in.pixel_array.dtype)
             dicom_out.PixelData = random_data.tostring()  # = byte array (see pydicom docs)
+            # noinspection PyPep8Naming
             dicom_out[0x7fe0, 0x0010].VR = 'OB'
         elif field_value is None:
             try:
@@ -164,11 +167,10 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
         else:
             setattr(dicom_out, field_key, field_value)
 
-
     # Save dicom_file_out
     # Make sure we have a directory
     if not os.path.exists(os.path.dirname(dicom_file_out)):
-       print('Decompressing files')
+        print('Decompressing files')
 
     # Save the file
     dicom_out.save_as(dicom_file_out)
@@ -213,4 +215,3 @@ def _anonymize_files(dicom_directory_in, dicom_directory_out, fields_to_keep):
     if original_compressed:
         print('Compressing files')
         compress_directory(dicom_directory_out)
-

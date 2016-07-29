@@ -52,6 +52,7 @@
 <span class="n">validate_orientation</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">validate_orthogonal</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">validate_sliceincrement</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">gdcmconv_path</span> <span class="o">=</span> <span class="kc">None</span>
 
 
 <div class="viewcode-block" id="disable_validate_sliceincrement"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.disable_validate_sliceincrement">[docs]</a><span class="k">def</span> <span class="nf">disable_validate_sliceincrement</span><span class="p">():</span>
@@ -126,6 +127,15 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">validate_slicecount</span>
     <span class="n">validate_slicecount</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="set_gdcmconv_path"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.set_gdcmconv_path">[docs]</a><span class="k">def</span> <span class="nf">set_gdcmconv_path</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set where the filepath to the gdcmconv executable (needed is it is not found in your PATH)</span>
+
+<span class="sd">    :param path: the file path to the gdcmconv executable</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">gdcmconv_path</span>
+    <span class="n">gdcmconv_path</span> <span class="o">=</span> <span class="n">path</span></div>
 </pre></div>
 
           </div>

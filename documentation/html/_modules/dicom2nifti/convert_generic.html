@@ -162,7 +162,7 @@
     <span class="c1"># if there are multiple possible orientations delete orientations where there are less than 4 files</span>
     <span class="c1"># we don&#39;t convert anything less that that anyway</span>
 
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_dicoms</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_dicoms</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">filtered_dicoms</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">orientation</span> <span class="ow">in</span> <span class="n">sorted_dicoms</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sorted_dicoms</span><span class="p">[</span><span class="n">orientation</span><span class="p">])</span> <span class="o">&gt;=</span> <span class="mi">4</span><span class="p">:</span>

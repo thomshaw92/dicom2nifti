@@ -57,18 +57,17 @@
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">struct</span>
-<span class="kn">import</span> <span class="nn">six</span>
 
 <span class="kn">import</span> <span class="nn">dicom</span>
-<span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
 
 <span class="kn">from</span> <span class="nn">dicom2nifti.exceptions</span> <span class="k">import</span> <span class="n">ConversionValidationError</span>
 
 
 <span class="c1"># Disable false positive numpy errors</span>
 <span class="c1"># pylint: disable=E1101</span>
-<div class="viewcode-block" id="read_dicom_directory"><a class="viewcode-back" href="../../dicom2nifti.common.html#dicom2nifti.common.read_dicom_directory">[docs]</a><span class="k">def</span> <span class="nf">read_dicom_directory</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">,</span> <span class="n">stop_before_pixels</span> <span class="o">=</span> <span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="read_dicom_directory"><a class="viewcode-back" href="../../dicom2nifti.common.html#dicom2nifti.common.read_dicom_directory">[docs]</a><span class="k">def</span> <span class="nf">read_dicom_directory</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">,</span> <span class="n">stop_before_pixels</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Read all dicom files in a given directory (stop before pixels)</span>
 

@@ -1,0 +1,212 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dicom2nifti &mdash; dicom2nifti  documentation</title>
+    
+    <link rel="stylesheet" href="_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="dicom2nifti  documentation" href="index.html" />
+    <link rel="prev" title="dicom2nifti.settings module" href="dicom2nifti.settings.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.settings.html" title="dicom2nifti.settings module"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="dicom2nifti">
+<h1>dicom2nifti<a class="headerlink" href="#dicom2nifti" title="Permalink to this headline">¶</a></h1>
+<p>Python library for converting dicom files to nifti</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Author:</th><td class="field-body">Arne Brys</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Organization:</th><td class="field-body"><a class="reference external" href="https://www.icometrix.com">icometrix</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Repository:</th><td class="field-body"><a class="reference external" href="https://github.com/icometrix/dicom2nifti">https://github.com/icometrix/dicom2nifti</a></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="documentation">
+<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>pip install dicom2nifti
+</pre></div>
+</div>
+</div>
+<div class="section" id="updating">
+<h2>Updating<a class="headerlink" href="#updating" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>pip install dicom2nifti --upgrade
+</pre></div>
+</div>
+</div>
+<div class="section" id="usage">
+<h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="command-line">
+<h3>Command line<a class="headerlink" href="#command-line" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>dicom2nifti <span class="o">[</span>--no-compression<span class="o">]</span> <span class="o">[</span>--no-reorientation<span class="o">]</span> input_directory output_directory
+</pre></div>
+</div>
+<p>for more information</p>
+<div class="highlight-bash"><div class="highlight"><pre><span></span>dicom2nifti -h
+</pre></div>
+</div>
+</div>
+<div class="section" id="from-python">
+<h3>From python<a class="headerlink" href="#from-python" title="Permalink to this headline">¶</a></h3>
+<p>Converting a directory with dicom files to nifti files</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dicom2nifti</span>
+
+<span class="n">dicom_series_to_nifti</span><span class="p">(</span><span class="n">original_dicom_directory</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">reorient_nifti</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Converting a directory with only 1 series to 1 nifti file</p>
+<div class="highlight-python"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dicom2nifti</span>
+
+<span class="n">dicom2nifti</span><span class="o">.</span><span class="n">dicom_series_to_nifti</span><span class="p">(</span><span class="n">original_dicom_directory</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">reorient_nifti</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="supported-data">
+<h2>Supported data<a class="headerlink" href="#supported-data" title="Permalink to this headline">¶</a></h2>
+<p>Most anatomical data for CT and MR should be supported as long as they are in classical dicom files.</p>
+<p>Try avoiding &#8220;Implicit VR Endian&#8221; if possible as this makes converting non anatomical (i.e. DTI, fMRI, ...) much more difficult.</p>
+<p>There is some vendor specific support, more specifically for 4D imaging like fMRI and DTI/DKI</p>
+<div class="section" id="ge-mr">
+<h3>GE MR<a class="headerlink" href="#ge-mr" title="Permalink to this headline">¶</a></h3>
+<p>Anatomical data should all be support.
+4D images like fMRI and DTI/DKI are supported.</p>
+</div>
+<div class="section" id="siemens-mr">
+<h3>Siemens MR<a class="headerlink" href="#siemens-mr" title="Permalink to this headline">¶</a></h3>
+<p>Anatomical data should all be support.
+4D images like fMRI and DTI/DKI are supported.</p>
+</div>
+<div class="section" id="philips-mr">
+<h3>Philips MR<a class="headerlink" href="#philips-mr" title="Permalink to this headline">¶</a></h3>
+<p>For classic dicom files dicom2nifti support anatomical.
+For classic dicom files 4D images like fMRI and DTI/DKI are supported.</p>
+<p>For &#8220;Philips Enhanced Dicom&#8221; there is no support for &#8220;Implicit VR Endian&#8221; transfer syntax.
+For the others we support anatomical and 4D images like fMRI and DTI/DKI.</p>
+</div>
+</div>
+<div class="section" id="unsupported-data">
+<h2>Unsupported data<a class="headerlink" href="#unsupported-data" title="Permalink to this headline">¶</a></h2>
+<p>If you encounter unsupported data you can help the development of dicom2nifti by providing a dataset. This dataset should be anonymised (but leave as much of the private fields as possible).</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">dicom2nifti</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a><ul>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#updating">Updating</a></li>
+<li><a class="reference internal" href="#usage">Usage</a><ul>
+<li><a class="reference internal" href="#command-line">Command line</a></li>
+<li><a class="reference internal" href="#from-python">From python</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#supported-data">Supported data</a><ul>
+<li><a class="reference internal" href="#ge-mr">GE MR</a></li>
+<li><a class="reference internal" href="#siemens-mr">Siemens MR</a></li>
+<li><a class="reference internal" href="#philips-mr">Philips MR</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#unsupported-data">Unsupported data</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="dicom2nifti.settings.html"
+                        title="previous chapter">dicom2nifti.settings module</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/readme_link.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="dicom2nifti.settings.html" title="dicom2nifti.settings module"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &copy; Copyright 2016, icometrix.
+    </div>
+  </body>
+</html>

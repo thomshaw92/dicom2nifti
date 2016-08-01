@@ -9,5 +9,5 @@ Python library for converting dicom files to nifti
 :Repository: https://github.com/icometrix/dicom2nifti
 :API documentation: http://dicom2nifti.readthedocs.io/en/stable
 
-.. include:: ./documentation/rst/readme.rst
+.. include:: documentation/rst/readme.rst
 

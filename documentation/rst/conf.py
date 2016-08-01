@@ -24,7 +24,7 @@ import os
 import sys
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
 
-sys.path.insert(os.path.abspath('../../dicom2nifti'))
+sys.path.append(os.path.abspath('../../dicom2nifti'))
 
 # -- General configuration ------------------------------------------------
 

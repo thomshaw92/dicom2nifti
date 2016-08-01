@@ -9,7 +9,7 @@ For MR specifically there is support for most 4D data (like DTI and fMRI)
 setup(
     name='dicom2nifti',
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
-    version='1.1.1',
+    version='1.1.2',
     description='package for converting dicom files to nifti',
     long_description=long_description,
     license='MIT',
@@ -18,7 +18,7 @@ setup(
     maintainer = "icometrix NV",
     maintainer_email = "dicom2nifti@icometrix.com",
     url='https://github.com/icometrix/dicom2nifti',
-    download_url='https://github.com/icometrix/dicom2nifti/tarball/1.1.1',
+    download_url='https://github.com/icometrix/dicom2nifti/tarball/1.1.2',
     keywords=['dicom', 'nifti', 'medical imaging'],
     scripts=['scripts/dicom2nifti'],
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers

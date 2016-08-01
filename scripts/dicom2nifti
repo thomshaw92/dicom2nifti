@@ -9,6 +9,7 @@ from __future__ import print_function
 import argparse
 import os
 import dicom2nifti.convert_dir as convert_directory
+import dicom2nifti
 import sys
 
 
@@ -19,10 +20,13 @@ def main(args):
     parser.add_argument('output_directory', type=str,
                         help='directory to store the nifti files')
 
-    parser.add_argument('--no-compression', action='store_true',
+    parser.add_argument('-G', '--allow-gantry-tilting', action='store_true',
+                        help='allow the conversion of gantry tilted data (this will be reflected in the affine matrix only)')
+
+    parser.add_argument('-C', '--no-compression', action='store_true',
                         help='disable gzip compression and write .nii files instead of .nii.gz')
 
-    parser.add_argument('--no-reorientation', action='store_true',
+    parser.add_argument('-R', '--no-reorientation', action='store_true',
                         help='disable image reorientation (default: images are reoriented to LAS orientation)')
 
     args = parser.parse_args(args)
@@ -38,6 +42,8 @@ def main(args):
         parser.print_help()
         return 2
     else:
+        if args.allow_gantry_tilting:
+            dicom2nifti.disable_validate_orthogonal()
         convert_directory.convert_directory(args.input_directory,
                                             args.output_directory,
                                             not args.no_compression,

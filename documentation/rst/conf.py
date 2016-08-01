@@ -25,7 +25,7 @@ import sys
 on_rtd = os.environ.get('READTHEDOCS') == 'True'
 
 sys.path.append(os.path.abspath('../../dicom2nifti'))
-
+print(os.path.abspath('../../dicom2nifti'))
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.

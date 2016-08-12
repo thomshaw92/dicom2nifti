@@ -16,6 +16,7 @@ import numpy
 from dicom.tag import Tag
 
 import dicom2nifti.common as common
+import dicom2nifti.settings as settings
 import dicom2nifti.convert_generic as convert_generic
 from dicom2nifti.exceptions import ConversionError
 
@@ -83,9 +84,10 @@ def _assert_explicit_vr(dicom_input):
     """
     Assert that explicit vr is used
     """
-    header = dicom_input[0]
-    if header.file_meta[0x0002, 0x0010].value == '1.2.840.10008.1.2':
-        raise ConversionError('IMPLICIT_VR_ENHANCED_DICOM')
+    if settings.validate_multiframe_implicit:
+        header = dicom_input[0]
+        if header.file_meta[0x0002, 0x0010].value == '1.2.840.10008.1.2':
+           raise ConversionError('IMPLICIT_VR_ENHANCED_DICOM')
 
 
 def is_multiframe_dicom(dicom_input):
@@ -471,10 +473,11 @@ def _multiframe_to_block(multiframe_dicom):
         private_scale_slope_tag = Tag(0x2005, 0x100e)
         if private_sequence_tag in frame_info[slice_index]:
             if private_scale_intercept_tag in frame_info[slice_index][private_sequence_tag][0]:
-                private_scale_intercept = frame_info[slice_index][private_sequence_tag][0][
-                    private_scale_intercept_tag].value
+                private_scale_intercept = common.get_fl_value(frame_info[slice_index][private_sequence_tag][0][
+                                                                  private_scale_intercept_tag])
             if private_scale_slope_tag in frame_info[slice_index][private_sequence_tag][0]:
-                private_scale_slope = frame_info[slice_index][private_sequence_tag][0][private_scale_slope_tag].value
+                private_scale_slope = common.get_fl_value(
+                    frame_info[slice_index][private_sequence_tag][0][private_scale_slope_tag])
         block_data = common.do_scaling(block_data,
                                        rescale_slope, rescale_intercept,
                                        private_scale_slope, private_scale_intercept)

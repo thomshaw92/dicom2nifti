@@ -2,6 +2,7 @@ from __future__ import print_function
 
 import os
 import dicom2nifti
+import dicom2nifti.settings as settings
 import dicom2nifti.image_reorientation as image_reorientation
 
 
@@ -18,6 +19,7 @@ def main():
     for root, dir_names, _ in os.walk(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
                                                    'tests',
                                                    'data')):
+        settings.disable_validate_multiframe_implicit()
         # New directory
         for dir_name in dir_names:
             dir_path = os.path.join(root, dir_name)

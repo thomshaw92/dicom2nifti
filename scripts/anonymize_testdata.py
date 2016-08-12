@@ -13,7 +13,7 @@ import numpy
 import os
 import datetime
 from six import string_types, iteritems
-from dicom2nifti.common import is_dicom_file
+from dicom2nifti.common import is_dicom_file, read_dicom_directory
 from dicom2nifti.convert_ge import is_ge
 from dicom2nifti.convert_dicom import is_compressed, decompress_directory, compress_directory
 from dicom2nifti.convert_siemens import is_siemens
@@ -82,7 +82,7 @@ def anonymize_directory(input_directory, output_directory=None):
                       # Pixel Data must be specified with hex code as it will not work for compressed dicoms
                       (0x7fe0, 0x0010): None}
 
-    if is_philips(input_directory):
+    if is_philips(read_dicom_directory(input_directory)):
         philips_fields = {
             (0x2001, 0x100a): None,
             (0x2001, 0x1003): None,
@@ -98,14 +98,14 @@ def anonymize_directory(input_directory, output_directory=None):
             'SharedFunctionalGroupsSequence': None}
         fields_to_keep.update(philips_fields)
 
-    if is_siemens(input_directory):
+    if is_siemens(read_dicom_directory(input_directory)):
         siemens_fields = {(0x0019, 0x100c): None,
                           (0x0029, 0x1020): None,
                           (0x0051, 0x100b): None,
                           (0x0019, 0x100e): None}
         fields_to_keep.update(siemens_fields)
 
-    if is_ge(input_directory):
+    if is_ge(read_dicom_directory(input_directory)):
         ge_fields = {(0x0020, 0x9056): None,
                      (0x0020, 0x9057): None,
                      (0x0043, 0x1039): None,
@@ -215,3 +215,6 @@ def _anonymize_files(dicom_directory_in, dicom_directory_out, fields_to_keep):
     if original_compressed:
         print('Compressing files')
         compress_directory(dicom_directory_out)
+
+
+anonymize_directory('/Users/abrys/Documents/data/philips_implicit', '/Users/abrys/Documents/data/philips_implicit')

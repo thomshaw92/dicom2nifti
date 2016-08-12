@@ -53,6 +53,25 @@ class TestConversionDicom(unittest.TestCase):
         finally:
             shutil.rmtree(tmp_output_dir)
 
+    def test_multiframe_option(self):
+        tmp_output_dir = tempfile.mkdtemp()
+        script_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'scripts', 'dicom2nifti')
+        assert os.path.isfile(script_file)
+
+        try:
+            if sys.version_info > (3, 0):
+                from importlib.machinery import SourceFileLoader
+                dicom2nifti_module = SourceFileLoader("dicom2nifti_script", script_file).load_module()
+            else:
+                import imp
+                dicom2nifti_module = imp.load_source('dicom2nifti_script', script_file)
+            dicom2nifti_module.main(['-M', test_data.PHILIPS_ENHANCED_ANATOMICAL_IMPLICIT, tmp_output_dir])
+            assert os.path.isfile(os.path.join(tmp_output_dir,"301_dicom2nifti.nii.gz"))
+            dicom2nifti_module.main(['--allow-multiframe-implicit', test_data.PHILIPS_ENHANCED_ANATOMICAL_IMPLICIT, tmp_output_dir])
+            assert os.path.isfile(os.path.join(tmp_output_dir,"301_dicom2nifti.nii.gz"))
+
+        finally:
+            shutil.rmtree(tmp_output_dir)
 
     def test_compression_function(self):
         tmp_output_dir = tempfile.mkdtemp()

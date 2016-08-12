@@ -23,6 +23,9 @@ def main(args):
     parser.add_argument('-G', '--allow-gantry-tilting', action='store_true',
                         help='allow the conversion of gantry tilted data (this will be reflected in the affine matrix only)')
 
+    parser.add_argument('-M', '--allow-multiframe-implicit', action='store_true',
+                        help='allow the conversion of multiframe data with implicit vr transfer syntax (this is not guaranteed to work)')
+
     parser.add_argument('-C', '--no-compression', action='store_true',
                         help='disable gzip compression and write .nii files instead of .nii.gz')
 
@@ -44,6 +47,8 @@ def main(args):
     else:
         if args.allow_gantry_tilting:
             dicom2nifti.disable_validate_orthogonal()
+        if args.allow_multiframe_implicit:
+            dicom2nifti.disable_validate_multiframe_implicit()
         convert_directory.convert_directory(args.input_directory,
                                             args.output_directory,
                                             not args.no_compression,

@@ -19,7 +19,7 @@ def shrink_multiframe(input_file, output_file=None, slice_count=8, timepoint_cou
     # Load dicom_file_in
     dicom_in = dicom.read_file(input_file)
 
-    if _is_multiframe_diffusion_imaging(os.path.dirname(input_file)) or _is_multiframe_4d(os.path.dirname(input_file)):
+    if _is_multiframe_diffusion_imaging([dicom_in]) or _is_multiframe_4d([dicom_in]):
 
         number_of_stack_slices = int(common.get_ss_value(dicom_in[(0x2001, 0x105f)][0][(0x2001, 0x102d)]))
         number_of_stacks = int(int(dicom_in.NumberOfFrames) / number_of_stack_slices)
@@ -43,7 +43,7 @@ def shrink_multiframe(input_file, output_file=None, slice_count=8, timepoint_cou
                 data_4d[new_slice_index, :, :] = dicom_in.pixel_array[slice_index, :, :]
 
         dicom_in.PixelData = data_4d.tostring()
-        dicom_in[(0x2001, 0x105f)][0][(0x2001, 0x102d)].value = slice_count
+        common.set_ss_value(dicom_in[(0x2001, 0x105f)][0][(0x2001, 0x102d)], slice_count)
         setattr(dicom_in, 'NumberOfFrames', slice_count * timepoint_count)
         setattr(dicom_in, 'PerFrameFunctionalGroupsSequence', new_frame_info)
 
@@ -51,7 +51,7 @@ def shrink_multiframe(input_file, output_file=None, slice_count=8, timepoint_cou
         # truncate the data
         dicom_in.PixelData = dicom_in.pixel_array[:slice_count, :, :].tostring()
         # set number of frames
-        dicom_in[(0x2001, 0x105f)][0][(0x2001, 0x102d)].value = slice_count
+        common.set_ss_value(dicom_in[(0x2001, 0x105f)][0][(0x2001, 0x102d)], slice_count)
 
         setattr(dicom_in, 'NumberOfFrames', slice_count)
         # truncate the pre frame groups sequence
@@ -62,6 +62,8 @@ def shrink_multiframe(input_file, output_file=None, slice_count=8, timepoint_cou
 
 
 def main():
+    shrink_multiframe('/Users/abrys/Documents/data/philips_implicit/IM1.dcm',timepoint_count=1)
+
     pass
 
 if __name__ == "__main__":

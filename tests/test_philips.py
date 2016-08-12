@@ -11,6 +11,7 @@ import shutil
 import os
 
 import dicom2nifti.convert_philips as convert_philips
+import dicom2nifti.settings as settings
 import tests.test_data as test_data
 from dicom2nifti.exceptions import ConversionError
 from dicom2nifti.common import read_dicom_directory
@@ -18,6 +19,7 @@ from tests.test_tools import compare_nifti, compare_bval, compare_bvec, ground_t
 
 
 class TestConversionPhilips(unittest.TestCase):
+
     def test_diffusion_imaging(self):
         tmp_output_dir = tempfile.mkdtemp()
         try:
@@ -119,6 +121,18 @@ class TestConversionPhilips(unittest.TestCase):
                               convert_philips.dicom_to_nifti,
                               read_dicom_directory(test_data.PHILIPS_ENHANCED_ANATOMICAL_IMPLICIT),
                               os.path.join(tmp_output_dir, 'test.nii.gz'))
+        finally:
+            shutil.rmtree(tmp_output_dir)
+
+    def test_anatomical_implicit(self):
+        tmp_output_dir = tempfile.mkdtemp()
+        try:
+            settings.disable_validate_multiframe_implicit()
+            results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_ENHANCED_ANATOMICAL_IMPLICIT),
+                                           os.path.join(tmp_output_dir, 'test.nii.gz'))
+            assert compare_nifti(results['NII_FILE'],
+                                 ground_thruth_filenames(test_data.PHILIPS_ENHANCED_ANATOMICAL_IMPLICIT)[0]) == True
+            settings.enable_validate_multiframe_implicit()
         finally:
             shutil.rmtree(tmp_output_dir)
 

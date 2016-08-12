@@ -156,6 +156,18 @@ def get_fd_value(tag):
     return tag.value
 
 
+def set_fd_value(tag, value):
+    """
+    Setters for data that also work with implicit transfersyntax
+
+    :param value: the value to set on the tag
+    :param tag: the tag to read
+    """
+    if tag.VR == 'OB' or tag.VR == 'UN':
+        value = struct.pack('d', value)
+    tag.value = value
+
+
 def get_fl_value(tag):
     """
     Getters for data that also work with implicit transfersyntax
@@ -192,6 +204,18 @@ def get_ss_value(tag):
         value = struct.unpack('h', tag.value)[0]
         return value
     return tag.value
+
+
+def set_ss_value(tag, value):
+    """
+    Setter for data that also work with implicit transfersyntax
+
+    :param value: the value to set on the tag
+    :param tag: the tag to read
+    """
+    if tag.VR == 'OB' or tag.VR == 'UN':
+        value = struct.pack('h', value)
+    tag.value = value
 
 
 def apply_scaling(data, dicom_headers):
@@ -231,7 +255,7 @@ def do_scaling(data, rescale_slope, rescale_intercept, private_scale_slope=1.0, 
     need_floats = False
 
     if int(rescale_slope) != rescale_slope or int(rescale_intercept) != rescale_intercept or \
-            private_scale_slope != 1.0 or private_scale_intercept != 0.0:
+                    private_scale_slope != 1.0 or private_scale_intercept != 0.0:
         need_floats = True
 
     if not need_floats:

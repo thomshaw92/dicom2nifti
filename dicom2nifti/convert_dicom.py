@@ -174,7 +174,9 @@ def decompress_dicom(input_file):
 
     :param input_file: single dicom file to decompress
     """
-    gdcmconv_executable = _which('gdcmconv')
+    gdcmconv_executable = settings.gdcmconv_path
+    if gdcmconv_executable is None:
+        gdcmconv_executable = _which('gdcmconv')
     if gdcmconv_executable is None:
         gdcmconv_executable = _which('gdcmconv.exe')
 

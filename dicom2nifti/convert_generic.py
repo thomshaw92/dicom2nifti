@@ -29,6 +29,8 @@ def dicom_to_nifti(dicom_input, output_file):
     if len(dicom_input) <= 0:
         raise ConversionError('NO_DICOM_FILES_FOUND')
 
+    dicom_input = sorted(dicom_input, key=lambda k: k.InstanceNumber)
+
     # remove localizers based on image type
     dicom_input = _remove_localizers_by_imagetype(dicom_input)
     # remove_localizers based on image orientation
@@ -42,11 +44,12 @@ def dicom_to_nifti(dicom_input, output_file):
     if settings.validate_orthogonal:
         # validate that we have an orthogonal image (to detect gantry tilting etc)
         common.validate_orthogonal(dicom_input)
+
+    dicom_input = sorted(dicom_input, key=lambda k: k.InstanceNumber)
+
     if settings.validate_sliceincrement:
         # validate that all slices have a consistent slice increment
         common.validate_sliceincrement(dicom_input)
-
-    dicom_input = sorted(dicom_input, key=lambda k: k.InstanceNumber)
 
     # Get data; originally z,y,x, transposed to x,y,z
     data = common.get_volume_pixeldata(dicom_input)

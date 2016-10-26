@@ -243,9 +243,9 @@ def apply_scaling(data, dicom_headers):
         try:
             # this section can sometimes fail due to unknown private fields
             if private_scale_slope_tag in dicom_headers:
-                private_scale_slope = dicom_headers[private_scale_slope_tag].value
+                private_scale_slope = float(dicom_headers[private_scale_slope_tag].value)
             if private_scale_slope_tag in dicom_headers:
-                private_scale_slope = dicom_headers[private_scale_slope_tag].value
+                private_scale_slope = float(dicom_headers[private_scale_slope_tag].value)
         except:
             pass
         return do_scaling(data, rescale_slope, rescale_intercept, private_scale_slope, private_scale_intercept)
@@ -265,9 +265,10 @@ def do_scaling(data, rescale_slope, rescale_intercept, private_scale_slope=1.0, 
         rescale_slope = int(rescale_slope)
         rescale_intercept = int(rescale_intercept)
     else:
+        rescale_slope = float(rescale_slope)
+        rescale_intercept = float(rescale_intercept)
         private_scale_slope = float(private_scale_slope)
         private_scale_intercept = float(private_scale_intercept)
-
     # Maybe we need to change the datatype?
     if data.dtype in [numpy.float32, numpy.float64]:
         pass

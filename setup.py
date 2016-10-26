@@ -1,6 +1,7 @@
 from distutils.core import setup
 from setuptools import find_packages
 
+version = '1.1.5'
 long_description = """
 With this package you can convert dicom images to nifti files.
 There is support for most anatomical CT and MR data.
@@ -9,16 +10,16 @@ For MR specifically there is support for most 4D data (like DTI and fMRI)
 setup(
     name='dicom2nifti',
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
-    version='1.1.4',
+    version=version,
     description='package for converting dicom files to nifti',
     long_description=long_description,
     license='MIT',
     author='icometrix NV',
     author_email='dicom2nifti@icometrix.com',
-    maintainer = "icometrix NV",
-    maintainer_email = "dicom2nifti@icometrix.com",
+    maintainer="icometrix NV",
+    maintainer_email="dicom2nifti@icometrix.com",
     url='https://github.com/icometrix/dicom2nifti',
-    download_url='https://github.com/icometrix/dicom2nifti/tarball/1.1.3',
+    download_url='https://github.com/icometrix/dicom2nifti/tarball/%s' % version,
     keywords=['dicom', 'nifti', 'medical imaging'],
     scripts=['scripts/dicom2nifti'],
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers

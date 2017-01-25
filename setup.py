@@ -9,11 +9,6 @@ There is support for most anatomical CT and MR data.
 For MR specifically there is support for most 4D data (like DTI and fMRI)
 """
 
-package_data = {'': []}
-for root, _, filenames in os.walk('dicom2nifti/tests/data'):
-    for file_ in filenames:
-        package_data[''].append(os.path.join(root, file_))
-
 setup(
     name='dicom2nifti',
     packages=find_packages(exclude=['contrib', 'docs', 'tests*']),
@@ -44,6 +39,5 @@ setup(
         'Operating System :: POSIX :: Linux'],
     install_requires=['nibabel', 'pydicom', 'numpy', 'six', 'future'],
     setup_requires=['nose', 'coverage'],
-    include_package_data=True,
-    package_data=package_data
+    include_package_data=True
 )

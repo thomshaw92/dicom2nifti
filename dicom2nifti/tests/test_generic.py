@@ -5,16 +5,16 @@ dicom2nifti
 @author: abrys
 """
 
-import unittest
-import tempfile
-import shutil
 import os
 import random
+import shutil
 import string
+import tempfile
+import unittest
 
 import dicom2nifti.convert_generic as convert_generic
-from dicom2nifti.common import is_dicom_file, read_dicom_directory
 import tests.test_data as test_data
+from dicom2nifti.common import is_dicom_file, read_dicom_directory
 from tests.test_tools import compare_nifti, ground_thruth_filenames
 
 

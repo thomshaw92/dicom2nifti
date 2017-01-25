@@ -5,10 +5,10 @@ dicom2nifti
 @author: abrys
 """
 
+import os
 import shutil
 import tempfile
 import unittest
-import os
 
 import dicom2nifti.convert_dir as convert_directory
 import tests.test_data as test_data

@@ -4,14 +4,15 @@ dicom2nifti
 
 @author: abrys
 """
-import unittest
-import tempfile
-import shutil
 import os
+import shutil
+import tempfile
+import unittest
+
 import dicom
 
-import tests.test_data as test_data
 import dicom2nifti.convert_siemens as convert_siemens
+import tests.test_data as test_data
 from dicom2nifti.common import read_dicom_directory
 from tests.test_tools import compare_nifti, compare_bval, compare_bvec, ground_thruth_filenames
 

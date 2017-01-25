@@ -10,15 +10,14 @@ import tempfile
 import unittest
 
 import dicom2nifti
-from dicom2nifti.exceptions import ConversionValidationError
-
+import tests.test_data as test_data
 from dicom2nifti.common import read_dicom_directory, \
     validate_sliceincrement, \
     validate_slicecount, \
     validate_orthogonal, \
     validate_orientation
 from dicom2nifti.convert_generic import dicom_to_nifti
-import tests.test_data as test_data
+from dicom2nifti.exceptions import ConversionValidationError
 
 
 class TestConversionCommon(unittest.TestCase):

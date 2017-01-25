@@ -5,10 +5,10 @@ dicom2nifti
 @author: abrys
 """
 
-import unittest
-import tempfile
-import shutil
 import os
+import shutil
+import tempfile
+import unittest
 
 import dicom2nifti
 import tests.test_data as test_data

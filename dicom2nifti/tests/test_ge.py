@@ -11,9 +11,9 @@ import tempfile
 import unittest
 
 import dicom2nifti.convert_ge as convert_ge
-import tests.test_data as test_data
+import dicom2nifti.tests.test_data as test_data
 from dicom2nifti.common import read_dicom_directory
-from tests.test_tools import compare_nifti, compare_bval, compare_bvec, ground_thruth_filenames
+from dicom2nifti.tests.test_tools import compare_nifti, compare_bval, compare_bvec, ground_thruth_filenames
 
 
 class TestConversionGE(unittest.TestCase):

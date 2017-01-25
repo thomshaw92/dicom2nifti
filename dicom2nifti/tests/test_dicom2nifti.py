@@ -11,8 +11,8 @@ import tempfile
 import unittest
 
 import dicom2nifti
-import tests.test_data as test_data
-from tests.test_tools import compare_nifti, ground_thruth_filenames
+import dicom2nifti.tests.test_data as test_data
+from dicom2nifti.tests.test_tools import compare_nifti, ground_thruth_filenames
 
 
 class TestConversionDicom(unittest.TestCase):

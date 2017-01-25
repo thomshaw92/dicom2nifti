@@ -81,6 +81,7 @@ class TestConversionCommon(unittest.TestCase):
     def test_validate_orthogonal_disabled(self):
         tmp_output_dir = tempfile.mkdtemp()
         try:
+            dicom2nifti.disable_validate_slicecount()
             self.assertRaises(ConversionValidationError,
                               dicom_to_nifti,
                               read_dicom_directory(test_data.FAILING_ORHTOGONAL),
@@ -106,6 +107,7 @@ class TestConversionCommon(unittest.TestCase):
         try:
             dicom2nifti.disable_validate_orthogonal() #this will also fail on this data
             dicom2nifti.disable_validate_sliceincrement() #this will also fail on this data
+            dicom2nifti.disable_validate_slicecount()
             self.assertRaises(ConversionValidationError,
                               dicom_to_nifti,
                               read_dicom_directory(test_data.FAILING_ORIENTATION),

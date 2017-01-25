@@ -33,9 +33,10 @@ def dicom_to_nifti(dicom_input, output_file):
 
     # remove localizers based on image type
     dicom_input = _remove_localizers_by_imagetype(dicom_input)
-    # remove_localizers based on image orientation
-    dicom_input = _remove_localizers_by_orientation(dicom_input)
     if settings.validate_slicecount:
+        # remove_localizers based on image orientation (only valid if slicecount is validated)
+        dicom_input = _remove_localizers_by_orientation(dicom_input)
+
         # validate all the dicom files for correct orientations
         common.validate_slicecount(dicom_input)
     if settings.validate_orientation:

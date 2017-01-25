@@ -23,61 +23,61 @@ class TestConversionDicom(unittest.TestCase):
                                                         os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                         False)
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.SIEMENS_ANATOMICAL)[0]) == True
+                                 ground_thruth_filenames(test_data.SIEMENS_ANATOMICAL)[0]) is True
 
             results = dicom2nifti.dicom_series_to_nifti(test_data.SIEMENS_ANATOMICAL,
                                                         os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                         True)
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.SIEMENS_ANATOMICAL)[1]) == True
+                                 ground_thruth_filenames(test_data.SIEMENS_ANATOMICAL)[1]) is True
 
             results = dicom2nifti.dicom_series_to_nifti(test_data.SIEMENS_ANATOMICAL_IMPLICIT,
                                                         os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                         False)
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.SIEMENS_ANATOMICAL_IMPLICIT)[0]) == True
+                                 ground_thruth_filenames(test_data.SIEMENS_ANATOMICAL_IMPLICIT)[0]) is True
 
             results = dicom2nifti.dicom_series_to_nifti(test_data.SIEMENS_ANATOMICAL_IMPLICIT,
                                                         os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                         True)
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.SIEMENS_ANATOMICAL_IMPLICIT)[1]) == True
+                                 ground_thruth_filenames(test_data.SIEMENS_ANATOMICAL_IMPLICIT)[1]) is True
 
             results = dicom2nifti.dicom_series_to_nifti(test_data.GENERIC_ANATOMICAL,
                                                         os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                         False)
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GENERIC_ANATOMICAL)[0]) == True
+                                 ground_thruth_filenames(test_data.GENERIC_ANATOMICAL)[0]) is True
 
             results = dicom2nifti.dicom_series_to_nifti(test_data.GENERIC_ANATOMICAL,
                                                         os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                         True)
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GENERIC_ANATOMICAL)[1]) == True
+                                 ground_thruth_filenames(test_data.GENERIC_ANATOMICAL)[1]) is True
 
             results = dicom2nifti.dicom_series_to_nifti(test_data.GENERIC_ANATOMICAL_IMPLICIT,
                                                         os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                         False)
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GENERIC_ANATOMICAL_IMPLICIT)[0]) == True
+                                 ground_thruth_filenames(test_data.GENERIC_ANATOMICAL_IMPLICIT)[0]) is True
 
             results = dicom2nifti.dicom_series_to_nifti(test_data.GENERIC_ANATOMICAL_IMPLICIT,
                                                         os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                         True)
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GENERIC_ANATOMICAL_IMPLICIT)[1]) == True
+                                 ground_thruth_filenames(test_data.GENERIC_ANATOMICAL_IMPLICIT)[1]) is True
 
             results = dicom2nifti.dicom_series_to_nifti(test_data.GENERIC_COMPRESSED,
                                                         os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                         False)
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GENERIC_COMPRESSED)[0]) == True
+                                 ground_thruth_filenames(test_data.GENERIC_COMPRESSED)[0]) is True
 
             results = dicom2nifti.dicom_series_to_nifti(test_data.GENERIC_COMPRESSED,
                                                         os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                         True)
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GENERIC_COMPRESSED)[1]) == True
+                                 ground_thruth_filenames(test_data.GENERIC_COMPRESSED)[1]) is True
 
         finally:
             shutil.rmtree(tmp_output_dir)

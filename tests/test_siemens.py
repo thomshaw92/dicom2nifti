@@ -10,7 +10,7 @@ import tempfile
 import unittest
 
 import dicom
-import dicom2nifti.tests.test_data as test_data
+import tests.test_data as test_data
 
 import dicom2nifti.convert_siemens as convert_siemens
 from dicom2nifti.common import read_dicom_directory

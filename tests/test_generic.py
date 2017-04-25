@@ -12,7 +12,7 @@ import string
 import tempfile
 import unittest
 
-import dicom2nifti.tests.test_data as test_data
+import tests.test_data as test_data
 
 import dicom2nifti.convert_generic as convert_generic
 from dicom2nifti.common import is_dicom_file, read_dicom_directory

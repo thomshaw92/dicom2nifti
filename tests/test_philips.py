@@ -10,7 +10,7 @@ import shutil
 import tempfile
 import unittest
 
-import dicom2nifti.tests.test_data as test_data
+import tests.test_data as test_data
 
 import dicom2nifti.convert_philips as convert_philips
 import dicom2nifti.settings as settings

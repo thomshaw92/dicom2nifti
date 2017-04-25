@@ -10,7 +10,7 @@ import shutil
 import tempfile
 import unittest
 
-import dicom2nifti.tests.test_data as test_data
+import tests.test_data as test_data
 
 import dicom2nifti.convert_dicom as convert_dicom
 from dicom2nifti.common import read_dicom_directory

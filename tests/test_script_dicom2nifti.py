@@ -11,7 +11,7 @@ import sys
 import tempfile
 import unittest
 
-import dicom2nifti.tests.test_data as test_data
+import tests.test_data as test_data
 
 
 class TestConversionDicom(unittest.TestCase):

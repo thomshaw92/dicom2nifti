@@ -10,7 +10,7 @@ import tempfile
 import unittest
 
 import dicom2nifti
-import dicom2nifti.tests.test_data as test_data
+import tests.test_data as test_data
 from dicom2nifti.common import read_dicom_directory, \
     validate_sliceincrement, \
     validate_slicecount, \

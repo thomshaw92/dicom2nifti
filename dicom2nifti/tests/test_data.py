@@ -116,10 +116,10 @@ FAILING_SLICEINCREMENT = os.path.join(os.path.dirname(os.path.abspath(__file__))
                                       'data', 'failing', 'sliceincrement', '001')
 
 FAILING_SLICECOUNT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                      'data', 'failing', 'slicecount', '001')
+                                  'data', 'failing', 'slicecount', '001')
 
 FAILING_ORHTOGONAL = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                      'data', 'failing', 'gantrytilting', '001')
+                                  'data', 'failing', 'gantrytilting', '001')
 
 FAILING_ORIENTATION = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                      'data', 'failing', 'sliceorientation', '001')
+                                   'data', 'failing', 'sliceorientation', '001')

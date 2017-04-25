@@ -69,14 +69,12 @@ class TestConversionCommon(unittest.TestCase):
         finally:
             shutil.rmtree(tmp_output_dir)
 
-
     def test_validate_orthogonal(self):
         validate_orthogonal(read_dicom_directory(test_data.GE_ANATOMICAL))
 
         self.assertRaises(ConversionValidationError,
                           validate_orthogonal,
                           read_dicom_directory(test_data.FAILING_ORHTOGONAL))
-
 
     def test_validate_orthogonal_disabled(self):
         tmp_output_dir = tempfile.mkdtemp()
@@ -93,7 +91,6 @@ class TestConversionCommon(unittest.TestCase):
         finally:
             shutil.rmtree(tmp_output_dir)
 
-
     def test_validate_orientation(self):
         validate_orientation(read_dicom_directory(test_data.GE_ANATOMICAL))
 
@@ -101,12 +98,11 @@ class TestConversionCommon(unittest.TestCase):
                           validate_orientation,
                           read_dicom_directory(test_data.FAILING_ORIENTATION))
 
-
     def test_validate_orientation_disabled(self):
         tmp_output_dir = tempfile.mkdtemp()
         try:
-            dicom2nifti.disable_validate_orthogonal() #this will also fail on this data
-            dicom2nifti.disable_validate_sliceincrement() #this will also fail on this data
+            dicom2nifti.disable_validate_orthogonal()  # this will also fail on this data
+            dicom2nifti.disable_validate_sliceincrement()  # this will also fail on this data
             dicom2nifti.disable_validate_slicecount()
             self.assertRaises(ConversionValidationError,
                               dicom_to_nifti,

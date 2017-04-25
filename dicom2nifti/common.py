@@ -257,8 +257,10 @@ def do_scaling(data, rescale_slope, rescale_intercept, private_scale_slope=1.0, 
     # Obtain slope and offset
     need_floats = False
 
-    if int(rescale_slope) != rescale_slope or int(rescale_intercept) != rescale_intercept or \
-                    private_scale_slope != 1.0 or private_scale_intercept != 0.0:
+    if int(rescale_slope) != rescale_slope or \
+            int(rescale_intercept) != rescale_intercept or \
+            private_scale_slope != 1.0 or \
+            private_scale_intercept != 0.0:
         need_floats = True
 
     if not need_floats:

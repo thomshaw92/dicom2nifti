@@ -48,6 +48,7 @@ def disable_validate_slicecount():
     global validate_slicecount
     validate_slicecount = False
 
+
 def disable_validate_multiframe_implicit():
     """
     Disable the validation that checks that data is not multiframe implicit
@@ -55,6 +56,7 @@ def disable_validate_multiframe_implicit():
     """
     global validate_multiframe_implicit
     validate_multiframe_implicit = False
+
 
 def enable_validate_sliceincrement():
     """
@@ -87,12 +89,14 @@ def enable_validate_slicecount():
     global validate_slicecount
     validate_slicecount = True
 
+
 def enable_validate_multiframe_implicit():
     """
     Enable the validation that checks that data is not multiframe implicit again (DEFAULT ENABLED)
     """
     global validate_multiframe_implicit
     validate_multiframe_implicit = True
+
 
 def set_gdcmconv_path(path):
     """

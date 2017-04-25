@@ -23,20 +23,20 @@ class TestConversionGE(unittest.TestCase):
             results = convert_ge.dicom_to_nifti(read_dicom_directory(test_data.GE_DTI),
                                                 os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GE_DTI)[0]) == True
+                                 ground_thruth_filenames(test_data.GE_DTI)[0]) is True
             assert compare_bval(results['BVAL_FILE'],
-                                ground_thruth_filenames(test_data.GE_DTI)[2]) == True
+                                ground_thruth_filenames(test_data.GE_DTI)[2]) is True
             assert compare_bvec(results['BVEC_FILE'],
-                                ground_thruth_filenames(test_data.GE_DTI)[3]) == True
+                                ground_thruth_filenames(test_data.GE_DTI)[3]) is True
 
             convert_ge.dicom_to_nifti(read_dicom_directory(test_data.GE_DTI_IMPLICIT),
                                       os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GE_DTI_IMPLICIT)[0]) == True
+                                 ground_thruth_filenames(test_data.GE_DTI_IMPLICIT)[0]) is True
             assert compare_bval(results['BVAL_FILE'],
-                                ground_thruth_filenames(test_data.GE_DTI_IMPLICIT)[2]) == True
+                                ground_thruth_filenames(test_data.GE_DTI_IMPLICIT)[2]) is True
             assert compare_bvec(results['BVEC_FILE'],
-                                ground_thruth_filenames(test_data.GE_DTI_IMPLICIT)[3]) == True
+                                ground_thruth_filenames(test_data.GE_DTI_IMPLICIT)[3]) is True
         finally:
             shutil.rmtree(tmp_output_dir)
 
@@ -46,11 +46,11 @@ class TestConversionGE(unittest.TestCase):
             results = convert_ge.dicom_to_nifti(read_dicom_directory(test_data.GE_FMRI),
                                                 os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GE_FMRI)[0]) == True
+                                 ground_thruth_filenames(test_data.GE_FMRI)[0]) is True
             results = convert_ge.dicom_to_nifti(read_dicom_directory(test_data.GE_FMRI_IMPLICIT),
                                                 os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GE_FMRI_IMPLICIT)[0]) == True
+                                 ground_thruth_filenames(test_data.GE_FMRI_IMPLICIT)[0]) is True
         finally:
             shutil.rmtree(tmp_output_dir)
 
@@ -60,11 +60,11 @@ class TestConversionGE(unittest.TestCase):
             results = convert_ge.dicom_to_nifti(read_dicom_directory(test_data.GE_ANATOMICAL),
                                                 os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GE_ANATOMICAL)[0]) == True
+                                 ground_thruth_filenames(test_data.GE_ANATOMICAL)[0]) is True
             results = convert_ge.dicom_to_nifti(read_dicom_directory(test_data.GE_ANATOMICAL_IMPLICIT),
                                                 os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GE_ANATOMICAL_IMPLICIT)[0]) == True
+                                 ground_thruth_filenames(test_data.GE_ANATOMICAL_IMPLICIT)[0]) is True
         finally:
             shutil.rmtree(tmp_output_dir)
 

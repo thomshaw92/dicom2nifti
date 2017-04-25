@@ -87,7 +87,7 @@ def _assert_explicit_vr(dicom_input):
     if settings.validate_multiframe_implicit:
         header = dicom_input[0]
         if header.file_meta[0x0002, 0x0010].value == '1.2.840.10008.1.2':
-           raise ConversionError('IMPLICIT_VR_ENHANCED_DICOM')
+            raise ConversionError('IMPLICIT_VR_ENHANCED_DICOM')
 
 
 def is_multiframe_dicom(dicom_input):

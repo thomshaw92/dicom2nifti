@@ -25,7 +25,7 @@ class TestConversionGeneric(unittest.TestCase):
             results = convert_generic.dicom_to_nifti(read_dicom_directory(test_data.GE_ANATOMICAL),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GE_ANATOMICAL)[0]) == True
+                                 ground_thruth_filenames(test_data.GE_ANATOMICAL)[0]) is True
 
         finally:
             shutil.rmtree(tmp_output_dir)

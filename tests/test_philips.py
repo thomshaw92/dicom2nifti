@@ -16,7 +16,7 @@ import dicom2nifti.convert_philips as convert_philips
 import dicom2nifti.settings as settings
 from dicom2nifti.common import read_dicom_directory
 from dicom2nifti.exceptions import ConversionError
-from test_tools import compare_nifti, compare_bval, compare_bvec, ground_thruth_filenames
+from tests.test_tools import compare_nifti, compare_bval, compare_bvec, ground_thruth_filenames
 
 
 class TestConversionPhilips(unittest.TestCase):

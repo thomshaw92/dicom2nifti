@@ -14,7 +14,7 @@ import tests.test_data as test_data
 
 import dicom2nifti.convert_siemens as convert_siemens
 from dicom2nifti.common import read_dicom_directory
-from test_tools import compare_nifti, compare_bval, compare_bvec, ground_thruth_filenames
+from tests.test_tools import compare_nifti, compare_bval, compare_bvec, ground_thruth_filenames
 
 
 class TestConversionSiemens(unittest.TestCase):

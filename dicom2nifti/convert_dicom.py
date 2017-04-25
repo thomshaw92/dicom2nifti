@@ -10,8 +10,10 @@ import os
 import tempfile
 import subprocess
 import shutil
+import sys
 
 import six
+from six import reraise
 import dicom
 from dicom.tag import Tag
 
@@ -74,6 +76,12 @@ def dicom_series_to_nifti(original_dicom_directory, output_file, reorient_nifti=
         dicom_input = common.read_dicom_directory(dicom_directory)
 
         return dicom_array_to_nifti(dicom_input, output_file, reorient_nifti)
+
+    except AttributeError as exception:
+        reraise(
+            tp=ConversionError,
+            value=ConversionError(str(exception)),
+            tb=sys.exc_info()[2])
 
     finally:
         # remove the copied data

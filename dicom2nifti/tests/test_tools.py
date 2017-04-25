@@ -34,10 +34,10 @@ def compare_nifti(nifti_file_1, nifti_file_2):
 def compare_bval(bval_file_1, bval_file_2):
     bval_1 = numpy.loadtxt(bval_file_1)
     bval_2 = numpy.loadtxt(bval_file_2)
-    return (bval_1 == bval_2).all()
+    return numpy.array_equal(bval_1, bval_2)
 
 
 def compare_bvec(bvec_file_1, bvec_file_2):
     bvec_1 = numpy.loadtxt(bvec_file_1)
     bvec_2 = numpy.loadtxt(bvec_file_2)
-    return (bvec_1 == bvec_2).all()
+    return numpy.array_equal(bvec_1, bvec_2)

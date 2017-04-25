@@ -18,6 +18,7 @@ class TestConversionDicom(unittest.TestCase):
     def test_main_function(self):
         tmp_output_dir = tempfile.mkdtemp()
         script_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                                   'python',
                                    'scripts',
                                    'dicom2nifti')
         assert os.path.isfile(script_file)
@@ -38,6 +39,7 @@ class TestConversionDicom(unittest.TestCase):
     def test_gantry_option(self):
         tmp_output_dir = tempfile.mkdtemp()
         script_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                                   'python',
                                    'scripts',
                                    'dicom2nifti')
         assert os.path.isfile(script_file)
@@ -60,7 +62,9 @@ class TestConversionDicom(unittest.TestCase):
     def test_multiframe_option(self):
         tmp_output_dir = tempfile.mkdtemp()
         script_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                                   'scripts', 'dicom2nifti')
+                                   'python',
+                                   'scripts',
+                                   'dicom2nifti')
         assert os.path.isfile(script_file)
 
         try:
@@ -82,7 +86,9 @@ class TestConversionDicom(unittest.TestCase):
     def test_compression_function(self):
         tmp_output_dir = tempfile.mkdtemp()
         script_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
-                                   'scripts', 'dicom2nifti')
+                                   'python',
+                                   'scripts',
+                                   'dicom2nifti')
         assert os.path.isfile(script_file)
 
         try:
@@ -103,6 +109,7 @@ class TestConversionDicom(unittest.TestCase):
     def test_reorientation_function(self):
         tmp_output_dir = tempfile.mkdtemp()
         script_file = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+                                   'python',
                                    'scripts',
                                    'dicom2nifti')
         assert os.path.isfile(script_file)

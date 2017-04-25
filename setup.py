@@ -38,6 +38,5 @@ setup(
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX :: Linux'],
     install_requires=['nibabel', 'pydicom', 'numpy', 'six', 'future'],
-    setup_requires=['nose', 'coverage'],
-    include_package_data=True
+    setup_requires=['nose', 'coverage']
 )

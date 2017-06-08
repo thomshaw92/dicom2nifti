@@ -480,9 +480,9 @@ def set_tr_te(nifti_image, repetition_time, echo_time):
     :param nifti_image: nifti image to set the info to
     """
     # set the repetition time in pixdim
-    nifti_image.get_header().structarr['pixdim'][4] = repetition_time / 1000.0
+    nifti_image.header.structarr['pixdim'][4] = repetition_time / 1000.0
 
     # set tr and te in db_name field
-    nifti_image.get_header().structarr['db_name'] = '?TR:%.3f TE:%d' % (repetition_time, echo_time)
+    nifti_image.header.structarr['db_name'] = '?TR:%.3f TE:%d' % (repetition_time, echo_time)
 
     return nifti_image

@@ -16,7 +16,7 @@ def compare_nifti(nifti_file_1, nifti_file_2):
     nifti_2 = nibabel.load(nifti_file_2)
 
     # check the affine
-    if not (nifti_1.get_affine() == nifti_2.get_affine()).all():
+    if not (nifti_1.affine == nifti_2.affine).all():
         print('affine mismatch')
         return False
 

@@ -63,7 +63,7 @@ class ImageVolume(object):
         # Not all image data has the same orientation
         # We use the affine matrix and multiplying it with one component
         # of the slice we can find the correct orientation
-        affine_inverse = numpy.linalg.inv(self.nifti.get_affine())
+        affine_inverse = numpy.linalg.inv(self.nifti.affine)
         transformed_x = numpy.transpose(numpy.dot(affine_inverse, [[1], [0], [0], [0]]))[0]
         transformed_y = numpy.transpose(numpy.dot(affine_inverse, [[0], [1], [0], [0]]))[0]
         transformed_z = numpy.transpose(numpy.dot(affine_inverse, [[0], [0], [1], [0]]))[0]

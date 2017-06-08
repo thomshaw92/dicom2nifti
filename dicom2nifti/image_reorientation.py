@@ -40,7 +40,7 @@ def reorient_image(input_image, output_image):
         raise Exception('Only 3d and 4d images are supported')
 
     # print 'Recreating affine'
-    affine = image.nifti.get_affine()
+    affine = image.nifti.affine
     # Based on VolumeImage.py where slice orientation 1 represents the axial plane
     # Flipping on the data may be needed based on x_inverted, y_inverted, ZInverted
 

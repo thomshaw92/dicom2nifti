@@ -578,7 +578,7 @@ def _fix_diffusion_images(bvals, bvecs, nifti, nifti_file):
     bvecs = bvecs[:-1]
 
     # remove last elements from the nifti
-    new_nifti = nibabel.Nifti1Image(nifti.get_data()[:, :, :, :-1], nifti.get_affine())
+    new_nifti = nibabel.Nifti1Image(nifti.get_data()[:, :, :, :-1], nifti.affine)
     new_nifti.to_filename(nifti_file)
 
     return new_nifti, bvals, bvecs

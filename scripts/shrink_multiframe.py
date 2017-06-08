@@ -7,6 +7,8 @@ dicom2nifti
 
 import dicom
 import os
+
+import logging
 import numpy
 from dicom2nifti.convert_philips import _is_multiframe_diffusion_imaging, _is_multiframe_4d
 import dicom2nifti.common as common
@@ -39,7 +41,7 @@ def shrink_multiframe(input_file, output_file=None, slice_count=8, timepoint_cou
                 z_location = frame_info[slice_index].FrameContentSequence[0].InStackPositionNumber - 1
                 new_frame_info[new_slice_index] = frame_info[slice_index]
 
-                print('Importing slice on position %s %s %s' % (slice_index, z_location, index_t))
+                logging.info('Importing slice on position %s %s %s' % (slice_index, z_location, index_t))
                 data_4d[new_slice_index, :, :] = dicom_in.pixel_array[slice_index, :, :]
 
         dicom_in.PixelData = data_4d.tostring()

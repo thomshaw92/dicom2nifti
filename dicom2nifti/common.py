@@ -10,6 +10,7 @@ import os
 import struct
 
 import dicom
+import logging
 import numpy
 from dicom.tag import Tag
 
@@ -334,7 +335,7 @@ def write_bvec_file(bvecs, bvec_file):
     :param bvecs: array with the vectors
     :param bvec_file: filepath to write to
     """
-    print('Saving BVEC file: %s' % bvec_file)
+    logging.info('Saving BVEC file: %s' % bvec_file)
     with open(bvec_file, 'w') as text_file:
         # Map a dicection to string join them using a space and write to the file
         text_file.write('%s\n' % ' '.join(map(str, bvecs[:, 0])))
@@ -349,7 +350,7 @@ def write_bval_file(bvals, bval_file):
     :param bvals: array with the values
     :param bval_file: filepath to write to
     """
-    print('Saving BVAL file: %s' % bval_file)
+    logging.info('Saving BVAL file: %s' % bval_file)
     with open(bval_file, 'w') as text_file:
         # join the bvals using a space and write to the file
         text_file.write('%s\n' % ' '.join(map(str, bvals)))
@@ -406,11 +407,11 @@ def validate_orthogonal(dicoms):
 
     if not numpy.allclose(first_image_dir, combined_dir, rtol=0.05, atol=0.05) \
             and not numpy.allclose(first_image_dir, -combined_dir, rtol=0.05, atol=0.05):
-        print('Orthogonality check failed: non cubical image')
-        print('---------------------------------------------------------')
-        print(first_image_dir)
-        print(combined_dir)
-        print('---------------------------------------------------------')
+        logging.warning('Orthogonality check failed: non cubical image')
+        logging.warning('---------------------------------------------------------')
+        logging.warning(first_image_dir)
+        logging.warning(combined_dir)
+        logging.warning('---------------------------------------------------------')
         raise ConversionValidationError('NON_CUBICAL_IMAGE/GANTRY_TILT')
 
 
@@ -427,11 +428,11 @@ def validate_sliceincrement(dicoms):
         current_image_position = numpy.array(dicom_.ImagePositionPatient)
         current_increment = previous_image_position - current_image_position
         if not numpy.allclose(increment, current_increment, rtol=0.05, atol=0.05):
-            print('Slice increment not consistent through all slices')
-            print('---------------------------------------------------------')
-            print(previous_image_position, increment)
-            print(current_image_position, current_increment)
-            print('---------------------------------------------------------')
+            logging.warning('Slice increment not consistent through all slices')
+            logging.warning('---------------------------------------------------------')
+            logging.warning('%s %s' %(previous_image_position, increment))
+            logging.warning('%s %s' %(current_image_position, current_increment))
+            logging.warning('---------------------------------------------------------')
             raise ConversionValidationError('SLICE_INCREMENT_INCONSISTENT')
         previous_image_position = current_image_position
 
@@ -444,8 +445,8 @@ def validate_slicecount(dicoms):
     :param dicoms: list of dicoms
     """
     if len(dicoms) <= 3:
-        print('At least 4 slices are needed for correct conversion')
-        print('---------------------------------------------------------')
+        logging.warning('At least 4 slices are needed for correct conversion')
+        logging.warning('---------------------------------------------------------')
         raise ConversionValidationError('TOO_FEW_SLICES/LOCALIZER')
 
 
@@ -463,11 +464,11 @@ def validate_orientation(dicoms):
         image_orient2 = numpy.array(dicom_.ImageOrientationPatient)[3:6]
         if not numpy.allclose(image_orient1, first_image_orient1, rtol=0.001, atol=0.001) \
                 or not numpy.allclose(image_orient2, first_image_orient2, rtol=0.001, atol=0.001):
-            print('Image orientations not consistent through all slices')
-            print('---------------------------------------------------------')
-            print(image_orient1, first_image_orient1)
-            print(image_orient2, first_image_orient2)
-            print('---------------------------------------------------------')
+            logging.warning('Image orientations not consistent through all slices')
+            logging.warning('---------------------------------------------------------')
+            logging.warning('%s %s' %(image_orient1, first_image_orient1))
+            logging.warning('%s %s' %(image_orient2, first_image_orient2))
+            logging.warning('---------------------------------------------------------')
             raise ConversionValidationError('IMAGE_ORIENTATION_INCONSISTENT')
 
 

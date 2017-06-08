@@ -11,6 +11,7 @@ import os
 import traceback
 
 import dicom.config
+import logging
 import nibabel
 import numpy
 from dicom.tag import Tag
@@ -61,22 +62,22 @@ def dicom_to_nifti(dicom_input, output_file):
 
     if is_multiframe_dicom(dicom_input):
         _assert_explicit_vr(dicom_input)
-        print('Found multiframe dicom')
+        logging.info('Found multiframe dicom')
         if _is_multiframe_4d(dicom_input):
-            print('Found sequence type: MULTIFRAME 4D')
+            logging.info('Found sequence type: MULTIFRAME 4D')
             return _multiframe_to_nifti(dicom_input, output_file)
 
         if _is_multiframe_anatomical(dicom_input):
-            print('Found sequence type: MULTIFRAME ANATOMICAL')
+            logging.info('Found sequence type: MULTIFRAME ANATOMICAL')
             return _multiframe_to_nifti(dicom_input, output_file)
     else:
-        print('Found singleframe dicom')
+        logging.info('Found singleframe dicom')
         grouped_dicoms = _get_grouped_dicoms(dicom_input)
         if _is_singleframe_4d(dicom_input):
-            print('Found sequence type: SINGLEFRAME 4D')
+            logging.info('Found sequence type: SINGLEFRAME 4D')
             return _singleframe_to_nifti(grouped_dicoms, output_file)
 
-    print('Assuming anatomical data')
+    logging.info('Assuming anatomical data')
     return convert_generic.dicom_to_nifti(dicom_input, output_file)
 
 
@@ -253,18 +254,18 @@ def _multiframe_to_nifti(dicom_input, output_file):
     """
 
     # Read the multiframe dicom file
-    print('Read dicom file')
+    logging.info('Read dicom file')
     multiframe_dicom = dicom_input[0]
 
     # Create mosaic block
-    print('Creating data block')
+    logging.info('Creating data block')
     full_block = _multiframe_to_block(multiframe_dicom)
 
-    print('Creating affine')
+    logging.info('Creating affine')
 
     # Create the nifti header info
     affine = _create_affine_multiframe(multiframe_dicom)
-    print('Creating nifti')
+    logging.info('Creating nifti')
 
     # Convert to nifti
     img = nibabel.Nifti1Image(full_block, affine)
@@ -273,16 +274,16 @@ def _multiframe_to_nifti(dicom_input, output_file):
     common.set_tr_te(img, float(timing_parameters.RepetitionTime),
                      float(first_frame[0x2005, 0x140f][0].EchoTime))
 
-    print('Saving nifti to disk')
+    logging.info('Saving nifti to disk')
     # Save to disk
-    print('Saving nifti to disk %s' % output_file)
+    logging.info('Saving nifti to disk %s' % output_file)
     img.to_filename(output_file)
 
     if _is_multiframe_diffusion_imaging(dicom_input):
         # Create the bval en bvec files
         base_path = os.path.dirname(output_file)
         base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
-        print('Creating bval en bvec files')
+        logging.info('Creating bval en bvec files')
         bval_file = '%s/%s.bval' % (base_path, base_name)
         bvec_file = '%s/%s.bvec' % (base_path, base_name)
         bval_file, bvec_file = _create_bvals_bvecs(multiframe_dicom, bval_file, bvec_file, img, output_file)
@@ -303,19 +304,19 @@ def _singleframe_to_nifti(grouped_dicoms, output_file):
     """
 
     # Create mosaic block
-    print('Creating data block')
+    logging.info('Creating data block')
     full_block = _singleframe_to_block(grouped_dicoms)
 
-    print('Creating affine')
+    logging.info('Creating affine')
     # Create the nifti header info
     affine = common.create_affine(grouped_dicoms[0])
 
-    print('Creating nifti')
+    logging.info('Creating nifti')
     # Convert to nifti
     img = nibabel.Nifti1Image(full_block, affine)
     common.set_tr_te(img, float(grouped_dicoms[0][0].RepetitionTime), float(grouped_dicoms[0][0].EchoTime))
 
-    print('Saving nifti to disk %s' % output_file)
+    logging.info('Saving nifti to disk %s' % output_file)
     # Save to disk
     img.to_filename(output_file)
 
@@ -325,7 +326,7 @@ def _singleframe_to_nifti(grouped_dicoms, output_file):
         if base_name.endswith('.nii'):
             base_name = os.path.splitext(base_name)[0]
 
-        print('Creating bval en bvec files')
+        logging.info('Creating bval en bvec files')
         bval_file = '%s.bval' % base_name
         bvec_file = '%s.bvec' % base_name
         bval_file, bvec_file = _create_singleframe_bvals_bvecs(grouped_dicoms, bval_file, bvec_file, img, output_file)
@@ -347,7 +348,7 @@ def _singleframe_to_block(grouped_dicoms):
     # For each slice / mosaic create a data volume block
     data_blocks = []
     for index in range(0, len(grouped_dicoms)):
-        print('Creating block %s of %s' % (index + 1, len(grouped_dicoms)))
+        logging.info('Creating block %s of %s' % (index + 1, len(grouped_dicoms)))
         current_block = _stack_to_block(grouped_dicoms[index])
         current_block = current_block[:, :, :, numpy.newaxis]
         data_blocks.append(current_block)

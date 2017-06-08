@@ -13,6 +13,7 @@ import traceback
 import unicodedata
 
 import dicom
+import logging
 import six
 from future.builtins import bytes
 from dicom.tag import Tag
@@ -47,14 +48,14 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
 
                     dicom_headers = dicom.read_file(file_path, defer_size=100, stop_before_pixels=False)
                     if not _is_valid_imaging_dicom(dicom_headers):
-                        print("Skipping: %s" % file_path)
+                        logging.info("Skipping: %s" % file_path)
                         continue
-                    print("Organizing: %s" % file_path)
+                    logging.info("Organizing: %s" % file_path)
                     if dicom_headers.SeriesInstanceUID not in dicom_series:
                         dicom_series[dicom_headers.SeriesInstanceUID] = []
                     dicom_series[dicom_headers.SeriesInstanceUID].append(dicom_headers)
             except:  # Explicitly capturing all errors here to be able to continue processing all the rest
-                print("Unable to read: %s" % file_path)
+                logging.warning("Unable to read: %s" % file_path)
                 traceback.print_exc()
 
     # start converting one by one
@@ -70,8 +71,8 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
             elif 'ProtocolName' in dicom_input[0]:
                 base_filename = _remove_accents('%s_%s' % (dicom_input[0].SeriesNumber,
                                                            dicom_input[0].ProtocolName))
-            print('--------------------------------------------')
-            print('Start converting ', base_filename)
+            logging.info('--------------------------------------------')
+            logging.info('Start converting %s' % base_filename)
             if compression:
                 nifti_file = os.path.join(output_folder, base_filename + '.nii.gz')
             else:
@@ -79,7 +80,7 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
             convert_dicom.dicom_array_to_nifti(dicom_input, nifti_file, reorient)
             gc.collect()
         except:  # Explicitly capturing app exceptions here to be able to continue processing
-            print("Unable to convert: %s" % base_filename)
+            logging.info("Unable to convert: %s" % base_filename)
             traceback.print_exc()
 
 

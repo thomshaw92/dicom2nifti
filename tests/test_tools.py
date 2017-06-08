@@ -1,3 +1,4 @@
+import logging
 import nibabel
 import numpy
 
@@ -11,21 +12,21 @@ def ground_thruth_filenames(input_dir):
 
 
 def compare_nifti(nifti_file_1, nifti_file_2):
-    print(nifti_file_1, nifti_file_2)
+    logging.info("%s %s" %(nifti_file_1, nifti_file_2))
     nifti_1 = nibabel.load(nifti_file_1)
     nifti_2 = nibabel.load(nifti_file_2)
 
     # check the affine
     if not (nifti_1.affine == nifti_2.affine).all():
-        print('affine mismatch')
+        logging.warning('affine mismatch')
         return False
 
     # check the data
     if nifti_1.get_data_dtype() != nifti_2.get_data_dtype():
-        print('dtype mismatch')
+        logging.warning('dtype mismatch')
         return False
     if not (nifti_1.get_data() == nifti_2.get_data()).all():
-        print('data mismatch')
+        logging.warning('data mismatch')
         return False
 
     return True

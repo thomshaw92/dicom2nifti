@@ -8,6 +8,9 @@ from __future__ import print_function
 
 import argparse
 import os
+
+import logging
+
 import dicom2nifti.convert_dir as convert_directory
 import dicom2nifti
 import sys
@@ -35,13 +38,13 @@ def main(args):
     args = parser.parse_args(args)
 
     if not os.path.isdir(args.input_directory):
-        print('ERROR: \'input_directory\' should be a valid path')
-        print('----------------------------------------------------\n')
+        logging.info('ERROR: \'input_directory\' should be a valid path')
+        logging.info('----------------------------------------------------\n')
         parser.print_help()
         return 2
     elif not os.path.isdir(args.output_directory):
-        print('ERROR: \'output_directory\' should be a valid path')
-        print('----------------------------------------------------\n')
+        logging.info('ERROR: \'output_directory\' should be a valid path')
+        logging.info('----------------------------------------------------\n')
         parser.print_help()
         return 2
     else:

@@ -1,6 +1,9 @@
 from __future__ import print_function
 
 import os
+
+import logging
+
 import dicom2nifti
 import dicom2nifti.settings as settings
 import dicom2nifti.image_reorientation as image_reorientation
@@ -26,7 +29,7 @@ def main():
             dir_path = os.path.join(root, dir_name)
             if subdir_count(dir_path) > 0:
                 continue  # not processing because not lowest level of directory
-            print(dir_path)
+            logging.info(dir_path)
             output_file = dir_path + '_ground_truth.nii.gz'
             reoriented_file = dir_path + '_ground_truth_reoriented.nii.gz'
             # noinspection PyBroadException

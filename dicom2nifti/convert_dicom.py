@@ -12,6 +12,7 @@ import subprocess
 import shutil
 import sys
 
+import logging
 import six
 from six import reraise
 import dicom
@@ -161,18 +162,18 @@ def _get_vendor(dicom_input):
     """
     # check if it is siemens frmi
     if convert_siemens.is_siemens(dicom_input):
-        print('Found manufacturer: SIEMENS')
+        logging.info('Found manufacturer: SIEMENS')
         return Vendor.SIEMENS
     # check if it is ge frmi
     if convert_ge.is_ge(dicom_input):
-        print('Found manufacturer: GE')
+        logging.info('Found manufacturer: GE')
         return Vendor.GE
     # check if it is ge frmi
     if convert_philips.is_philips(dicom_input):
-        print('Found manufacturer: PHILIPS')
+        logging.info('Found manufacturer: PHILIPS')
         return Vendor.PHILIPS
     # check if it is siemens dti
-    print('WARNING: Assuming generic vendor conversion (ANATOMICAL)')
+    logging.info('WARNING: Assuming generic vendor conversion (ANATOMICAL)')
     return Vendor.GENERIC
 
 
@@ -203,7 +204,7 @@ def decompress_directory(dicom_directory):
     if settings.gdcmconv_path is None and _which('gdcmconv') is None and _which('gdcmconv.exe') is None:
         raise ConversionError('GDCMCONV_NOT_FOUND')
 
-    print('Decompressing dicom files in %s' % dicom_directory)
+    logging.info('Decompressing dicom files in %s' % dicom_directory)
     for root, _, files in os.walk(dicom_directory):
         for dicom_file in files:
             if common.is_dicom_file(os.path.join(root, dicom_file)):
@@ -237,7 +238,7 @@ def compress_directory(dicom_directory):
     if _which('gdcmconv') is None and _which('gdcmconv.exe') is None:
         raise ConversionError('GDCMCONV_NOT_FOUND')
 
-    print('Compressing dicom files in %s' % dicom_directory)
+    logging.info('Compressing dicom files in %s' % dicom_directory)
     for root, _, files in os.walk(dicom_directory):
         for dicom_file in files:
             if common.is_dicom_file(os.path.join(root, dicom_file)):

@@ -9,6 +9,7 @@ from __future__ import print_function
 import dicom
 import dicom.UID
 import dicom.dataset
+import logging
 import numpy
 import os
 import datetime
@@ -149,7 +150,7 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
 
     # Add the data elements
     for (field_key, field_value) in iteritems(fields_to_keep):
-        print(field_key)
+        logging.info(field_key)
         if field_key == (0x7fe0, 0x0010):
             # anonimize the dicom pixeldata
             random_data = numpy.random.randint(0, 255, dicom_in.pixel_array.shape).astype(dicom_in.pixel_array.dtype)
@@ -163,14 +164,14 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
                 else:
                     dicom_out.add(dicom_in[field_key])
             except KeyError:
-                print('Warning:', field_key, 'not found')
+                logging.info('Warning: %s not found' % field_key)
         else:
             setattr(dicom_out, field_key, field_value)
 
     # Save dicom_file_out
     # Make sure we have a directory
     if not os.path.exists(os.path.dirname(dicom_file_out)):
-        print('Decompressing files')
+        logging.info('Decompressing files')
 
     # Save the file
     dicom_out.save_as(dicom_file_out)
@@ -207,13 +208,13 @@ def _anonymize_files(dicom_directory_in, dicom_directory_out, fields_to_keep):
             current_dir = root[len(dicom_directory_in) + 1:]
             dicom_file_out = os.path.join(dicom_directory_out, current_dir, file_name)
             if is_dicom_file(dicom_file_in):
-                print("Processing " + dicom_file_in)
+                logging.info("Processing " + dicom_file_in)
                 _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep)
             else:
-                print("Skipping " + dicom_file_in + ", no dicom file")
+                logging.info("Skipping " + dicom_file_in + ", no dicom file")
 
     if original_compressed:
-        print('Compressing files')
+        logging.info('Compressing files')
         compress_directory(dicom_directory_out)
 
 

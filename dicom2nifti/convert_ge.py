@@ -11,6 +11,7 @@ import itertools
 import os
 from math import pow
 
+import logging
 import nibabel
 import numpy
 from dicom.tag import Tag
@@ -55,14 +56,14 @@ def dicom_to_nifti(dicom_input, output_file):
     """
     assert is_ge(dicom_input)
 
-    print('Reading and sorting dicom files')
+    logging.info('Reading and sorting dicom files')
     grouped_dicoms = _get_grouped_dicoms(dicom_input)
 
     if _is_4d(grouped_dicoms):
-        print('Found sequence type: 4D')
+        logging.info('Found sequence type: 4D')
         return _4d_to_nifti(grouped_dicoms, output_file)
 
-    print('Assuming anatomical data')
+    logging.info('Assuming anatomical data')
     return convert_generic.dicom_to_nifti(dicom_input, output_file)
 
 
@@ -112,19 +113,19 @@ def _4d_to_nifti(grouped_dicoms, output_file):
     """
 
     # Create mosaic block
-    print('Creating data block')
+    logging.info('Creating data block')
     full_block = _get_full_block(grouped_dicoms)
 
-    print('Creating affine')
+    logging.info('Creating affine')
     # Create the nifti header info
     affine = common.create_affine(grouped_dicoms[0])
 
-    print('Creating nifti')
+    logging.info('Creating nifti')
     # Convert to nifti
     img = nibabel.Nifti1Image(full_block, affine)
     common.set_tr_te(img, float(grouped_dicoms[0][0].RepetitionTime),
                      float(grouped_dicoms[0][0].EchoTime))
-    print('Saving nifti to disk %s' % output_file)
+    logging.info('Saving nifti to disk %s' % output_file)
     # Save to disk
     img.to_filename(output_file)
 
@@ -133,7 +134,7 @@ def _4d_to_nifti(grouped_dicoms, output_file):
         base_path = os.path.dirname(output_file)
         base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
 
-        print('Creating bval en bvec files')
+        logging.info('Creating bval en bvec files')
         bval_file = '%s/%s.bval' % (base_path, base_name)
         bvec_file = '%s/%s.bvec' % (base_path, base_name)
         _create_bvals_bvecs(grouped_dicoms, bval_file, bvec_file)
@@ -151,7 +152,7 @@ def _get_full_block(grouped_dicoms):
     # For each slice / mosaic create a data volume block
     data_blocks = []
     for index in range(0, len(grouped_dicoms)):
-        print('Creating block %s of %s' % (index + 1, len(grouped_dicoms)))
+        logging.info('Creating block %s of %s' % (index + 1, len(grouped_dicoms)))
         data_blocks.append(_timepoint_to_block(grouped_dicoms[index]))
 
     # Add the data_blocks together to one 4d block

@@ -6,6 +6,7 @@ dicom2nifti
 """
 from __future__ import print_function
 import dicom2nifti.patch_pydicom_encodings
+
 dicom2nifti.patch_pydicom_encodings.apply()
 
 import os
@@ -255,7 +256,10 @@ def is_compressed(dicom_input):
     """
     # read dicom header
     if os.path.isfile(dicom_input):
-        header = dicom.read_file(dicom_input, 70, True)
+        header = dicom.read_file(dicom_input,
+                                 defer_size=70,
+                                 stop_before_pixels=True,
+                                 force=dicom2nifti.settings.pydicom_read_force)
     else:
         header = _get_first_header(dicom_input)
 
@@ -285,7 +289,9 @@ def _get_first_header(dicom_directory):
             if not common.is_dicom_file(file_path):
                 continue
             # read the headers
-            return dicom.read_file(file_path, stop_before_pixels=True)
+            return dicom.read_file(file_path,
+                                   stop_before_pixels=True,
+                                   force=dicom2nifti.settings.pydicom_read_force)
     # no dicom files found
     raise ConversionError('NO_DICOM_FILES_FOUND')
 

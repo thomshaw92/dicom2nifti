@@ -17,6 +17,7 @@ import numpy
 from dicom.tag import Tag
 
 from dicom2nifti.exceptions import ConversionValidationError
+import dicom2nifti.settings
 
 
 # Disable false positive numpy errors
@@ -36,7 +37,10 @@ def read_dicom_directory(dicom_directory, stop_before_pixels=False):
         for dicom_file in files:
             file_path = os.path.join(root, dicom_file)
             if is_dicom_file(file_path):
-                dicom_headers = dicom.read_file(file_path, defer_size=100, stop_before_pixels=stop_before_pixels)
+                dicom_headers = dicom.read_file(file_path,
+                                                defer_size=100,
+                                                stop_before_pixels=stop_before_pixels,
+                                                force=dicom2nifti.settings.pydicom_read_force)
                 dicom_input.append(dicom_headers)
     return dicom_input
 

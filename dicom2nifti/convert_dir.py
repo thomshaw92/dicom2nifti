@@ -24,7 +24,7 @@ from six import iteritems
 import dicom2nifti.common as common
 import dicom2nifti.convert_dicom as convert_dicom
 import dicom2nifti.convert_philips as convert_philips
-
+import dicom2nifti.settings
 
 def convert_directory(dicom_directory, output_folder, compression=True, reorient=True):
     """
@@ -48,7 +48,10 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
                     if convert_dicom.is_compressed(file_path):
                         convert_dicom.decompress_dicom(file_path)
 
-                    dicom_headers = dicom.read_file(file_path, defer_size=100, stop_before_pixels=False)
+                    dicom_headers = dicom.read_file(file_path,
+                                                    defer_size=100,
+                                                    stop_before_pixels=False,
+                                                    force=dicom2nifti.settings.pydicom_read_force)
                     if not _is_valid_imaging_dicom(dicom_headers):
                         logging.info("Skipping: %s" % file_path)
                         continue

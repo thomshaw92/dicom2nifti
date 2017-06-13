@@ -4,6 +4,7 @@ validate_orientation = True
 validate_orthogonal = True
 validate_sliceincrement = True
 validate_multiframe_implicit = True
+pydicom_read_force = False
 gdcmconv_path = None
 
 
@@ -96,6 +97,22 @@ def enable_validate_multiframe_implicit():
     """
     global validate_multiframe_implicit
     validate_multiframe_implicit = True
+
+
+def enable_pydicom_read_force_implicit():
+    """
+    Enable the pydicom read force to try to read non conform dicom data
+    """
+    global pydicom_read_force
+    pydicom_read_force = True
+
+
+def disable_pydicom_read_force_implicit():
+    """
+    Enable the pydicom read force to try to read non conform dicom data
+    """
+    global pydicom_read_force
+    pydicom_read_force = False
 
 
 def set_gdcmconv_path(path):

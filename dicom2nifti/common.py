@@ -5,6 +5,8 @@ dicom2nifti
 @author: abrys
 """
 from __future__ import print_function
+import dicom2nifti.patch_pydicom_encodings
+dicom2nifti.patch_pydicom_encodings.apply()
 
 import os
 import struct

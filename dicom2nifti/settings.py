@@ -99,7 +99,7 @@ def enable_validate_multiframe_implicit():
     validate_multiframe_implicit = True
 
 
-def enable_pydicom_read_force_implicit():
+def enable_pydicom_read_force():
     """
     Enable the pydicom read force to try to read non conform dicom data
     """
@@ -107,7 +107,7 @@ def enable_pydicom_read_force_implicit():
     pydicom_read_force = True
 
 
-def disable_pydicom_read_force_implicit():
+def disable_pydicom_read_force():
     """
     Enable the pydicom read force to try to read non conform dicom data
     """

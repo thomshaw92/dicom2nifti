@@ -111,6 +111,13 @@ def is_dicom_file(filename):
     file_stream.close()
     if data == b'DICM':
         return True
+    if dicom2nifti.settings.pydicom_read_force:
+        try:
+            dicom_headers = dicom.read_file(filename, defer_size=100, stop_before_pixels=True, force=True)
+            if dicom_headers is not None:
+                return True
+        except:
+            pass
     return False
 
 

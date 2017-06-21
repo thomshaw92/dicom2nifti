@@ -26,6 +26,8 @@ import dicom2nifti.convert_dicom as convert_dicom
 import dicom2nifti.convert_philips as convert_philips
 import dicom2nifti.settings
 
+logger = logging.getLogger(__name__)
+
 def convert_directory(dicom_directory, output_folder, compression=True, reorient=True):
     """
     This function will order all dicom files by series and order them one by one
@@ -53,14 +55,14 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
                                                     stop_before_pixels=False,
                                                     force=dicom2nifti.settings.pydicom_read_force)
                     if not _is_valid_imaging_dicom(dicom_headers):
-                        logging.info("Skipping: %s" % file_path)
+                        logger.info("Skipping: %s" % file_path)
                         continue
-                    logging.info("Organizing: %s" % file_path)
+                    logger.info("Organizing: %s" % file_path)
                     if dicom_headers.SeriesInstanceUID not in dicom_series:
                         dicom_series[dicom_headers.SeriesInstanceUID] = []
                     dicom_series[dicom_headers.SeriesInstanceUID].append(dicom_headers)
             except:  # Explicitly capturing all errors here to be able to continue processing all the rest
-                logging.warning("Unable to read: %s" % file_path)
+                logger.warning("Unable to read: %s" % file_path)
                 traceback.print_exc()
 
     # start converting one by one
@@ -76,8 +78,8 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
             elif 'ProtocolName' in dicom_input[0]:
                 base_filename = _remove_accents('%s_%s' % (dicom_input[0].SeriesNumber,
                                                            dicom_input[0].ProtocolName))
-            logging.info('--------------------------------------------')
-            logging.info('Start converting %s' % base_filename)
+            logger.info('--------------------------------------------')
+            logger.info('Start converting %s' % base_filename)
             if compression:
                 nifti_file = os.path.join(output_folder, base_filename + '.nii.gz')
             else:
@@ -85,7 +87,7 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
             convert_dicom.dicom_array_to_nifti(dicom_input, nifti_file, reorient)
             gc.collect()
         except:  # Explicitly capturing app exceptions here to be able to continue processing
-            logging.info("Unable to convert: %s" % base_filename)
+            logger.info("Unable to convert: %s" % base_filename)
             traceback.print_exc()
 
 

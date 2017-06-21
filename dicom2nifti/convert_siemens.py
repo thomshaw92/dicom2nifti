@@ -22,6 +22,7 @@ import dicom2nifti.common as common
 import dicom2nifti.convert_generic as convert_generic
 from dicom2nifti.exceptions import ConversionValidationError, ConversionError
 
+logger = logging.getLogger(__name__)
 
 # Disable this warning as there is not reason for an init class in an enum
 # pylint: disable=w0232, r0903, E1101
@@ -73,15 +74,15 @@ def dicom_to_nifti(dicom_input, output_file):
     assert is_siemens(dicom_input)
 
     if _is_4d(dicom_input):
-        logging.info('Found sequence type: MOSAIC 4D')
+        logger.info('Found sequence type: MOSAIC 4D')
         return _mosaic_4d_to_nifti(dicom_input, output_file)
 
     grouped_dicoms = _classic_get_grouped_dicoms(dicom_input)
     if _is_classic_4d(grouped_dicoms):
-        logging.info('Found sequence type: CLASSIC 4D')
+        logger.info('Found sequence type: CLASSIC 4D')
         return _classic_4d_to_nifti(grouped_dicoms, output_file)
 
-    logging.info('Assuming anatomical data')
+    logger.info('Assuming anatomical data')
     return convert_generic.dicom_to_nifti(dicom_input, output_file)
 
 
@@ -156,31 +157,31 @@ def _mosaic_4d_to_nifti(dicom_input, output_file):
     http://slicer.org/doc/html/DICOMDiffusionVolumePlugin_8py_source.html
     """
     # Get the sorted mosaics
-    logging.info('Sorting dicom slices')
+    logger.info('Sorting dicom slices')
     sorted_mosaics = _get_sorted_mosaics(dicom_input)
     common.validate_orientation(sorted_mosaics)
 
     # Create mosaic block
-    logging.info('Creating data block')
+    logger.info('Creating data block')
     full_block = _mosaic_get_full_block(sorted_mosaics)
 
-    logging.info('Creating affine')
+    logger.info('Creating affine')
     # Create the nifti header info
     affine = _create_affine_siemens_mosaic(dicom_input)
-    logging.info('Creating nifti')
+    logger.info('Creating nifti')
     # Convert to nifti
     img = nibabel.Nifti1Image(full_block, affine)
     common.set_tr_te(img, float(sorted_mosaics[0].RepetitionTime), float(sorted_mosaics[0].EchoTime))
-    logging.info('Saving nifti to disk')
+    logger.info('Saving nifti to disk')
     # Save to disk
     img.to_filename(output_file)
 
     if _is_diffusion_imaging(dicom_input[0]):
         # Create the bval en bvec files
-        logging.info('Creating bval en bvec files')
+        logger.info('Creating bval en bvec files')
         base_path = os.path.dirname(output_file)
         base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
-        logging.info('Creating bval en bvec files')
+        logger.info('Creating bval en bvec files')
         bval_file = '%s/%s.bval' % (base_path, base_name)
         bvec_file = '%s/%s.bvec' % (base_path, base_name)
         _create_bvals(sorted_mosaics, bval_file)
@@ -204,27 +205,27 @@ def _classic_4d_to_nifti(grouped_dicoms, output_file):
     common.validate_orientation(all_dicoms)
 
     # Create mosaic block
-    logging.info('Creating data block')
+    logger.info('Creating data block')
     full_block = _classic_get_full_block(grouped_dicoms)
 
-    logging.info('Creating affine')
+    logger.info('Creating affine')
     # Create the nifti header info
     affine = common.create_affine(grouped_dicoms[0])
 
-    logging.info('Creating nifti')
+    logger.info('Creating nifti')
     # Convert to nifti
     img = nibabel.Nifti1Image(full_block, affine)
     common.set_tr_te(img, float(grouped_dicoms[0][0].RepetitionTime), float(grouped_dicoms[0][0].EchoTime))
-    logging.info('Saving nifti to disk')
+    logger.info('Saving nifti to disk')
     # Save to disk
     img.to_filename(output_file)
 
     if _is_diffusion_imaging(grouped_dicoms[0][0]):
         # Create the bval en bvec files
-        logging.info('Creating bval en bvec files')
+        logger.info('Creating bval en bvec files')
         base_path = os.path.dirname(output_file)
         base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
-        logging.info('Creating bval en bvec files')
+        logger.info('Creating bval en bvec files')
         bval_file = '%s/%s.bval' % (base_path, base_name)
         bvec_file = '%s/%s.bvec' % (base_path, base_name)
 
@@ -273,7 +274,7 @@ def _classic_get_full_block(grouped_dicoms):
     # For each slice / mosaic create a data volume block
     data_blocks = []
     for index in range(0, len(grouped_dicoms)):
-        logging.info('Creating block %s of %s' % (index + 1, len(grouped_dicoms)))
+        logger.info('Creating block %s of %s' % (index + 1, len(grouped_dicoms)))
         data_blocks.append(_classic_timepoint_to_block(grouped_dicoms[index]))
 
     # Add the data_blocks together to one 4d block

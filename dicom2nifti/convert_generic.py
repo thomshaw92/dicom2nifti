@@ -19,6 +19,7 @@ import dicom2nifti.common as common
 import dicom2nifti.settings as settings
 from dicom2nifti.exceptions import ConversionError
 
+logger = logging.getLogger(__name__)
 
 def dicom_to_nifti(dicom_input, output_file):
     """
@@ -68,7 +69,7 @@ def dicom_to_nifti(dicom_input, output_file):
         common.set_tr_te(img, float(dicom_input[0].RepetitionTime), float(dicom_input[0].EchoTime))
 
     # Save to disk
-    logging.info('Saving nifti to disk %s' % output_file)
+    logger.info('Saving nifti to disk %s' % output_file)
     img.to_filename(output_file)
 
     return {'NII_FILE': output_file}

@@ -20,3 +20,13 @@ from .settings import disable_validate_sliceincrement, \
 from .convert_dicom import dicom_series_to_nifti
 # noinspection PyUnresolvedReferences
 from .convert_dir import convert_directory
+
+# Setup the logger correctly
+import logging
+import sys
+
+logger = logging.getLogger(__name__)
+handler = logging.StreamHandler(sys.stdout)
+handler.setFormatter(logging.Formatter('%(asctime)s %(levelname)s %(message)s'))
+logger.addHandler(handler)
+logger.setLevel(logging.WARNING)

@@ -12,7 +12,12 @@ dicom2nifti.patch_pydicom_encodings.apply()
 import logging
 import nibabel
 import numpy
-from dicom.tag import Tag
+
+try:
+    from pydicom.tag import Tag
+except ImportError:
+    from dicom.tag import Tag
+
 import six
 
 import dicom2nifti.common as common

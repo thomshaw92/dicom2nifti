@@ -2,10 +2,14 @@
 Importing this file will extend the pydicom encoding mapping fixing issues when reading less frequently used encodings
 """
 
-import dicom.charset
+try:
+    import pydicom.charset as pydicom_charset
+except ImportError:
+    import dicom.charset as pydicom_charset
+
 
 def apply():
-    dicom.charset.python_encoding.update({
+    pydicom_charset.python_encoding.update({
         '': 'iso8859',  # default character set for DICOM
         'ISO_IR 6': 'iso8859',  # alias for latin_1 too (iso_ir_6 exists as an alias to 'ascii')
         'ISO_IR 13': 'shift_jis',

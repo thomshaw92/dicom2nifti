@@ -12,18 +12,23 @@ dicom2nifti.patch_pydicom_encodings.apply()
 import os
 import traceback
 
-import dicom.config
 import logging
 import nibabel
 import numpy
-from dicom.tag import Tag
+
+try:
+    import pydicom.config as pydicom_config
+    from pydicom.tag import Tag
+except ImportError:
+    import dicom.config as pydicom_config
+    from dicom.tag import Tag
 
 import dicom2nifti.common as common
 import dicom2nifti.settings as settings
 import dicom2nifti.convert_generic as convert_generic
 from dicom2nifti.exceptions import ConversionError
 
-dicom.config.enforce_valid_values = False
+pydicom_config.enforce_valid_values = False
 logger = logging.getLogger(__name__)
 
 def is_philips(dicom_input):

@@ -6,20 +6,27 @@ dicom2nifti
 """
 from __future__ import print_function
 import dicom2nifti.patch_pydicom_encodings
+
 dicom2nifti.patch_pydicom_encodings.apply()
 
 import os
 import struct
 
-import dicom
+try:
+    import pydicom
+    from pydicom.tag import Tag
+except ImportError:
+    import dicom as pydicom
+    from dicom.tag import Tag
+
 import logging
 import numpy
-from dicom.tag import Tag
 
 from dicom2nifti.exceptions import ConversionValidationError
 import dicom2nifti.settings
 
 logger = logging.getLogger(__name__)
+
 
 # Disable false positive numpy errors
 # pylint: disable=E1101
@@ -38,10 +45,10 @@ def read_dicom_directory(dicom_directory, stop_before_pixels=False):
         for dicom_file in files:
             file_path = os.path.join(root, dicom_file)
             if is_dicom_file(file_path):
-                dicom_headers = dicom.read_file(file_path,
-                                                defer_size=100,
-                                                stop_before_pixels=stop_before_pixels,
-                                                force=dicom2nifti.settings.pydicom_read_force)
+                dicom_headers = pydicom.read_file(file_path,
+                                                  defer_size=100,
+                                                  stop_before_pixels=stop_before_pixels,
+                                                  force=dicom2nifti.settings.pydicom_read_force)
                 dicom_input.append(dicom_headers)
     return dicom_input
 
@@ -114,7 +121,7 @@ def is_dicom_file(filename):
         return True
     if dicom2nifti.settings.pydicom_read_force:
         try:
-            dicom_headers = dicom.read_file(filename, defer_size=100, stop_before_pixels=True, force=True)
+            dicom_headers = pydicom.read_file(filename, defer_size=100, stop_before_pixels=True, force=True)
             if dicom_headers is not None:
                 return True
         except:
@@ -273,9 +280,9 @@ def do_scaling(data, rescale_slope, rescale_intercept, private_scale_slope=1.0, 
     need_floats = False
 
     if int(rescale_slope) != rescale_slope or \
-            int(rescale_intercept) != rescale_intercept or \
-            private_scale_slope != 1.0 or \
-            private_scale_intercept != 0.0:
+                    int(rescale_intercept) != rescale_intercept or \
+                    private_scale_slope != 1.0 or \
+                    private_scale_intercept != 0.0:
         need_floats = True
 
     if not need_floats:
@@ -444,8 +451,8 @@ def validate_sliceincrement(dicoms):
         if not numpy.allclose(increment, current_increment, rtol=0.05, atol=0.05):
             logger.warning('Slice increment not consistent through all slices')
             logger.warning('---------------------------------------------------------')
-            logger.warning('%s %s' %(previous_image_position, increment))
-            logger.warning('%s %s' %(current_image_position, current_increment))
+            logger.warning('%s %s' % (previous_image_position, increment))
+            logger.warning('%s %s' % (current_image_position, current_increment))
             logger.warning('---------------------------------------------------------')
             raise ConversionValidationError('SLICE_INCREMENT_INCONSISTENT')
         previous_image_position = current_image_position
@@ -480,8 +487,8 @@ def validate_orientation(dicoms):
                 or not numpy.allclose(image_orient2, first_image_orient2, rtol=0.001, atol=0.001):
             logger.warning('Image orientations not consistent through all slices')
             logger.warning('---------------------------------------------------------')
-            logger.warning('%s %s' %(image_orient1, first_image_orient1))
-            logger.warning('%s %s' %(image_orient2, first_image_orient2))
+            logger.warning('%s %s' % (image_orient1, first_image_orient1))
+            logger.warning('%s %s' % (image_orient2, first_image_orient2))
             logger.warning('---------------------------------------------------------')
             raise ConversionValidationError('IMAGE_ORIENTATION_INCONSISTENT')
 

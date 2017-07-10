@@ -6,6 +6,7 @@ this module houses all the code to just convert a directory of random dicom file
 """
 from __future__ import print_function
 import dicom2nifti.patch_pydicom_encodings
+
 dicom2nifti.patch_pydicom_encodings.apply()
 
 import gc
@@ -14,11 +15,16 @@ import re
 import traceback
 import unicodedata
 
-import dicom
+try:
+    import pydicom
+    from pydicom.tag import Tag
+except ImportError:
+    import dicom as pydicom
+    from dicom.tag import Tag
+
 import logging
 import six
 from future.builtins import bytes
-from dicom.tag import Tag
 from six import iteritems
 
 import dicom2nifti.common as common
@@ -27,6 +33,7 @@ import dicom2nifti.convert_philips as convert_philips
 import dicom2nifti.settings
 
 logger = logging.getLogger(__name__)
+
 
 def convert_directory(dicom_directory, output_folder, compression=True, reorient=True):
     """
@@ -50,10 +57,10 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
                     if convert_dicom.is_compressed(file_path):
                         convert_dicom.decompress_dicom(file_path)
 
-                    dicom_headers = dicom.read_file(file_path,
-                                                    defer_size=100,
-                                                    stop_before_pixels=False,
-                                                    force=dicom2nifti.settings.pydicom_read_force)
+                    dicom_headers = pydicom.read_file(file_path,
+                                                      defer_size=100,
+                                                      stop_before_pixels=False,
+                                                      force=dicom2nifti.settings.pydicom_read_force)
                     if not _is_valid_imaging_dicom(dicom_headers):
                         logger.info("Skipping: %s" % file_path)
                         continue

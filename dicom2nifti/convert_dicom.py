@@ -18,8 +18,13 @@ import sys
 import logging
 import six
 from six import reraise
-import dicom
-from dicom.tag import Tag
+
+try:
+    import pydicom
+    from pydicom.tag import Tag
+except ImportError:
+    import dicom as pydicom
+    from dicom.tag import Tag
 
 from dicom2nifti.exceptions import ConversionValidationError, ConversionError
 import dicom2nifti.convert_generic as convert_generic
@@ -31,6 +36,7 @@ import dicom2nifti.image_reorientation as image_reorientation
 import dicom2nifti.settings as settings
 
 logger = logging.getLogger(__name__)
+
 
 # Disable this warning as there is not reason for an init class in an enum
 # pylint: disable=w0232, r0903, C0103
@@ -257,10 +263,10 @@ def is_compressed(dicom_input):
     """
     # read dicom header
     if os.path.isfile(dicom_input):
-        header = dicom.read_file(dicom_input,
-                                 defer_size=70,
-                                 stop_before_pixels=True,
-                                 force=dicom2nifti.settings.pydicom_read_force)
+        header = pydicom.read_file(dicom_input,
+                                   defer_size=70,
+                                   stop_before_pixels=True,
+                                   force=dicom2nifti.settings.pydicom_read_force)
     else:
         header = _get_first_header(dicom_input)
 
@@ -290,9 +296,9 @@ def _get_first_header(dicom_directory):
             if not common.is_dicom_file(file_path):
                 continue
             # read the headers
-            return dicom.read_file(file_path,
-                                   stop_before_pixels=True,
-                                   force=dicom2nifti.settings.pydicom_read_force)
+            return pydicom.read_file(file_path,
+                                     stop_before_pixels=True,
+                                     force=dicom2nifti.settings.pydicom_read_force)
     # no dicom files found
     raise ConversionError('NO_DICOM_FILES_FOUND')
 

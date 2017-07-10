@@ -1,8 +1,14 @@
-import os
 from distutils.core import setup
 from setuptools import find_packages
+from pip.req import parse_requirements
 
-version = '1.2.6'
+# parse_requirements() returns generator of pip.req.InstallRequirement objects
+install_requires = parse_requirements('requirements.txt')
+
+# reqs is a list of requirement
+install_requires = [str(ir.req) for ir in install_requires]
+
+version = '1.2.7'
 long_description = """
 With this package you can convert dicom images to nifti files.
 There is support for most anatomical CT and MR data.
@@ -37,6 +43,6 @@ setup(
         'Programming Language :: Python :: 3.5',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX :: Linux'],
-    install_requires=['nibabel', 'pydicom', 'numpy', 'six', 'future'],
+    install_requires=install_requires,
     setup_requires=['nose', 'coverage']
 )

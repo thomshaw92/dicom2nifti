@@ -16,7 +16,11 @@ import traceback
 import logging
 import nibabel
 import numpy
-from dicom.tag import Tag
+
+try:
+    from pydicom.tag import Tag
+except ImportError:
+    from dicom.tag import Tag
 
 import dicom2nifti.common as common
 import dicom2nifti.convert_generic as convert_generic

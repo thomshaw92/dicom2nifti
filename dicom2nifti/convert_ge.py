@@ -16,7 +16,12 @@ from math import pow
 import logging
 import nibabel
 import numpy
-from dicom.tag import Tag
+
+try:
+    from pydicom.tag import Tag
+except ImportError:
+    from dicom.tag import Tag
+
 from six import string_types
 
 import dicom2nifti.common as common

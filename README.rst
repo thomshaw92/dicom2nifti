@@ -27,7 +27,7 @@ Once pydicom 1.0.0 is final and released on pypi this step will be obsolete.
 
 .. code-block:: bash
 
-   pip install pip install git+https://github.com/pydicom/pydicom.git
+   pip install git+https://github.com/pydicom/pydicom.git
    pip install dicom2nifti
 
 ---------------

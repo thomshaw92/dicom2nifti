@@ -84,15 +84,11 @@ def _is_4d(grouped_dicoms):
     # read dicom header
     header = grouped_dicoms[0][0]
 
-    # check if the dicom contains stack information
-    if Tag(0x0020, 0x9056) not in header or Tag(0x0020, 0x9057) not in header:
-        return False
-
     # check if contains multiple stacks
-    if len(grouped_dicoms) <= 1:
-        return False
+    if len(grouped_dicoms) > 1:
+        return True
 
-    return True
+    return False
 
 
 def _is_diffusion_imaging(grouped_dicoms):
@@ -198,19 +194,30 @@ def _get_grouped_dicoms(dicom_input):
     stack_index = 0
     previous_stack_position = -1
 
-    # loop over all sorted dicoms
-    stack_position_tag = Tag(0x0020, 0x9057)  # put this there as this is a slow step and used a lot
-    for index in range(0, len(dicoms)):
-        dicom_ = dicoms[index]
+
+    # loop over all sorted dicoms and sort them by stack
+    # for this we use the position and direction of the slices so we can detect a new stack easily
+    previous_position = None
+    previous_direction = None
+    for dicom_ in dicoms:
+        current_direction = None
         # if the stack number decreases we moved to the next stack
-        stack_position = 0
-        if stack_position_tag in dicom_:
-            stack_position = dicom_[stack_position_tag].value
-        if previous_stack_position > stack_position:
+        if previous_position is not None:
+            current_direction = numpy.array(dicom_.ImagePositionPatient) - previous_position
+            current_direction = current_direction / numpy.linalg.norm(current_direction)
+        if current_direction is not None and \
+                previous_direction is not None and \
+                not numpy.allclose(current_direction, previous_direction, rtol=0.01, atol=0.01):
+            previous_position = numpy.array(dicom_.ImagePositionPatient)
+            previous_direction = None
             stack_index += 1
+        else:
+            previous_position = numpy.array(dicom_.ImagePositionPatient)
+            previous_direction = current_direction
+
+        if stack_index >= len(grouped_dicoms):
             grouped_dicoms.append([])
         grouped_dicoms[stack_index].append(dicom_)
-        previous_stack_position = stack_position
 
     return grouped_dicoms
 

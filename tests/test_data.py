@@ -27,6 +27,9 @@ GE_ANATOMICAL_IMPLICIT = os.path.join(os.path.dirname(os.path.abspath(__file__))
 GE_DTI = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                       'data', 'ge', 'dti', '001')
 
+GE_DTI_OLD = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                      'data', 'ge', 'dti', '002')
+
 GE_DTI_IMPLICIT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                'data', 'ge', 'dti', '001_implicit')
 

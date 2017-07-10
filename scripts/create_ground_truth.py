@@ -20,7 +20,6 @@ def subdir_count(path):
 
 def main():
     for root, dir_names, _ in os.walk(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                                                   'dicom2nifti',
                                                    'tests',
                                                    'data')):
         settings.disable_validate_multiframe_implicit()
@@ -34,8 +33,9 @@ def main():
             reoriented_file = dir_path + '_ground_truth_reoriented.nii.gz'
             # noinspection PyBroadException
             try:
-                dicom2nifti.dicom_series_to_nifti(dir_path, output_file, False)
-                image_reorientation.reorient_image(output_file, reoriented_file)
+                if not os.path.isfile(output_file):
+                    dicom2nifti.dicom_series_to_nifti(dir_path, output_file, False)
+                    image_reorientation.reorient_image(output_file, reoriented_file)
             except:  # explicitly capturing everything here
                 pass
 

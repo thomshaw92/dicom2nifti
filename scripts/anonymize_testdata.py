@@ -160,9 +160,11 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
         elif field_value is None:
             try:
                 if isinstance(field_key, string_types):
-                    dicom_out.add(dicom_in.data_element(field_key))
+                    if field_key in dicom_in:
+                        dicom_out.add(dicom_in.data_element(field_key))
                 else:
-                    dicom_out.add(dicom_in[field_key])
+                    if dicom_in.get(field_key) is not None:
+                        dicom_out.add(dicom_in[field_key])
             except KeyError:
                 logging.info('Warning: %s not found' % field_key)
         else:
@@ -218,4 +220,4 @@ def _anonymize_files(dicom_directory_in, dicom_directory_out, fields_to_keep):
         compress_directory(dicom_directory_out)
 
 
-anonymize_directory('/Users/abrys/Documents/data/philips_implicit', '/Users/abrys/Documents/data/philips_implicit')
+anonymize_directory('/Users/abrys/Documents/git/dicom2nifti/tests/data/ge/dti/002', '/Users/abrys/Documents/git/dicom2nifti/tests/data/ge/dti/002')

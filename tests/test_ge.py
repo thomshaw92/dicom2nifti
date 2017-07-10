@@ -41,6 +41,17 @@ class TestConversionGE(unittest.TestCase):
         finally:
             shutil.rmtree(tmp_output_dir)
 
+    def test_diffusion_images_old(self):
+        tmp_output_dir = tempfile.mkdtemp()
+        try:
+            results = convert_ge.dicom_to_nifti(read_dicom_directory(test_data.GE_DTI_OLD),
+                                                os.path.join(tmp_output_dir, 'test.nii.gz'))
+            assert compare_nifti(results['NII_FILE'],
+                                 ground_thruth_filenames(test_data.GE_DTI_OLD)[0]) is True
+
+        finally:
+            shutil.rmtree(tmp_output_dir)
+
     def test_4d(self):
         tmp_output_dir = tempfile.mkdtemp()
         try:
@@ -78,9 +89,9 @@ class TestConversionGE(unittest.TestCase):
         diffusion_group = convert_ge._get_grouped_dicoms(read_dicom_directory(test_data.GE_DTI))
         _4d_group = convert_ge._get_grouped_dicoms(read_dicom_directory(test_data.GE_FMRI))
         anatomical_group = convert_ge._get_grouped_dicoms(read_dicom_directory(test_data.GE_ANATOMICAL))
-        assert convert_ge._is_4d(diffusion_group)
-        assert convert_ge._is_4d(_4d_group)
-        assert not convert_ge._is_4d(anatomical_group)
+        self.assertTrue(convert_ge._is_4d(diffusion_group))
+        self.assertTrue(convert_ge._is_4d(_4d_group))
+        self.assertFalse(convert_ge._is_4d(anatomical_group))
 
     def test_is_diffusion_imaging(self):
         diffusion_group = convert_ge._get_grouped_dicoms(read_dicom_directory(test_data.GE_DTI))

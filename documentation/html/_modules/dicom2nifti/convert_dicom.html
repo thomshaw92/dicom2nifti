@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>dicom2nifti.convert_dicom &mdash; dicom2nifti  documentation</title>
+    <title>dicom2nifti.convert_dicom &#8212; dicom2nifti  documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,14 +17,15 @@
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="dicom2nifti  documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -36,8 +37,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -54,15 +55,26 @@
 <span class="sd">@author: abrys</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.patch_pydicom_encodings</span>
+
+<span class="n">dicom2nifti</span><span class="o">.</span><span class="n">patch_pydicom_encodings</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">subprocess</span>
 <span class="kn">import</span> <span class="nn">shutil</span>
+<span class="kn">import</span> <span class="nn">sys</span>
 
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">six</span>
-<span class="kn">import</span> <span class="nn">dicom</span>
-<span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
+<span class="kn">from</span> <span class="nn">six</span> <span class="k">import</span> <span class="n">reraise</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pydicom</span>
+    <span class="kn">from</span> <span class="nn">pydicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">dicom</span> <span class="k">as</span> <span class="nn">pydicom</span>
+    <span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
 
 <span class="kn">from</span> <span class="nn">dicom2nifti.exceptions</span> <span class="k">import</span> <span class="n">ConversionValidationError</span><span class="p">,</span> <span class="n">ConversionError</span>
 <span class="kn">import</span> <span class="nn">dicom2nifti.convert_generic</span> <span class="k">as</span> <span class="nn">convert_generic</span>
@@ -72,6 +84,8 @@
 <span class="kn">import</span> <span class="nn">dicom2nifti.common</span> <span class="k">as</span> <span class="nn">common</span>
 <span class="kn">import</span> <span class="nn">dicom2nifti.image_reorientation</span> <span class="k">as</span> <span class="nn">image_reorientation</span>
 <span class="kn">import</span> <span class="nn">dicom2nifti.settings</span> <span class="k">as</span> <span class="nn">settings</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <span class="c1"># Disable this warning as there is not reason for an init class in an enum</span>
@@ -123,6 +137,12 @@
         <span class="n">dicom_input</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">read_dicom_directory</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">)</span>
 
         <span class="k">return</span> <span class="n">dicom_array_to_nifti</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">output_file</span><span class="p">,</span> <span class="n">reorient_nifti</span><span class="p">)</span>
+
+    <span class="k">except</span> <span class="ne">AttributeError</span> <span class="k">as</span> <span class="n">exception</span><span class="p">:</span>
+        <span class="n">reraise</span><span class="p">(</span>
+            <span class="n">tp</span><span class="o">=</span><span class="n">ConversionError</span><span class="p">,</span>
+            <span class="n">value</span><span class="o">=</span><span class="n">ConversionError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">exception</span><span class="p">)),</span>
+            <span class="n">tb</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()[</span><span class="mi">2</span><span class="p">])</span>
 
     <span class="k">finally</span><span class="p">:</span>
         <span class="c1"># remove the copied data</span>
@@ -202,18 +222,18 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># check if it is siemens frmi</span>
     <span class="k">if</span> <span class="n">convert_siemens</span><span class="o">.</span><span class="n">is_siemens</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found manufacturer: SIEMENS&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found manufacturer: SIEMENS&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Vendor</span><span class="o">.</span><span class="n">SIEMENS</span>
     <span class="c1"># check if it is ge frmi</span>
     <span class="k">if</span> <span class="n">convert_ge</span><span class="o">.</span><span class="n">is_ge</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found manufacturer: GE&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found manufacturer: GE&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Vendor</span><span class="o">.</span><span class="n">GE</span>
     <span class="c1"># check if it is ge frmi</span>
     <span class="k">if</span> <span class="n">convert_philips</span><span class="o">.</span><span class="n">is_philips</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found manufacturer: PHILIPS&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found manufacturer: PHILIPS&#39;</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">Vendor</span><span class="o">.</span><span class="n">PHILIPS</span>
     <span class="c1"># check if it is siemens dti</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;WARNING: Assuming generic vendor conversion (ANATOMICAL)&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;WARNING: Assuming generic vendor conversion (ANATOMICAL)&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">Vendor</span><span class="o">.</span><span class="n">GENERIC</span>
 
 
@@ -223,7 +243,9 @@
 
 <span class="sd">    :param input_file: single dicom file to decompress</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span>
+    <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">gdcmconv_path</span>
+    <span class="k">if</span> <span class="n">gdcmconv_executable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">gdcmconv_executable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv.exe&#39;</span><span class="p">)</span>
 
@@ -242,7 +264,7 @@
     <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">gdcmconv_path</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv.exe&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;GDCMCONV_NOT_FOUND&#39;</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Decompressing dicom files in </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">dicom_directory</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Decompressing dicom files in </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">dicom_directory</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">dicom_file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">common</span><span class="o">.</span><span class="n">is_dicom_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">)):</span>
@@ -276,7 +298,7 @@
     <span class="k">if</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv.exe&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;GDCMCONV_NOT_FOUND&#39;</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Compressing dicom files in </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">dicom_directory</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Compressing dicom files in </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">dicom_directory</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">dicom_file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">common</span><span class="o">.</span><span class="n">is_dicom_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">)):</span>
@@ -291,7 +313,10 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># read dicom header</span>
     <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
-        <span class="n">header</span> <span class="o">=</span> <span class="n">dicom</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="mi">70</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">pydicom</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span>
+                                   <span class="n">defer_size</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span>
+                                   <span class="n">stop_before_pixels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                   <span class="n">force</span><span class="o">=</span><span class="n">dicom2nifti</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">pydicom_read_force</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">header</span> <span class="o">=</span> <span class="n">_get_first_header</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
 
@@ -321,7 +346,9 @@
             <span class="k">if</span> <span class="ow">not</span> <span class="n">common</span><span class="o">.</span><span class="n">is_dicom_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
                 <span class="k">continue</span>
             <span class="c1"># read the headers</span>
-            <span class="k">return</span> <span class="n">dicom</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">stop_before_pixels</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">pydicom</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span>
+                                     <span class="n">stop_before_pixels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                     <span class="n">force</span><span class="o">=</span><span class="n">dicom2nifti</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">pydicom_read_force</span><span class="p">)</span>
     <span class="c1"># no dicom files found</span>
     <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;NO_DICOM_FILES_FOUND&#39;</span><span class="p">)</span>
 
@@ -377,12 +404,12 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, icometrix.
+        &#169; Copyright 2016, icometrix.
     </div>
   </body>
 </html>

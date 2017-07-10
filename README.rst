@@ -19,6 +19,16 @@ Python library for converting dicom files to nifti
 
    pip install dicom2nifti
 
+-------------------------------------
+ Installation with pydicom >= 1.0.0
+-------------------------------------
+Should you have the need to use dicom2nifti in combination with pydicom 1.0.0 you have to install pydicom first from source before installing dicom2nifti.
+Once pydicom 1.0.0 is final and released on pypi this step will be obsolete.
+.. code-block:: bash
+
+   pip install pip install git+https://github.com/pydicom/pydicom.git
+   pip install dicom2nifti
+
 ---------------
  Updating
 ---------------

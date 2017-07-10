@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>dicom2nifti.common &mdash; dicom2nifti  documentation</title>
+    <title>dicom2nifti.common &#8212; dicom2nifti  documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,14 +17,15 @@
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="dicom2nifti  documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -36,8 +37,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -54,15 +55,27 @@
 <span class="sd">@author: abrys</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.patch_pydicom_encodings</span>
+
+<span class="n">dicom2nifti</span><span class="o">.</span><span class="n">patch_pydicom_encodings</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">struct</span>
 
-<span class="kn">import</span> <span class="nn">dicom</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pydicom</span>
+    <span class="kn">from</span> <span class="nn">pydicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">dicom</span> <span class="k">as</span> <span class="nn">pydicom</span>
+    <span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
+
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
-<span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
 
 <span class="kn">from</span> <span class="nn">dicom2nifti.exceptions</span> <span class="k">import</span> <span class="n">ConversionValidationError</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.settings</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
 <span class="c1"># Disable false positive numpy errors</span>
@@ -82,7 +95,10 @@
         <span class="k">for</span> <span class="n">dicom_file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
             <span class="n">file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">is_dicom_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">):</span>
-                <span class="n">dicom_headers</span> <span class="o">=</span> <span class="n">dicom</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">defer_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">stop_before_pixels</span><span class="o">=</span><span class="n">stop_before_pixels</span><span class="p">)</span>
+                <span class="n">dicom_headers</span> <span class="o">=</span> <span class="n">pydicom</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span>
+                                                  <span class="n">defer_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                                                  <span class="n">stop_before_pixels</span><span class="o">=</span><span class="n">stop_before_pixels</span><span class="p">,</span>
+                                                  <span class="n">force</span><span class="o">=</span><span class="n">dicom2nifti</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">pydicom_read_force</span><span class="p">)</span>
                 <span class="n">dicom_input</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dicom_headers</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">dicom_input</span></div>
 
@@ -151,8 +167,15 @@
     <span class="n">file_stream</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">file_stream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
     <span class="n">file_stream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
-    <span class="k">if</span> <span class="n">data</span> <span class="o">==</span> <span class="n">b</span><span class="s1">&#39;DICM&#39;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">data</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">&#39;DICM&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">dicom2nifti</span><span class="o">.</span><span class="n">settings</span><span class="o">.</span><span class="n">pydicom_read_force</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dicom_headers</span> <span class="o">=</span> <span class="n">pydicom</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">defer_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">stop_before_pixels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dicom_headers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
     <span class="k">return</span> <span class="kc">False</span></div>
 
 
@@ -205,6 +228,18 @@
     <span class="k">return</span> <span class="n">tag</span><span class="o">.</span><span class="n">value</span></div>
 
 
+<div class="viewcode-block" id="set_fd_value"><a class="viewcode-back" href="../../dicom2nifti.common.html#dicom2nifti.common.set_fd_value">[docs]</a><span class="k">def</span> <span class="nf">set_fd_value</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Setters for data that also work with implicit transfersyntax</span>
+
+<span class="sd">    :param value: the value to set on the tag</span>
+<span class="sd">    :param tag: the tag to read</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tag</span><span class="o">.</span><span class="n">VR</span> <span class="o">==</span> <span class="s1">&#39;OB&#39;</span> <span class="ow">or</span> <span class="n">tag</span><span class="o">.</span><span class="n">VR</span> <span class="o">==</span> <span class="s1">&#39;UN&#39;</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="n">tag</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
 <div class="viewcode-block" id="get_fl_value"><a class="viewcode-back" href="../../dicom2nifti.common.html#dicom2nifti.common.get_fl_value">[docs]</a><span class="k">def</span> <span class="nf">get_fl_value</span><span class="p">(</span><span class="n">tag</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Getters for data that also work with implicit transfersyntax</span>
@@ -243,6 +278,18 @@
     <span class="k">return</span> <span class="n">tag</span><span class="o">.</span><span class="n">value</span></div>
 
 
+<div class="viewcode-block" id="set_ss_value"><a class="viewcode-back" href="../../dicom2nifti.common.html#dicom2nifti.common.set_ss_value">[docs]</a><span class="k">def</span> <span class="nf">set_ss_value</span><span class="p">(</span><span class="n">tag</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Setter for data that also work with implicit transfersyntax</span>
+
+<span class="sd">    :param value: the value to set on the tag</span>
+<span class="sd">    :param tag: the tag to read</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">tag</span><span class="o">.</span><span class="n">VR</span> <span class="o">==</span> <span class="s1">&#39;OB&#39;</span> <span class="ow">or</span> <span class="n">tag</span><span class="o">.</span><span class="n">VR</span> <span class="o">==</span> <span class="s1">&#39;UN&#39;</span><span class="p">:</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="n">tag</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span></div>
+
+
 <div class="viewcode-block" id="apply_scaling"><a class="viewcode-back" href="../../dicom2nifti.common.html#dicom2nifti.common.apply_scaling">[docs]</a><span class="k">def</span> <span class="nf">apply_scaling</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">dicom_headers</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Rescale the data based on the RescaleSlope and RescaleOffset</span>
@@ -265,11 +312,14 @@
             <span class="n">rescale_slope</span> <span class="o">=</span> <span class="n">dicom_headers</span><span class="o">.</span><span class="n">RescaleSlope</span>
         <span class="k">if</span> <span class="s1">&#39;RescaleIntercept&#39;</span> <span class="ow">in</span> <span class="n">dicom_headers</span><span class="p">:</span>
             <span class="n">rescale_intercept</span> <span class="o">=</span> <span class="n">dicom_headers</span><span class="o">.</span><span class="n">RescaleIntercept</span>
-        <span class="k">if</span> <span class="n">private_scale_slope_tag</span> <span class="ow">in</span> <span class="n">dicom_headers</span><span class="p">:</span>
-            <span class="n">private_scale_slope</span> <span class="o">=</span> <span class="n">dicom_headers</span><span class="p">[</span><span class="n">private_scale_slope_tag</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
-        <span class="k">if</span> <span class="n">private_scale_slope_tag</span> <span class="ow">in</span> <span class="n">dicom_headers</span><span class="p">:</span>
-            <span class="n">private_scale_slope</span> <span class="o">=</span> <span class="n">dicom_headers</span><span class="p">[</span><span class="n">private_scale_slope_tag</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
-
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># this section can sometimes fail due to unknown private fields</span>
+            <span class="k">if</span> <span class="n">private_scale_slope_tag</span> <span class="ow">in</span> <span class="n">dicom_headers</span><span class="p">:</span>
+                <span class="n">private_scale_slope</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dicom_headers</span><span class="p">[</span><span class="n">private_scale_slope_tag</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">private_scale_slope_tag</span> <span class="ow">in</span> <span class="n">dicom_headers</span><span class="p">:</span>
+                <span class="n">private_scale_slope</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dicom_headers</span><span class="p">[</span><span class="n">private_scale_slope_tag</span><span class="p">]</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
         <span class="k">return</span> <span class="n">do_scaling</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">rescale_slope</span><span class="p">,</span> <span class="n">rescale_intercept</span><span class="p">,</span> <span class="n">private_scale_slope</span><span class="p">,</span> <span class="n">private_scale_intercept</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">data</span></div>
@@ -279,17 +329,20 @@
     <span class="c1"># Obtain slope and offset</span>
     <span class="n">need_floats</span> <span class="o">=</span> <span class="kc">False</span>
 
-    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">rescale_slope</span><span class="p">)</span> <span class="o">!=</span> <span class="n">rescale_slope</span> <span class="ow">or</span> <span class="nb">int</span><span class="p">(</span><span class="n">rescale_intercept</span><span class="p">)</span> <span class="o">!=</span> <span class="n">rescale_intercept</span> <span class="ow">or</span> \
-            <span class="n">private_scale_slope</span> <span class="o">!=</span> <span class="mf">1.0</span> <span class="ow">or</span> <span class="n">private_scale_intercept</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
+    <span class="k">if</span> <span class="nb">int</span><span class="p">(</span><span class="n">rescale_slope</span><span class="p">)</span> <span class="o">!=</span> <span class="n">rescale_slope</span> <span class="ow">or</span> \
+                    <span class="nb">int</span><span class="p">(</span><span class="n">rescale_intercept</span><span class="p">)</span> <span class="o">!=</span> <span class="n">rescale_intercept</span> <span class="ow">or</span> \
+                    <span class="n">private_scale_slope</span> <span class="o">!=</span> <span class="mf">1.0</span> <span class="ow">or</span> \
+                    <span class="n">private_scale_intercept</span> <span class="o">!=</span> <span class="mf">0.0</span><span class="p">:</span>
         <span class="n">need_floats</span> <span class="o">=</span> <span class="kc">True</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">need_floats</span><span class="p">:</span>
         <span class="n">rescale_slope</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">rescale_slope</span><span class="p">)</span>
         <span class="n">rescale_intercept</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">rescale_intercept</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
+        <span class="n">rescale_slope</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rescale_slope</span><span class="p">)</span>
+        <span class="n">rescale_intercept</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rescale_intercept</span><span class="p">)</span>
         <span class="n">private_scale_slope</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">private_scale_slope</span><span class="p">)</span>
         <span class="n">private_scale_intercept</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">private_scale_intercept</span><span class="p">)</span>
-
     <span class="c1"># Maybe we need to change the datatype?</span>
     <span class="k">if</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span> <span class="ow">in</span> <span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">float64</span><span class="p">]:</span>
         <span class="k">pass</span>
@@ -353,7 +406,7 @@
 <span class="sd">    :param bvecs: array with the vectors</span>
 <span class="sd">    :param bvec_file: filepath to write to</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving BVEC file: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">bvec_file</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Saving BVEC file: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">bvec_file</span><span class="p">)</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">bvec_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">text_file</span><span class="p">:</span>
         <span class="c1"># Map a dicection to string join them using a space and write to the file</span>
         <span class="n">text_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">bvecs</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])))</span>
@@ -368,7 +421,7 @@
 <span class="sd">    :param bvals: array with the values</span>
 <span class="sd">    :param bval_file: filepath to write to</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving BVAL file: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">bval_file</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Saving BVAL file: </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">bval_file</span><span class="p">)</span>
     <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">bval_file</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">text_file</span><span class="p">:</span>
         <span class="c1"># join the bvals using a space and write to the file</span>
         <span class="n">text_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="se">\n</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">bvals</span><span class="p">)))</span></div>
@@ -425,11 +478,11 @@
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">first_image_dir</span><span class="p">,</span> <span class="n">combined_dir</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.05</span><span class="p">)</span> \
             <span class="ow">and</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">first_image_dir</span><span class="p">,</span> <span class="o">-</span><span class="n">combined_dir</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.05</span><span class="p">):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Orthogonality check failed: non cubical image&#39;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">first_image_dir</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="n">combined_dir</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Orthogonality check failed: non cubical image&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">first_image_dir</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">combined_dir</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
         <span class="k">raise</span> <span class="n">ConversionValidationError</span><span class="p">(</span><span class="s1">&#39;NON_CUBICAL_IMAGE/GANTRY_TILT&#39;</span><span class="p">)</span></div>
 
 
@@ -446,11 +499,11 @@
         <span class="n">current_image_position</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dicom_</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">)</span>
         <span class="n">current_increment</span> <span class="o">=</span> <span class="n">previous_image_position</span> <span class="o">-</span> <span class="n">current_image_position</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">increment</span><span class="p">,</span> <span class="n">current_increment</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.05</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Slice increment not consistent through all slices&#39;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">previous_image_position</span><span class="p">,</span> <span class="n">increment</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">current_image_position</span><span class="p">,</span> <span class="n">current_increment</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Slice increment not consistent through all slices&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">previous_image_position</span><span class="p">,</span> <span class="n">increment</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">current_image_position</span><span class="p">,</span> <span class="n">current_increment</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">ConversionValidationError</span><span class="p">(</span><span class="s1">&#39;SLICE_INCREMENT_INCONSISTENT&#39;</span><span class="p">)</span>
         <span class="n">previous_image_position</span> <span class="o">=</span> <span class="n">current_image_position</span></div>
 
@@ -463,8 +516,8 @@
 <span class="sd">    :param dicoms: list of dicoms</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dicoms</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">3</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;At least 4 slices are needed for correct conversion&#39;</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;At least 4 slices are needed for correct conversion&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
         <span class="k">raise</span> <span class="n">ConversionValidationError</span><span class="p">(</span><span class="s1">&#39;TOO_FEW_SLICES/LOCALIZER&#39;</span><span class="p">)</span></div>
 
 
@@ -482,11 +535,11 @@
         <span class="n">image_orient2</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dicom_</span><span class="o">.</span><span class="n">ImageOrientationPatient</span><span class="p">)[</span><span class="mi">3</span><span class="p">:</span><span class="mi">6</span><span class="p">]</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">image_orient1</span><span class="p">,</span> <span class="n">first_image_orient1</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">)</span> \
                 <span class="ow">or</span> <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">image_orient2</span><span class="p">,</span> <span class="n">first_image_orient2</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.001</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Image orientations not consistent through all slices&#39;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">image_orient1</span><span class="p">,</span> <span class="n">first_image_orient1</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="n">image_orient2</span><span class="p">,</span> <span class="n">first_image_orient2</span><span class="p">)</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Image orientations not consistent through all slices&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">image_orient1</span><span class="p">,</span> <span class="n">first_image_orient1</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">image_orient2</span><span class="p">,</span> <span class="n">first_image_orient2</span><span class="p">))</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;---------------------------------------------------------&#39;</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">ConversionValidationError</span><span class="p">(</span><span class="s1">&#39;IMAGE_ORIENTATION_INCONSISTENT&#39;</span><span class="p">)</span></div>
 
 
@@ -499,10 +552,10 @@
 <span class="sd">    :param nifti_image: nifti image to set the info to</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># set the repetition time in pixdim</span>
-    <span class="n">nifti_image</span><span class="o">.</span><span class="n">get_header</span><span class="p">()</span><span class="o">.</span><span class="n">structarr</span><span class="p">[</span><span class="s1">&#39;pixdim&#39;</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">repetition_time</span> <span class="o">/</span> <span class="mf">1000.0</span>
+    <span class="n">nifti_image</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">structarr</span><span class="p">[</span><span class="s1">&#39;pixdim&#39;</span><span class="p">][</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">repetition_time</span> <span class="o">/</span> <span class="mf">1000.0</span>
 
     <span class="c1"># set tr and te in db_name field</span>
-    <span class="n">nifti_image</span><span class="o">.</span><span class="n">get_header</span><span class="p">()</span><span class="o">.</span><span class="n">structarr</span><span class="p">[</span><span class="s1">&#39;db_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;?TR:</span><span class="si">%.3f</span><span class="s1"> TE:</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">repetition_time</span><span class="p">,</span> <span class="n">echo_time</span><span class="p">)</span>
+    <span class="n">nifti_image</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">structarr</span><span class="p">[</span><span class="s1">&#39;db_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;?TR:</span><span class="si">%.3f</span><span class="s1"> TE:</span><span class="si">%d</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">repetition_time</span><span class="p">,</span> <span class="n">echo_time</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">nifti_image</span></div>
 </pre></div>
@@ -538,12 +591,12 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, icometrix.
+        &#169; Copyright 2016, icometrix.
     </div>
   </body>
 </html>

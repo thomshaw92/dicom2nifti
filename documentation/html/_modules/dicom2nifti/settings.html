@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>dicom2nifti.settings &mdash; dicom2nifti  documentation</title>
+    <title>dicom2nifti.settings &#8212; dicom2nifti  documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,14 +17,15 @@
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="dicom2nifti  documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -36,8 +37,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -52,6 +53,8 @@
 <span class="n">validate_orientation</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">validate_orthogonal</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">validate_sliceincrement</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">validate_multiframe_implicit</span> <span class="o">=</span> <span class="kc">True</span>
+<span class="n">pydicom_read_force</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="n">gdcmconv_path</span> <span class="o">=</span> <span class="kc">None</span>
 
 
@@ -97,6 +100,15 @@
     <span class="n">validate_slicecount</span> <span class="o">=</span> <span class="kc">False</span></div>
 
 
+<div class="viewcode-block" id="disable_validate_multiframe_implicit"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.disable_validate_multiframe_implicit">[docs]</a><span class="k">def</span> <span class="nf">disable_validate_multiframe_implicit</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Disable the validation that checks that data is not multiframe implicit</span>
+<span class="sd">    This allows to sometimes convert Philips Multiframe with implicit transfer syntax</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">validate_multiframe_implicit</span>
+    <span class="n">validate_multiframe_implicit</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
 <div class="viewcode-block" id="enable_validate_sliceincrement"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.enable_validate_sliceincrement">[docs]</a><span class="k">def</span> <span class="nf">enable_validate_sliceincrement</span><span class="p">():</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Enable the slice increment validation again (DEFAULT ENABLED)</span>
@@ -127,6 +139,31 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">validate_slicecount</span>
     <span class="n">validate_slicecount</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="enable_validate_multiframe_implicit"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.enable_validate_multiframe_implicit">[docs]</a><span class="k">def</span> <span class="nf">enable_validate_multiframe_implicit</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enable the validation that checks that data is not multiframe implicit again (DEFAULT ENABLED)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">validate_multiframe_implicit</span>
+    <span class="n">validate_multiframe_implicit</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="enable_pydicom_read_force"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.enable_pydicom_read_force">[docs]</a><span class="k">def</span> <span class="nf">enable_pydicom_read_force</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enable the pydicom read force to try to read non conform dicom data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">pydicom_read_force</span>
+    <span class="n">pydicom_read_force</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="disable_pydicom_read_force"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.disable_pydicom_read_force">[docs]</a><span class="k">def</span> <span class="nf">disable_pydicom_read_force</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enable the pydicom read force to try to read non conform dicom data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">pydicom_read_force</span>
+    <span class="n">pydicom_read_force</span> <span class="o">=</span> <span class="kc">False</span></div>
+
 
 <div class="viewcode-block" id="set_gdcmconv_path"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.set_gdcmconv_path">[docs]</a><span class="k">def</span> <span class="nf">set_gdcmconv_path</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -169,12 +206,12 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, icometrix.
+        &#169; Copyright 2016, icometrix.
     </div>
   </body>
 </html>

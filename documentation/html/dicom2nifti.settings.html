@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>dicom2nifti.settings module &mdash; dicom2nifti  documentation</title>
+    <title>dicom2nifti.settings module &#8212; dicom2nifti  documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,14 +17,15 @@
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="dicom2nifti  documentation" href="index.html" />
-    <link rel="up" title="dicom2nifti package" href="dicom2nifti.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="prev" title="dicom2nifti.image_volume module" href="dicom2nifti.image_volume.html" /> 
   </head>
   <body role="document">
@@ -40,8 +41,8 @@
         <li class="right" >
           <a href="dicom2nifti.image_volume.html" title="dicom2nifti.image_volume module"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" accesskey="U">dicom2nifti package</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" accesskey="U">dicom2nifti package</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -52,6 +53,19 @@
             
   <div class="section" id="module-dicom2nifti.settings">
 <span id="dicom2nifti-settings-module"></span><h1>dicom2nifti.settings module<a class="headerlink" href="#module-dicom2nifti.settings" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="dicom2nifti.settings.disable_pydicom_read_force">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">disable_pydicom_read_force</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#disable_pydicom_read_force"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.disable_pydicom_read_force" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable the pydicom read force to try to read non conform dicom data</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.settings.disable_validate_multiframe_implicit">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">disable_validate_multiframe_implicit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#disable_validate_multiframe_implicit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.disable_validate_multiframe_implicit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable the validation that checks that data is not multiframe implicit
+This allows to sometimes convert Philips Multiframe with implicit transfer syntax</p>
+</dd></dl>
+
 <dl class="function">
 <dt id="dicom2nifti.settings.disable_validate_orientation">
 <code class="descclassname">dicom2nifti.settings.</code><code class="descname">disable_validate_orientation</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#disable_validate_orientation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.disable_validate_orientation" title="Permalink to this definition">¶</a></dt>
@@ -84,6 +98,18 @@ USE WITH CAUTION!</p>
 <dd><p>Disable the validation of the slice increment.
 This allows for converting data where the slice increment is not consistent.
 USE WITH CAUTION!</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.settings.enable_pydicom_read_force">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">enable_pydicom_read_force</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#enable_pydicom_read_force"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.enable_pydicom_read_force" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable the pydicom read force to try to read non conform dicom data</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.settings.enable_validate_multiframe_implicit">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">enable_validate_multiframe_implicit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#enable_validate_multiframe_implicit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.enable_validate_multiframe_implicit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable the validation that checks that data is not multiframe implicit again (DEFAULT ENABLED)</p>
 </dd></dl>
 
 <dl class="function">
@@ -141,7 +167,7 @@ USE WITH CAUTION!</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/dicom2nifti.settings.txt"
+      <li><a href="_sources/dicom2nifti.settings.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -171,12 +197,12 @@ USE WITH CAUTION!</p>
         <li class="right" >
           <a href="dicom2nifti.image_volume.html" title="dicom2nifti.image_volume module"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" >dicom2nifti package</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" >dicom2nifti package</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, icometrix.
+        &#169; Copyright 2016, icometrix.
     </div>
   </body>
 </html>

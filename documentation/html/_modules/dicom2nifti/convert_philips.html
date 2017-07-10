@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>dicom2nifti.convert_philips &mdash; dicom2nifti  documentation</title>
+    <title>dicom2nifti.convert_philips &#8212; dicom2nifti  documentation</title>
     
     <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -17,14 +17,15 @@
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="dicom2nifti  documentation" href="../../index.html" />
-    <link rel="up" title="Module code" href="../index.html" /> 
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
   </head>
   <body role="document">
     <div class="related" role="navigation" aria-label="related navigation">
@@ -36,8 +37,8 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -55,21 +56,30 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.patch_pydicom_encodings</span>
+<span class="n">dicom2nifti</span><span class="o">.</span><span class="n">patch_pydicom_encodings</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">traceback</span>
 
-<span class="kn">import</span> <span class="nn">dicom.config</span>
+<span class="kn">import</span> <span class="nn">logging</span>
 <span class="kn">import</span> <span class="nn">nibabel</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
-<span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pydicom.config</span> <span class="k">as</span> <span class="nn">pydicom_config</span>
+    <span class="kn">from</span> <span class="nn">pydicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">dicom.config</span> <span class="k">as</span> <span class="nn">pydicom_config</span>
+    <span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
 
 <span class="kn">import</span> <span class="nn">dicom2nifti.common</span> <span class="k">as</span> <span class="nn">common</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.settings</span> <span class="k">as</span> <span class="nn">settings</span>
 <span class="kn">import</span> <span class="nn">dicom2nifti.convert_generic</span> <span class="k">as</span> <span class="nn">convert_generic</span>
 <span class="kn">from</span> <span class="nn">dicom2nifti.exceptions</span> <span class="k">import</span> <span class="n">ConversionError</span>
 
-<span class="n">dicom</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">enforce_valid_values</span> <span class="o">=</span> <span class="kc">False</span>
-
+<span class="n">pydicom_config</span><span class="o">.</span><span class="n">enforce_valid_values</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 <div class="viewcode-block" id="is_philips"><a class="viewcode-back" href="../../dicom2nifti.convert_philips.html#dicom2nifti.convert_philips.is_philips">[docs]</a><span class="k">def</span> <span class="nf">is_philips</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -109,22 +119,22 @@
 
     <span class="k">if</span> <span class="n">is_multiframe_dicom</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
         <span class="n">_assert_explicit_vr</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found multiframe dicom&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found multiframe dicom&#39;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">_is_multiframe_4d</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found sequence type: MULTIFRAME 4D&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found sequence type: MULTIFRAME 4D&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">_multiframe_to_nifti</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">_is_multiframe_anatomical</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found sequence type: MULTIFRAME ANATOMICAL&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found sequence type: MULTIFRAME ANATOMICAL&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">_multiframe_to_nifti</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found singleframe dicom&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found singleframe dicom&#39;</span><span class="p">)</span>
         <span class="n">grouped_dicoms</span> <span class="o">=</span> <span class="n">_get_grouped_dicoms</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">_is_singleframe_4d</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
-            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Found sequence type: SINGLEFRAME 4D&#39;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Found sequence type: SINGLEFRAME 4D&#39;</span><span class="p">)</span>
             <span class="k">return</span> <span class="n">_singleframe_to_nifti</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Assuming anatomical data&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Assuming anatomical data&#39;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">convert_generic</span><span class="o">.</span><span class="n">dicom_to_nifti</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span></div>
 
 
@@ -132,9 +142,10 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Assert that explicit vr is used</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">header</span> <span class="o">=</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">if</span> <span class="n">header</span><span class="o">.</span><span class="n">file_meta</span><span class="p">[</span><span class="mh">0x0002</span><span class="p">,</span> <span class="mh">0x0010</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;1.2.840.10008.1.2&#39;</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;IMPLICIT_VR_ENHANCED_DICOM&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">validate_multiframe_implicit</span><span class="p">:</span>
+        <span class="n">header</span> <span class="o">=</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">header</span><span class="o">.</span><span class="n">file_meta</span><span class="p">[</span><span class="mh">0x0002</span><span class="p">,</span> <span class="mh">0x0010</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;1.2.840.10008.1.2&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;IMPLICIT_VR_ENHANCED_DICOM&#39;</span><span class="p">)</span>
 
 
 <div class="viewcode-block" id="is_multiframe_dicom"><a class="viewcode-back" href="../../dicom2nifti.convert_philips.html#dicom2nifti.convert_philips.is_multiframe_dicom">[docs]</a><span class="k">def</span> <span class="nf">is_multiframe_dicom</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
@@ -300,18 +311,18 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Read the multiframe dicom file</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Read dicom file&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Read dicom file&#39;</span><span class="p">)</span>
     <span class="n">multiframe_dicom</span> <span class="o">=</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="c1"># Create mosaic block</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating data block&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Creating data block&#39;</span><span class="p">)</span>
     <span class="n">full_block</span> <span class="o">=</span> <span class="n">_multiframe_to_block</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating affine&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Creating affine&#39;</span><span class="p">)</span>
 
     <span class="c1"># Create the nifti header info</span>
     <span class="n">affine</span> <span class="o">=</span> <span class="n">_create_affine_multiframe</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">)</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating nifti&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Creating nifti&#39;</span><span class="p">)</span>
 
     <span class="c1"># Convert to nifti</span>
     <span class="n">img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">full_block</span><span class="p">,</span> <span class="n">affine</span><span class="p">)</span>
@@ -320,16 +331,16 @@
     <span class="n">common</span><span class="o">.</span><span class="n">set_tr_te</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">timing_parameters</span><span class="o">.</span><span class="n">RepetitionTime</span><span class="p">),</span>
                      <span class="nb">float</span><span class="p">(</span><span class="n">first_frame</span><span class="p">[</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x140f</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">EchoTime</span><span class="p">))</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving nifti to disk&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Saving nifti to disk&#39;</span><span class="p">)</span>
     <span class="c1"># Save to disk</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving nifti to disk </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">output_file</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Saving nifti to disk </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">output_file</span><span class="p">)</span>
     <span class="n">img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
 
     <span class="k">if</span> <span class="n">_is_multiframe_diffusion_imaging</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
         <span class="c1"># Create the bval en bvec files</span>
         <span class="n">base_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
         <span class="n">base_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">output_file</span><span class="p">))[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating bval en bvec files&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Creating bval en bvec files&#39;</span><span class="p">)</span>
         <span class="n">bval_file</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">.bval&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">base_path</span><span class="p">,</span> <span class="n">base_name</span><span class="p">)</span>
         <span class="n">bvec_file</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">/</span><span class="si">%s</span><span class="s1">.bvec&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">base_path</span><span class="p">,</span> <span class="n">base_name</span><span class="p">)</span>
         <span class="n">bval_file</span><span class="p">,</span> <span class="n">bvec_file</span> <span class="o">=</span> <span class="n">_create_bvals_bvecs</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="p">,</span> <span class="n">bval_file</span><span class="p">,</span> <span class="n">bvec_file</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
@@ -350,19 +361,19 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="c1"># Create mosaic block</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating data block&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Creating data block&#39;</span><span class="p">)</span>
     <span class="n">full_block</span> <span class="o">=</span> <span class="n">_singleframe_to_block</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating affine&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Creating affine&#39;</span><span class="p">)</span>
     <span class="c1"># Create the nifti header info</span>
     <span class="n">affine</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">create_affine</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating nifti&#39;</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Creating nifti&#39;</span><span class="p">)</span>
     <span class="c1"># Convert to nifti</span>
     <span class="n">img</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">full_block</span><span class="p">,</span> <span class="n">affine</span><span class="p">)</span>
     <span class="n">common</span><span class="o">.</span><span class="n">set_tr_te</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="nb">float</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">RepetitionTime</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">EchoTime</span><span class="p">))</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Saving nifti to disk </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">output_file</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Saving nifti to disk </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">output_file</span><span class="p">)</span>
     <span class="c1"># Save to disk</span>
     <span class="n">img</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="n">output_file</span><span class="p">)</span>
 
@@ -372,7 +383,7 @@
         <span class="k">if</span> <span class="n">base_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.nii&#39;</span><span class="p">):</span>
             <span class="n">base_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">base_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating bval en bvec files&#39;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Creating bval en bvec files&#39;</span><span class="p">)</span>
         <span class="n">bval_file</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.bval&#39;</span> <span class="o">%</span> <span class="n">base_name</span>
         <span class="n">bvec_file</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">%s</span><span class="s1">.bvec&#39;</span> <span class="o">%</span> <span class="n">base_name</span>
         <span class="n">bval_file</span><span class="p">,</span> <span class="n">bvec_file</span> <span class="o">=</span> <span class="n">_create_singleframe_bvals_bvecs</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">,</span> <span class="n">bval_file</span><span class="p">,</span> <span class="n">bvec_file</span><span class="p">,</span> <span class="n">img</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
@@ -394,7 +405,7 @@
     <span class="c1"># For each slice / mosaic create a data volume block</span>
     <span class="n">data_blocks</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)):</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Creating block </span><span class="si">%s</span><span class="s1"> of </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)))</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Creating block </span><span class="si">%s</span><span class="s1"> of </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)))</span>
         <span class="n">current_block</span> <span class="o">=</span> <span class="n">_stack_to_block</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">[</span><span class="n">index</span><span class="p">])</span>
         <span class="n">current_block</span> <span class="o">=</span> <span class="n">current_block</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="n">numpy</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
         <span class="n">data_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">current_block</span><span class="p">)</span>
@@ -520,10 +531,11 @@
         <span class="n">private_scale_slope_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x2005</span><span class="p">,</span> <span class="mh">0x100e</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">private_sequence_tag</span> <span class="ow">in</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">]:</span>
             <span class="k">if</span> <span class="n">private_scale_intercept_tag</span> <span class="ow">in</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">][</span><span class="n">private_sequence_tag</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span>
-                <span class="n">private_scale_intercept</span> <span class="o">=</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">][</span><span class="n">private_sequence_tag</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span>
-                    <span class="n">private_scale_intercept_tag</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+                <span class="n">private_scale_intercept</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_fl_value</span><span class="p">(</span><span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">][</span><span class="n">private_sequence_tag</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span>
+                                                                  <span class="n">private_scale_intercept_tag</span><span class="p">])</span>
             <span class="k">if</span> <span class="n">private_scale_slope_tag</span> <span class="ow">in</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">][</span><span class="n">private_sequence_tag</span><span class="p">][</span><span class="mi">0</span><span class="p">]:</span>
-                <span class="n">private_scale_slope</span> <span class="o">=</span> <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">][</span><span class="n">private_sequence_tag</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">private_scale_slope_tag</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
+                <span class="n">private_scale_slope</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_fl_value</span><span class="p">(</span>
+                    <span class="n">frame_info</span><span class="p">[</span><span class="n">slice_index</span><span class="p">][</span><span class="n">private_sequence_tag</span><span class="p">][</span><span class="mi">0</span><span class="p">][</span><span class="n">private_scale_slope_tag</span><span class="p">])</span>
         <span class="n">block_data</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">do_scaling</span><span class="p">(</span><span class="n">block_data</span><span class="p">,</span>
                                        <span class="n">rescale_slope</span><span class="p">,</span> <span class="n">rescale_intercept</span><span class="p">,</span>
                                        <span class="n">private_scale_slope</span><span class="p">,</span> <span class="n">private_scale_intercept</span><span class="p">)</span>
@@ -624,7 +636,7 @@
     <span class="n">bvecs</span> <span class="o">=</span> <span class="n">bvecs</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="c1"># remove last elements from the nifti</span>
-    <span class="n">new_nifti</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">nifti</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">nifti</span><span class="o">.</span><span class="n">get_affine</span><span class="p">())</span>
+    <span class="n">new_nifti</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">nifti</span><span class="o">.</span><span class="n">get_data</span><span class="p">()[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="p">:</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">nifti</span><span class="o">.</span><span class="n">affine</span><span class="p">)</span>
     <span class="n">new_nifti</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="n">nifti_file</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">new_nifti</span><span class="p">,</span> <span class="n">bvals</span><span class="p">,</span> <span class="n">bvecs</span>
@@ -701,12 +713,12 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, icometrix.
+        &#169; Copyright 2016, icometrix.
     </div>
   </body>
 </html>

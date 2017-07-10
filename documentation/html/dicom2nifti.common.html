@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>dicom2nifti.common module &mdash; dicom2nifti  documentation</title>
+    <title>dicom2nifti.common module &#8212; dicom2nifti  documentation</title>
     
     <link rel="stylesheet" href="_static/classic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -17,14 +17,15 @@
         VERSION:     '',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
-        HAS_SOURCE:  true
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
       };
     </script>
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="dicom2nifti  documentation" href="index.html" />
-    <link rel="up" title="dicom2nifti package" href="dicom2nifti.html" />
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="dicom2nifti.convert_dicom module" href="dicom2nifti.convert_dicom.html" />
     <link rel="prev" title="dicom2nifti package" href="dicom2nifti.html" /> 
   </head>
@@ -44,8 +45,8 @@
         <li class="right" >
           <a href="dicom2nifti.html" title="dicom2nifti package"
              accesskey="P">previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" accesskey="U">dicom2nifti package</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" accesskey="U">dicom2nifti package</a> &#187;</li> 
       </ul>
     </div>  
 
@@ -245,6 +246,42 @@ the next 4 bytes should contain DICM otherwise it is not a dicom</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="dicom2nifti.common.set_fd_value">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">set_fd_value</code><span class="sig-paren">(</span><em>tag</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#set_fd_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.set_fd_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setters for data that also work with implicit transfersyntax</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>value</strong> &#8211; the value to set on the tag</li>
+<li><strong>tag</strong> &#8211; the tag to read</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.set_ss_value">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">set_ss_value</code><span class="sig-paren">(</span><em>tag</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#set_ss_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.set_ss_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Setter for data that also work with implicit transfersyntax</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>value</strong> &#8211; the value to set on the tag</li>
+<li><strong>tag</strong> &#8211; the tag to read</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
 <dt id="dicom2nifti.common.set_tr_te">
 <code class="descclassname">dicom2nifti.common.</code><code class="descname">set_tr_te</code><span class="sig-paren">(</span><em>nifti_image</em>, <em>repetition_time</em>, <em>echo_time</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#set_tr_te"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.set_tr_te" title="Permalink to this definition">¶</a></dt>
 <dd><p>Set the tr and te in the nifti headers</p>
@@ -376,7 +413,7 @@ This will also skip localizers and alike</p>
   <div role="note" aria-label="source link">
     <h3>This Page</h3>
     <ul class="this-page-menu">
-      <li><a href="_sources/dicom2nifti.common.txt"
+      <li><a href="_sources/dicom2nifti.common.rst.txt"
             rel="nofollow">Show Source</a></li>
     </ul>
    </div>
@@ -409,12 +446,12 @@ This will also skip localizers and alike</p>
         <li class="right" >
           <a href="dicom2nifti.html" title="dicom2nifti package"
              >previous</a> |</li>
-        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &raquo;</li>
-          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" >dicom2nifti package</a> &raquo;</li> 
+        <li class="nav-item nav-item-0"><a href="index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="dicom2nifti.html" >dicom2nifti package</a> &#187;</li> 
       </ul>
     </div>
     <div class="footer" role="contentinfo">
-        &copy; Copyright 2016, icometrix.
+        &#169; Copyright 2016, icometrix.
     </div>
   </body>
 </html>

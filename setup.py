@@ -3,7 +3,7 @@ from setuptools import find_packages
 from pip.req import parse_requirements
 
 # parse_requirements() returns generator of pip.req.InstallRequirement objects
-install_requires = parse_requirements('requirements.txt')
+install_requires = parse_requirements('requirements.txt', session=False)
 
 # reqs is a list of requirement
 install_requires = [str(ir.req) for ir in install_requires]

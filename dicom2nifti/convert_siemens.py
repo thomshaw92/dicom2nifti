@@ -419,15 +419,10 @@ def _mosaic_to_block(mosaic):
     number_x = int(mosaic.Rows / size[0])
     number_y = int(mosaic.Columns / size[1])
 
-    # get the format
-    format_string = common.get_numpy_type(mosaic)
-
-    # reshape the 1d array to 3d
-    data_1d = numpy.fromstring(mosaic.PixelData, dtype=format_string)
     # recreate 2d slice
-    data_2d = numpy.reshape(data_1d, (size[1] * number_y, size[0] * number_x))
+    data_2d = mosaic.pixel_array
     # create 3d block
-    data_3d = numpy.zeros((size[2], size[1], size[0]), dtype=format_string)
+    data_3d = numpy.zeros((size[2], size[1], size[0]), dtype=data_2d.dtype)
     # fill 3d block by taking the correct portions of the slice
     z_index = 0
     for y_index in range(0, number_y):

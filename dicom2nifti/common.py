@@ -402,10 +402,11 @@ def create_affine(sorted_dicoms):
     else:
         step = (image_pos - last_image_pos) / (1 - len(sorted_dicoms))
 
-    return numpy.matrix([[-image_orient1[0] * delta_r, -image_orient2[0] * delta_c, -step[0], -image_pos[0]],
+    affine = numpy.matrix([[-image_orient1[0] * delta_r, -image_orient2[0] * delta_c, -step[0], -image_pos[0]],
                          [-image_orient1[1] * delta_r, -image_orient2[1] * delta_c, -step[1], -image_pos[1]],
                          [image_orient1[2] * delta_r, image_orient2[2] * delta_c, step[2], image_pos[2]],
                          [0, 0, 0, 1]])
+    return affine
 
 
 def validate_orthogonal(dicoms):

@@ -7,6 +7,7 @@ dicom2nifti
 
 from __future__ import print_function
 import dicom2nifti.patch_pydicom_encodings
+
 dicom2nifti.patch_pydicom_encodings.apply()
 
 import os
@@ -27,6 +28,7 @@ import dicom2nifti.convert_generic as convert_generic
 from dicom2nifti.exceptions import ConversionValidationError, ConversionError
 
 logger = logging.getLogger(__name__)
+
 
 # Disable this warning as there is not reason for an init class in an enum
 # pylint: disable=w0232, r0903, E1101
@@ -251,7 +253,9 @@ def _classic_get_grouped_dicoms(dicom_input):
     """
     # Loop overall files and build dict
     # Order all dicom files by InstanceNumber
-    dicoms = sorted(dicom_input, key=lambda x: x.InstanceNumber)
+    dicoms = sorted(dicom_input, key=lambda x: (x.ImagePositionPatient[0],
+                                                x.ImagePositionPatient[1],
+                                                x.ImagePositionPatient[2]))
 
     # now group per stack
     grouped_dicoms = []
@@ -431,10 +435,10 @@ def _mosaic_to_block(mosaic):
         for x_index in range(0, number_x):
             if mosaic_type == MosaicType.ASCENDING:
                 data_3d[z_index, :, :] = data_2d[size[1] * y_index:size[1] * (y_index + 1),
-                                                 size[0] * x_index:size[0] * (x_index + 1)]
+                                         size[0] * x_index:size[0] * (x_index + 1)]
             else:
                 data_3d[size[2] - (z_index + 1), :, :] = data_2d[size[1] * y_index:size[1] * (y_index + 1),
-                                                                 size[0] * x_index:size[0] * (x_index + 1)]
+                                                         size[0] * x_index:size[0] * (x_index + 1)]
             z_index += 1
             if z_index >= size[2]:
                 break

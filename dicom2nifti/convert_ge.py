@@ -192,8 +192,6 @@ def _get_grouped_dicoms(dicom_input):
     # now group per stack
     grouped_dicoms = [[]]  # list with first element a list
     stack_index = 0
-    previous_stack_position = -1
-
 
     # loop over all sorted dicoms and sort them by stack
     # for this we use the position and direction of the slices so we can detect a new stack easily

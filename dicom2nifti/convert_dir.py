@@ -103,21 +103,30 @@ def _is_valid_imaging_dicom(dicom_header):
     Function will do some basic checks to see if this is a valid imaging dicom
     """
     # if it is philips and multiframe dicom then we assume it is ok
-    if convert_philips.is_philips([dicom_header]):
-        if convert_philips.is_multiframe_dicom([dicom_header]):
-            return True
+    try:
+        if convert_philips.is_philips([dicom_header]):
+            if convert_philips.is_multiframe_dicom([dicom_header]):
+                return True
 
-    if "SeriesInstanceUID" not in dicom_header:
+        if "SeriesInstanceUID" not in dicom_header:
+            return False
+
+        if "InstanceNumber" not in dicom_header:
+            return False
+
+        if "ImageOrientationPatient" not in dicom_header or len(dicom_header.ImageOrientationPatient) < 6:
+            return False
+
+        if "ImagePositionPatient" not in dicom_header or len(dicom_header.ImagePositionPatient) < 3:
+            return False
+
+        # for all others if there is image position patient we assume it is ok
+        if Tag(0x0020, 0x0037) not in dicom_header:
+            return False
+
+        return True
+    except:
         return False
-
-    if "InstanceNumber" not in dicom_header:
-        return False
-
-    # for all others if there is image position patient we assume it is ok
-    if Tag(0x0020, 0x0037) not in dicom_header:
-        return False
-
-    return True
 
 
 def _remove_accents(filename):

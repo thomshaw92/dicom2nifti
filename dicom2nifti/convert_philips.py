@@ -7,6 +7,7 @@ dicom2nifti
 
 from __future__ import print_function
 import dicom2nifti.patch_pydicom_encodings
+
 dicom2nifti.patch_pydicom_encodings.apply()
 
 import os
@@ -30,6 +31,7 @@ from dicom2nifti.exceptions import ConversionError
 
 pydicom_config.enforce_valid_values = False
 logger = logging.getLogger(__name__)
+
 
 def is_philips(dicom_input):
     """
@@ -386,7 +388,9 @@ def _get_grouped_dicoms(dicom_input):
     fast_read = True will only read the headers not the data
     """
     # Order all dicom files by InstanceNumber
-    dicoms = sorted(dicom_input, key=lambda x: x.InstanceNumber)
+    dicoms = sorted(dicom_input, key=lambda x: (x.ImagePositionPatient[0],
+                                                x.ImagePositionPatient[1],
+                                                x.ImagePositionPatient[2]))
 
     # now group per stack
     grouped_dicoms = [[]]  # list with first element a list

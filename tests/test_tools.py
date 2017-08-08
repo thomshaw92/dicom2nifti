@@ -1,7 +1,12 @@
+import os
 import logging
+import tempfile
+
 import nibabel
 import numpy
+import shutil
 
+import dicom2nifti.image_reorientation as image_reorientation
 
 def ground_thruth_filenames(input_dir):
     nifti_file = input_dir + '_ground_truth.nii.gz'
@@ -12,24 +17,34 @@ def ground_thruth_filenames(input_dir):
 
 
 def compare_nifti(nifti_file_1, nifti_file_2):
-    logging.info("%s %s" %(nifti_file_1, nifti_file_2))
-    nifti_1 = nibabel.load(nifti_file_1)
-    nifti_2 = nibabel.load(nifti_file_2)
+    result = True
+    logging.info("%s %s" % (nifti_file_1, nifti_file_2))
+    work_dir = tempfile.mkdtemp()
+    try:
+        tmp_nifti_file_1 = os.path.join(work_dir, os.path.basename(nifti_file_1))
+        tmp_nifti_file_2 = os.path.join(work_dir, os.path.basename(nifti_file_2))
+        image_reorientation.reorient_image(nifti_file_1, tmp_nifti_file_1)
+        image_reorientation.reorient_image(nifti_file_2, tmp_nifti_file_2)
+        nifti_1 = nibabel.load(tmp_nifti_file_1)
+        nifti_2 = nibabel.load(tmp_nifti_file_2)
 
-    # check the affine
-    if not (nifti_1.affine == nifti_2.affine).all():
-        logging.warning('affine mismatch')
-        return False
+        # check the affine
+        if not numpy.allclose(nifti_1.affine, nifti_2.affine):
+            logging.warning('affine mismatch')
+            result = False
 
-    # check the data
-    if nifti_1.get_data_dtype() != nifti_2.get_data_dtype():
-        logging.warning('dtype mismatch')
-        return False
-    if not (nifti_1.get_data() == nifti_2.get_data()).all():
-        logging.warning('data mismatch')
-        return False
+        # check the data
+        if nifti_1.get_data_dtype() != nifti_2.get_data_dtype():
+            logging.warning('dtype mismatch')
+            result = False
+        if not (nifti_1.get_data() == nifti_2.get_data()).all():
+            logging.warning('data mismatch')
+            result = False
 
-    return True
+    except:
+        shutil.rmtree(work_dir)
+
+    return result
 
 
 def compare_bval(bval_file_1, bval_file_2):

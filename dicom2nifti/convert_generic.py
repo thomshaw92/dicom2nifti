@@ -7,6 +7,7 @@ dicom2nifti
 
 from __future__ import print_function
 import dicom2nifti.patch_pydicom_encodings
+
 dicom2nifti.patch_pydicom_encodings.apply()
 
 import logging
@@ -26,6 +27,7 @@ from dicom2nifti.exceptions import ConversionError
 
 logger = logging.getLogger(__name__)
 
+
 def dicom_to_nifti(dicom_input, output_file):
     """
     This function will convert an anatomical dicom series to a nifti
@@ -37,8 +39,6 @@ def dicom_to_nifti(dicom_input, output_file):
     """
     if len(dicom_input) <= 0:
         raise ConversionError('NO_DICOM_FILES_FOUND')
-
-    dicom_input = sorted(dicom_input, key=lambda k: k.InstanceNumber)
 
     # remove localizers based on image type
     dicom_input = _remove_localizers_by_imagetype(dicom_input)
@@ -55,7 +55,10 @@ def dicom_to_nifti(dicom_input, output_file):
         # validate that we have an orthogonal image (to detect gantry tilting etc)
         common.validate_orthogonal(dicom_input)
 
-    dicom_input = sorted(dicom_input, key=lambda k: k.InstanceNumber)
+    dicom_input = sorted(dicom_input,
+                         key=lambda x: (x.ImagePositionPatient[0],
+                                        x.ImagePositionPatient[1],
+                                        x.ImagePositionPatient[2]))
 
     if settings.validate_sliceincrement:
         # validate that all slices have a consistent slice increment

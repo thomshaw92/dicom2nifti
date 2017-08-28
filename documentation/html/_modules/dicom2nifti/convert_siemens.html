@@ -57,6 +57,7 @@
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 <span class="kn">import</span> <span class="nn">dicom2nifti.patch_pydicom_encodings</span>
+
 <span class="n">dicom2nifti</span><span class="o">.</span><span class="n">patch_pydicom_encodings</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
@@ -77,6 +78,7 @@
 <span class="kn">from</span> <span class="nn">dicom2nifti.exceptions</span> <span class="k">import</span> <span class="n">ConversionValidationError</span><span class="p">,</span> <span class="n">ConversionError</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
 
 <span class="c1"># Disable this warning as there is not reason for an init class in an enum</span>
 <span class="c1"># pylint: disable=w0232, r0903, E1101</span>
@@ -301,7 +303,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Loop overall files and build dict</span>
     <span class="c1"># Order all dicom files by InstanceNumber</span>
-    <span class="n">dicoms</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">InstanceNumber</span><span class="p">)</span>
+    <span class="n">dicoms</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                <span class="n">x</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                                <span class="n">x</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
 
     <span class="c1"># now group per stack</span>
     <span class="n">grouped_dicoms</span> <span class="o">=</span> <span class="p">[]</span>
@@ -469,15 +473,10 @@
     <span class="n">number_x</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mosaic</span><span class="o">.</span><span class="n">Rows</span> <span class="o">/</span> <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
     <span class="n">number_y</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mosaic</span><span class="o">.</span><span class="n">Columns</span> <span class="o">/</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
-    <span class="c1"># get the format</span>
-    <span class="n">format_string</span> <span class="o">=</span> <span class="n">common</span><span class="o">.</span><span class="n">get_numpy_type</span><span class="p">(</span><span class="n">mosaic</span><span class="p">)</span>
-
-    <span class="c1"># reshape the 1d array to 3d</span>
-    <span class="n">data_1d</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">fromstring</span><span class="p">(</span><span class="n">mosaic</span><span class="o">.</span><span class="n">PixelData</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">format_string</span><span class="p">)</span>
     <span class="c1"># recreate 2d slice</span>
-    <span class="n">data_2d</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">data_1d</span><span class="p">,</span> <span class="p">(</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">number_y</span><span class="p">,</span> <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">number_x</span><span class="p">))</span>
+    <span class="n">data_2d</span> <span class="o">=</span> <span class="n">mosaic</span><span class="o">.</span><span class="n">pixel_array</span>
     <span class="c1"># create 3d block</span>
-    <span class="n">data_3d</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">size</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">format_string</span><span class="p">)</span>
+    <span class="n">data_3d</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">size</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">data_2d</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
     <span class="c1"># fill 3d block by taking the correct portions of the slice</span>
     <span class="n">z_index</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="k">for</span> <span class="n">y_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">number_y</span><span class="p">):</span>
@@ -486,10 +485,10 @@
         <span class="k">for</span> <span class="n">x_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">number_x</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">mosaic_type</span> <span class="o">==</span> <span class="n">MosaicType</span><span class="o">.</span><span class="n">ASCENDING</span><span class="p">:</span>
                 <span class="n">data_3d</span><span class="p">[</span><span class="n">z_index</span><span class="p">,</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">data_2d</span><span class="p">[</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y_index</span><span class="p">:</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                                                 <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">x_index</span><span class="p">:</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+                                         <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">x_index</span><span class="p">:</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="n">data_3d</span><span class="p">[</span><span class="n">size</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="p">(</span><span class="n">z_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">data_2d</span><span class="p">[</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y_index</span><span class="p">:</span><span class="n">size</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">y_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span>
-                                                                 <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">x_index</span><span class="p">:</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
+                                                         <span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">x_index</span><span class="p">:</span><span class="n">size</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="p">(</span><span class="n">x_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]</span>
             <span class="n">z_index</span> <span class="o">+=</span> <span class="mi">1</span>
             <span class="k">if</span> <span class="n">z_index</span> <span class="o">&gt;=</span> <span class="n">size</span><span class="p">[</span><span class="mi">2</span><span class="p">]:</span>
                 <span class="k">break</span>

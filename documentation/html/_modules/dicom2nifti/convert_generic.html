@@ -57,6 +57,7 @@
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 <span class="kn">import</span> <span class="nn">dicom2nifti.patch_pydicom_encodings</span>
+
 <span class="n">dicom2nifti</span><span class="o">.</span><span class="n">patch_pydicom_encodings</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
 
 <span class="kn">import</span> <span class="nn">logging</span>
@@ -76,6 +77,7 @@
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
+
 <div class="viewcode-block" id="dicom_to_nifti"><a class="viewcode-back" href="../../dicom2nifti.convert_generic.html#dicom2nifti.convert_generic.dicom_to_nifti">[docs]</a><span class="k">def</span> <span class="nf">dicom_to_nifti</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">output_file</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function will convert an anatomical dicom series to a nifti</span>
@@ -87,8 +89,6 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;NO_DICOM_FILES_FOUND&#39;</span><span class="p">)</span>
-
-    <span class="n">dicom_input</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="o">.</span><span class="n">InstanceNumber</span><span class="p">)</span>
 
     <span class="c1"># remove localizers based on image type</span>
     <span class="n">dicom_input</span> <span class="o">=</span> <span class="n">_remove_localizers_by_imagetype</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
@@ -105,7 +105,10 @@
         <span class="c1"># validate that we have an orthogonal image (to detect gantry tilting etc)</span>
         <span class="n">common</span><span class="o">.</span><span class="n">validate_orthogonal</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
 
-    <span class="n">dicom_input</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">k</span><span class="p">:</span> <span class="n">k</span><span class="o">.</span><span class="n">InstanceNumber</span><span class="p">)</span>
+    <span class="n">dicom_input</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span>
+                         <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                        <span class="n">x</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                        <span class="n">x</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
 
     <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">validate_sliceincrement</span><span class="p">:</span>
         <span class="c1"># validate that all slices have a consistent slice increment</span>

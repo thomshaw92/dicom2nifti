@@ -68,7 +68,7 @@
 <div class="viewcode-block" id="reorient_image"><a class="viewcode-back" href="../../dicom2nifti.image_reorientation.html#dicom2nifti.image_reorientation.reorient_image">[docs]</a><span class="k">def</span> <span class="nf">reorient_image</span><span class="p">(</span><span class="n">input_image</span><span class="p">,</span> <span class="n">output_image</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Change the orientation of the Image data in order to be in LAS space</span>
-<span class="sd">    x will represent the coronal plane, y the sagital and z the axial plane.</span>
+<span class="sd">    x will represent the coronal plane, y the sagittal and z the axial plane.</span>
 <span class="sd">    x increases from Right (R) to Left (L), y from Posterior (P) to Anterior (A) and z from Inferior (I) to Superior (S)</span>
 
 <span class="sd">    :returns: The output image in nibabel form</span>
@@ -98,7 +98,7 @@
     <span class="c1"># the last column with the origin depends on the origin of the original image, the size and the direction of x,y,z</span>
 
     <span class="n">new_affine</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-    <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">affine</span><span class="p">[:,</span> <span class="n">image</span><span class="o">.</span><span class="n">sagital_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span>
+    <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">affine</span><span class="p">[:,</span> <span class="n">image</span><span class="o">.</span><span class="n">sagittal_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span>
     <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">affine</span><span class="p">[:,</span> <span class="n">image</span><span class="o">.</span><span class="n">coronal_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span>
     <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">affine</span><span class="p">[:,</span> <span class="n">image</span><span class="o">.</span><span class="n">axial_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span>
     <span class="n">point</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
@@ -109,8 +109,8 @@
     <span class="c1"># and then transform it in world coordinates</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">image</span><span class="o">.</span><span class="n">axial_orientation</span><span class="o">.</span><span class="n">x_inverted</span><span class="p">:</span>
         <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
-        <span class="n">point</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">sagital_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span>
-                                                                <span class="n">image</span><span class="o">.</span><span class="n">sagital_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+        <span class="n">point</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">sagittal_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span>
+                                                                <span class="n">image</span><span class="o">.</span><span class="n">sagittal_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
         <span class="c1"># new_affine[0, 3] = - new_affine[0, 3]</span>
     <span class="k">if</span> <span class="n">image</span><span class="o">.</span><span class="n">axial_orientation</span><span class="o">.</span><span class="n">y_inverted</span><span class="p">:</span>
         <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span> <span class="n">new_affine</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
@@ -135,9 +135,9 @@
 <span class="sd">    Reorganize the data for a 4d nifti</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># print &#39;converting 4d image&#39;</span>
-    <span class="c1"># Create empty array where x,y,z correspond to LR (sagital), PA (coronal), IS (axial) directions and the size</span>
+    <span class="c1"># Create empty array where x,y,z correspond to LR (sagittal), PA (coronal), IS (axial) directions and the size</span>
     <span class="c1"># of the array in each direction is the same with the corresponding direction of the input image.</span>
-    <span class="n">new_image</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">sagital_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">],</span>
+    <span class="n">new_image</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">sagittal_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">],</span>
                              <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">coronal_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">],</span>
                              <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">axial_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">],</span>
                              <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="mi">3</span><span class="p">]],</span>
@@ -163,9 +163,9 @@
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Reorganize the data for a 3d nifti</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Create empty array where x,y,z correspond to LR (sagital), PA (coronal), IS (axial) directions and the size</span>
+    <span class="c1"># Create empty array where x,y,z correspond to LR (sagittal), PA (coronal), IS (axial) directions and the size</span>
     <span class="c1"># of the array in each direction is the same with the corresponding direction of the input image.</span>
-    <span class="n">new_image</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">sagital_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">],</span>
+    <span class="n">new_image</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">([</span><span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">sagittal_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">],</span>
                              <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">coronal_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">],</span>
                              <span class="n">image</span><span class="o">.</span><span class="n">dimensions</span><span class="p">[</span><span class="n">image</span><span class="o">.</span><span class="n">axial_orientation</span><span class="o">.</span><span class="n">normal_component</span><span class="p">]],</span>
                             <span class="n">dtype</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">nifti_data</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>

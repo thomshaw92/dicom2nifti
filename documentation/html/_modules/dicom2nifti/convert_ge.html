@@ -134,15 +134,11 @@
     <span class="c1"># read dicom header</span>
     <span class="n">header</span> <span class="o">=</span> <span class="n">grouped_dicoms</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
 
-    <span class="c1"># check if the dicom contains stack information</span>
-    <span class="k">if</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x0020</span><span class="p">,</span> <span class="mh">0x9056</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span> <span class="ow">or</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x0020</span><span class="p">,</span> <span class="mh">0x9057</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">False</span>
-
     <span class="c1"># check if contains multiple stacks</span>
-    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">1</span><span class="p">:</span>
-        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
 
-    <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="kc">False</span>
 
 
 <span class="k">def</span> <span class="nf">_is_diffusion_imaging</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">):</span>
@@ -246,21 +242,30 @@
     <span class="c1"># now group per stack</span>
     <span class="n">grouped_dicoms</span> <span class="o">=</span> <span class="p">[[]]</span>  <span class="c1"># list with first element a list</span>
     <span class="n">stack_index</span> <span class="o">=</span> <span class="mi">0</span>
-    <span class="n">previous_stack_position</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
 
-    <span class="c1"># loop over all sorted dicoms</span>
-    <span class="n">stack_position_tag</span> <span class="o">=</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x0020</span><span class="p">,</span> <span class="mh">0x9057</span><span class="p">)</span>  <span class="c1"># put this there as this is a slow step and used a lot</span>
-    <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">dicoms</span><span class="p">)):</span>
-        <span class="n">dicom_</span> <span class="o">=</span> <span class="n">dicoms</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+    <span class="c1"># loop over all sorted dicoms and sort them by stack</span>
+    <span class="c1"># for this we use the position and direction of the slices so we can detect a new stack easily</span>
+    <span class="n">previous_position</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">previous_direction</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">dicom_</span> <span class="ow">in</span> <span class="n">dicoms</span><span class="p">:</span>
+        <span class="n">current_direction</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="c1"># if the stack number decreases we moved to the next stack</span>
-        <span class="n">stack_position</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="n">stack_position_tag</span> <span class="ow">in</span> <span class="n">dicom_</span><span class="p">:</span>
-            <span class="n">stack_position</span> <span class="o">=</span> <span class="n">dicom_</span><span class="p">[</span><span class="n">stack_position_tag</span><span class="p">]</span><span class="o">.</span><span class="n">value</span>
-        <span class="k">if</span> <span class="n">previous_stack_position</span> <span class="o">&gt;</span> <span class="n">stack_position</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">previous_position</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">current_direction</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dicom_</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">)</span> <span class="o">-</span> <span class="n">previous_position</span>
+            <span class="n">current_direction</span> <span class="o">=</span> <span class="n">current_direction</span> <span class="o">/</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">current_direction</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">current_direction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> \
+                <span class="n">previous_direction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> \
+                <span class="ow">not</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">current_direction</span><span class="p">,</span> <span class="n">previous_direction</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+            <span class="n">previous_position</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dicom_</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">)</span>
+            <span class="n">previous_direction</span> <span class="o">=</span> <span class="kc">None</span>
             <span class="n">stack_index</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">previous_position</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">dicom_</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">)</span>
+            <span class="n">previous_direction</span> <span class="o">=</span> <span class="n">current_direction</span>
+
+        <span class="k">if</span> <span class="n">stack_index</span> <span class="o">&gt;=</span> <span class="nb">len</span><span class="p">(</span><span class="n">grouped_dicoms</span><span class="p">):</span>
             <span class="n">grouped_dicoms</span><span class="o">.</span><span class="n">append</span><span class="p">([])</span>
         <span class="n">grouped_dicoms</span><span class="p">[</span><span class="n">stack_index</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dicom_</span><span class="p">)</span>
-        <span class="n">previous_stack_position</span> <span class="o">=</span> <span class="n">stack_position</span>
 
     <span class="k">return</span> <span class="n">grouped_dicoms</span>
 

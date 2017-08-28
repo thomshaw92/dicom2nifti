@@ -57,6 +57,7 @@
 
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">print_function</span>
 <span class="kn">import</span> <span class="nn">dicom2nifti.patch_pydicom_encodings</span>
+
 <span class="n">dicom2nifti</span><span class="o">.</span><span class="n">patch_pydicom_encodings</span><span class="o">.</span><span class="n">apply</span><span class="p">()</span>
 
 <span class="kn">import</span> <span class="nn">os</span>
@@ -80,6 +81,7 @@
 
 <span class="n">pydicom_config</span><span class="o">.</span><span class="n">enforce_valid_values</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
 
 <div class="viewcode-block" id="is_philips"><a class="viewcode-back" href="../../dicom2nifti.convert_philips.html#dicom2nifti.convert_philips.is_philips">[docs]</a><span class="k">def</span> <span class="nf">is_philips</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -436,7 +438,9 @@
 <span class="sd">    fast_read = True will only read the headers not the data</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># Order all dicom files by InstanceNumber</span>
-    <span class="n">dicoms</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">InstanceNumber</span><span class="p">)</span>
+    <span class="n">dicoms</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                <span class="n">x</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                                                <span class="n">x</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">[</span><span class="mi">2</span><span class="p">]))</span>
 
     <span class="c1"># now group per stack</span>
     <span class="n">grouped_dicoms</span> <span class="o">=</span> <span class="p">[[]]</span>  <span class="c1"># list with first element a list</span>

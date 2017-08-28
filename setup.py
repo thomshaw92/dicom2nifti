@@ -1,7 +1,7 @@
 from distutils.core import setup
 from setuptools import find_packages
 
-version = '1.2.11'
+version = '1.2.12'
 long_description = """
 With this package you can convert dicom images to nifti files.
 There is support for most anatomical CT and MR data.
@@ -34,6 +34,7 @@ setup(
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
         'Operating System :: MacOS :: MacOS X',
         'Operating System :: POSIX :: Linux'],
     install_requires=['six', 'future', 'nibabel', 'numpy', 'pydicom>=0.9.9'],

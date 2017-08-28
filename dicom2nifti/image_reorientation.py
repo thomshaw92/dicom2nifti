@@ -18,7 +18,7 @@ from dicom2nifti.image_volume import ImageVolume, SliceType
 def reorient_image(input_image, output_image):
     """
     Change the orientation of the Image data in order to be in LAS space
-    x will represent the coronal plane, y the sagital and z the axial plane.
+    x will represent the coronal plane, y the sagittal and z the axial plane.
     x increases from Right (R) to Left (L), y from Posterior (P) to Anterior (A) and z from Inferior (I) to Superior (S)
 
     :returns: The output image in nibabel form
@@ -48,7 +48,7 @@ def reorient_image(input_image, output_image):
     # the last column with the origin depends on the origin of the original image, the size and the direction of x,y,z
 
     new_affine = numpy.eye(4)
-    new_affine[:, 0] = affine[:, image.sagital_orientation.normal_component]
+    new_affine[:, 0] = affine[:, image.sagittal_orientation.normal_component]
     new_affine[:, 1] = affine[:, image.coronal_orientation.normal_component]
     new_affine[:, 2] = affine[:, image.axial_orientation.normal_component]
     point = [0, 0, 0, 1]
@@ -59,8 +59,8 @@ def reorient_image(input_image, output_image):
     # and then transform it in world coordinates
     if not image.axial_orientation.x_inverted:
         new_affine[:, 0] = - new_affine[:, 0]
-        point[image.sagital_orientation.normal_component] = image.dimensions[
-                                                                image.sagital_orientation.normal_component] - 1
+        point[image.sagittal_orientation.normal_component] = image.dimensions[
+                                                                image.sagittal_orientation.normal_component] - 1
         # new_affine[0, 3] = - new_affine[0, 3]
     if image.axial_orientation.y_inverted:
         new_affine[:, 1] = - new_affine[:, 1]
@@ -85,9 +85,9 @@ def _reorient_4d(image):
     Reorganize the data for a 4d nifti
     """
     # print 'converting 4d image'
-    # Create empty array where x,y,z correspond to LR (sagital), PA (coronal), IS (axial) directions and the size
+    # Create empty array where x,y,z correspond to LR (sagittal), PA (coronal), IS (axial) directions and the size
     # of the array in each direction is the same with the corresponding direction of the input image.
-    new_image = numpy.zeros([image.dimensions[image.sagital_orientation.normal_component],
+    new_image = numpy.zeros([image.dimensions[image.sagittal_orientation.normal_component],
                              image.dimensions[image.coronal_orientation.normal_component],
                              image.dimensions[image.axial_orientation.normal_component],
                              image.dimensions[3]],
@@ -113,9 +113,9 @@ def _reorient_3d(image):
     """
     Reorganize the data for a 3d nifti
     """
-    # Create empty array where x,y,z correspond to LR (sagital), PA (coronal), IS (axial) directions and the size
+    # Create empty array where x,y,z correspond to LR (sagittal), PA (coronal), IS (axial) directions and the size
     # of the array in each direction is the same with the corresponding direction of the input image.
-    new_image = numpy.zeros([image.dimensions[image.sagital_orientation.normal_component],
+    new_image = numpy.zeros([image.dimensions[image.sagittal_orientation.normal_component],
                              image.dimensions[image.coronal_orientation.normal_component],
                              image.dimensions[image.axial_orientation.normal_component]],
                             dtype=image.nifti_data.dtype)

@@ -24,7 +24,7 @@ class SliceType(object):
     ENUM like container for the slice types
     """
     AXIAL = 1
-    SAGITAL = 2
+    SAGITTAL = 2
     CORONAL = 3
 
 
@@ -56,7 +56,7 @@ class ImageVolume(object):
         self.dimensions = self.nifti_data.shape
         self.axial_orientation = None
         self.coronal_orientation = None
-        self.sagital_orientation = None
+        self.sagittal_orientation = None
         self.__calculate_slice_orientation__()
 
     def __calculate_slice_orientation__(self):
@@ -89,18 +89,18 @@ class ImageVolume(object):
         self.coronal_orientation.x_inverted = numpy.sign(transformed_x[self.coronal_orientation.x_component]) < 0
         self.coronal_orientation.y_component = z_component
         self.coronal_orientation.y_inverted = numpy.sign(transformed_z[self.coronal_orientation.y_component]) < 0
-        # Find slice orientation for the sagital size
+        # Find slice orientation for the sagittal size
         # Find the index of the max component to know which component is the direction in the size
-        self.sagital_orientation = SliceOrientation()
-        self.sagital_orientation.normal_component = x_component
-        self.sagital_orientation.x_component = y_component
-        self.sagital_orientation.x_inverted = numpy.sign(transformed_y[self.sagital_orientation.x_component]) < 0
-        self.sagital_orientation.y_component = z_component
-        self.sagital_orientation.y_inverted = numpy.sign(transformed_z[self.sagital_orientation.y_component]) < 0
+        self.sagittal_orientation = SliceOrientation()
+        self.sagittal_orientation.normal_component = x_component
+        self.sagittal_orientation.x_component = y_component
+        self.sagittal_orientation.x_inverted = numpy.sign(transformed_y[self.sagittal_orientation.x_component]) < 0
+        self.sagittal_orientation.y_component = z_component
+        self.sagittal_orientation.y_inverted = numpy.sign(transformed_z[self.sagittal_orientation.y_component]) < 0
         # Assert that the slice normals are not equal
         assert self.axial_orientation.normal_component != self.coronal_orientation.normal_component
-        assert self.coronal_orientation.normal_component != self.sagital_orientation.normal_component
-        assert self.sagital_orientation.normal_component != self.axial_orientation.normal_component
+        assert self.coronal_orientation.normal_component != self.sagittal_orientation.normal_component
+        assert self.sagittal_orientation.normal_component != self.axial_orientation.normal_component
 
     def __get_raw_slice__(self, slice_number, slice_orientation, time_point=0):
         # Take the slice out of one of the timepoints of a 4 d nifti
@@ -138,7 +138,7 @@ class ImageVolume(object):
             slice.original_data contains the original data for this slice
             :param time_point: in case of 4d nifti the 4th dimension
             :param slice_number: the slice number
-            :param slice_type: tye slice type (AXIAL, SAGITAL, CORONAL)
+            :param slice_type: tye slice type (AXIAL, SAGITTAL, CORONAL)
         """
         slice_ = Slice()
         slice_.slice_number = slice_number
@@ -149,9 +149,9 @@ class ImageVolume(object):
         if slice_type == SliceType.AXIAL:
             slice_data = self.__get_raw_slice__(slice_number, self.axial_orientation, time_point)
             slice_.slice_orientation = self.axial_orientation
-        elif slice_type == SliceType.SAGITAL:
-            slice_data = self.__get_raw_slice__(slice_number, self.sagital_orientation, time_point)
-            slice_.slice_orientation = self.sagital_orientation
+        elif slice_type == SliceType.SAGITTAL:
+            slice_data = self.__get_raw_slice__(slice_number, self.sagittal_orientation, time_point)
+            slice_.slice_orientation = self.sagittal_orientation
         elif slice_type == SliceType.CORONAL:
             slice_data = self.__get_raw_slice__(slice_number, self.coronal_orientation, time_point)
             slice_.slice_orientation = self.coronal_orientation
@@ -165,8 +165,8 @@ class ImageVolume(object):
         """
         if slice_type == SliceType.AXIAL:
             return self.dimensions[self.axial_orientation.normal_component]
-        elif slice_type == SliceType.SAGITAL:
-            return self.dimensions[self.sagital_orientation.normal_component]
+        elif slice_type == SliceType.SAGITTAL:
+            return self.dimensions[self.sagittal_orientation.normal_component]
         elif slice_type == SliceType.CORONAL:
             return self.dimensions[self.coronal_orientation.normal_component]
 

@@ -71,6 +71,7 @@ def get_volume_pixeldata(sorted_slices):
             combined_dtype = slice_data.dtype
         else:
             combined_dtype = numpy.promote_types(combined_dtype, slice_data.dtype)
+
     # create the new volume with with the correct data
     vol = numpy.concatenate(slices, axis=0)
 
@@ -321,11 +322,11 @@ def do_scaling(data, rescale_slope, rescale_intercept, private_scale_slope=1.0, 
         else:
             # Unsigned integer type
             if maximum_required < 2 ** 8:
-                dtype = numpy.int8
+                dtype = numpy.uint8
             elif maximum_required < 2 ** 16:
-                dtype = numpy.int16
+                dtype = numpy.uint16
             elif maximum_required < 2 ** 32:
-                dtype = numpy.int32
+                dtype = numpy.uint32
             else:
                 dtype = numpy.float32
 

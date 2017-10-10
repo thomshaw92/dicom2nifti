@@ -14,12 +14,12 @@ import numpy
 import os
 import datetime
 from six import string_types, iteritems
+
+import dicom2nifti.compressed_dicom as compressed_dicom
 from dicom2nifti.common import is_dicom_file, read_dicom_directory
 from dicom2nifti.convert_ge import is_ge
-from dicom2nifti.convert_dicom import is_compressed, decompress_directory, compress_directory
 from dicom2nifti.convert_siemens import is_siemens
 from dicom2nifti.convert_philips import is_philips
-
 
 def anonymize_directory(input_directory, output_directory=None):
     if output_directory is None:
@@ -133,7 +133,7 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
                    'ImplementationClassUID']
 
     # Load dicom_file_in
-    dicom_in = dicom.read_file(dicom_file_in)
+    dicom_in = compressed_dicom.read_file(dicom_file_in)
 
     # Create new dicom file
     # Set new file meta information
@@ -193,11 +193,6 @@ def _anonymize_files(dicom_directory_in, dicom_directory_out, fields_to_keep):
     dicom_directory_in = os.path.abspath(dicom_directory_in)
     dicom_directory_out = os.path.abspath(dicom_directory_out)
 
-    original_compressed = is_compressed(dicom_directory_in)
-
-    if original_compressed:
-        decompress_directory(dicom_directory_in)
-
     # looping over all files
     for root, _, file_names in os.walk(dicom_directory_in):
         # New directory
@@ -214,10 +209,6 @@ def _anonymize_files(dicom_directory_in, dicom_directory_out, fields_to_keep):
                 _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep)
             else:
                 logging.info("Skipping " + dicom_file_in + ", no dicom file")
-
-    if original_compressed:
-        logging.info('Compressing files')
-        compress_directory(dicom_directory_out)
 
 
 anonymize_directory('/Users/abrys/Documents/git/dicom2nifti/tests/data/ge/dti/002', '/Users/abrys/Documents/git/dicom2nifti/tests/data/ge/dti/002')

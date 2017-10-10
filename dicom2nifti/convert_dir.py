@@ -5,6 +5,8 @@ this module houses all the code to just convert a directory of random dicom file
 @author: abrys
 """
 from __future__ import print_function
+
+import dicom2nifti.compressed_dicom as compressed_dicom
 import dicom2nifti.patch_pydicom_encodings
 
 dicom2nifti.patch_pydicom_encodings.apply()
@@ -51,16 +53,14 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
             file_path = os.path.join(root, dicom_file)
             # noinspection PyBroadException
             try:
-                if common.is_dicom_file(file_path):
+                if compressed_dicom.is_dicom_file(file_path):
                     # read the dicom as fast as possible
                     # (max length for SeriesInstanceUID is 64 so defer_size 100 should be ok)
-                    if convert_dicom.is_compressed(file_path):
-                        convert_dicom.decompress_dicom(file_path)
 
-                    dicom_headers = pydicom.read_file(file_path,
-                                                      defer_size=100,
-                                                      stop_before_pixels=False,
-                                                      force=dicom2nifti.settings.pydicom_read_force)
+                    dicom_headers = compressed_dicom.read_file(file_path,
+                                                               defer_size=100,
+                                                               stop_before_pixels=False,
+                                                               force=dicom2nifti.settings.pydicom_read_force)
                     if not _is_valid_imaging_dicom(dicom_headers):
                         logger.info("Skipping: %s" % file_path)
                         continue

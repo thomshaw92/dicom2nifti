@@ -14,7 +14,16 @@ import dicom2nifti.convert_dir as convert_directory
 import tests.test_data as test_data
 
 
-class TestConversionDicom(unittest.TestCase):
+class TestConversionDirectory(unittest.TestCase):
+    def test_convert_directory2(self):
+
+        tmp_output_dir = tempfile.mkdtemp()
+        try:
+            convert_directory.convert_directory('/Users/abrys/Downloads/dicom_FLAIR_9', '/Users/abrys/Downloads/')
+
+        finally:
+            shutil.rmtree(tmp_output_dir)
+
     def test_convert_directory(self):
 
         tmp_output_dir = tempfile.mkdtemp()

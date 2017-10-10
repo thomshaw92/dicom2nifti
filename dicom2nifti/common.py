@@ -5,6 +5,8 @@ dicom2nifti
 @author: abrys
 """
 from __future__ import print_function
+
+import dicom2nifti.compressed_dicom as compressed_dicom
 import dicom2nifti.patch_pydicom_encodings
 
 dicom2nifti.patch_pydicom_encodings.apply()
@@ -44,11 +46,11 @@ def read_dicom_directory(dicom_directory, stop_before_pixels=False):
     for root, _, files in os.walk(dicom_directory):
         for dicom_file in files:
             file_path = os.path.join(root, dicom_file)
-            if is_dicom_file(file_path):
-                dicom_headers = pydicom.read_file(file_path,
-                                                  defer_size=100,
-                                                  stop_before_pixels=stop_before_pixels,
-                                                  force=dicom2nifti.settings.pydicom_read_force)
+            if compressed_dicom.is_dicom_file(file_path):
+                dicom_headers = compressed_dicom.read_file(file_path,
+                                                           defer_size=100,
+                                                           stop_before_pixels=stop_before_pixels,
+                                                           force=dicom2nifti.settings.pydicom_read_force)
                 dicom_input.append(dicom_headers)
     return dicom_input
 
@@ -102,32 +104,6 @@ def _is_float(float_value):
     """
     if int(float_value) != float_value:
         return True
-
-
-def is_dicom_file(filename):
-    """
-    Util function to check if file is a dicom file
-    the first 128 bytes are preamble
-    the next 4 bytes should contain DICM otherwise it is not a dicom
-
-    :param filename: file to check for the DICM header block
-    :type filename: six.string_types
-    :returns: True if it is a dicom file
-    """
-    file_stream = open(filename, 'rb')
-    file_stream.seek(128)
-    data = file_stream.read(4)
-    file_stream.close()
-    if data == b'DICM':
-        return True
-    if dicom2nifti.settings.pydicom_read_force:
-        try:
-            dicom_headers = pydicom.read_file(filename, defer_size=100, stop_before_pixels=True, force=True)
-            if dicom_headers is not None:
-                return True
-        except:
-            pass
-    return False
 
 
 def get_numpy_type(dicom_header):
@@ -404,9 +380,9 @@ def create_affine(sorted_dicoms):
         step = (image_pos - last_image_pos) / (1 - len(sorted_dicoms))
 
     affine = numpy.matrix([[-image_orient1[0] * delta_r, -image_orient2[0] * delta_c, -step[0], -image_pos[0]],
-                         [-image_orient1[1] * delta_r, -image_orient2[1] * delta_c, -step[1], -image_pos[1]],
-                         [image_orient1[2] * delta_r, image_orient2[2] * delta_c, step[2], image_pos[2]],
-                         [0, 0, 0, 1]])
+                           [-image_orient1[1] * delta_r, -image_orient2[1] * delta_c, -step[1], -image_pos[1]],
+                           [image_orient1[2] * delta_r, image_orient2[2] * delta_c, step[2], image_pos[2]],
+                           [0, 0, 0, 1]])
     return affine
 
 

@@ -98,51 +98,6 @@ class TestConversionDicom(unittest.TestCase):
         assert convert_dicom._get_vendor(
             read_dicom_directory(test_data.GENERIC_ANATOMICAL)) == convert_dicom.Vendor.GENERIC
 
-    def test_is_compressed(self):
-        assert convert_dicom.is_compressed(test_data.GENERIC_COMPRESSED) is True
-        assert convert_dicom.is_compressed(test_data.GENERIC_ANATOMICAL) is False
-
-    def test_decompress_file(self):
-        temporary_directory = tempfile.mkdtemp()
-        try:
-            dicom_file = os.path.join(temporary_directory, 'IM-0001-0001-0001.dcm')
-            input_file = os.path.join(test_data.GENERIC_COMPRESSED, 'IM-0001-0001-0001.dcm')
-            shutil.copy(input_file, dicom_file)
-            convert_dicom.decompress_dicom(dicom_file)
-            assert os.path.isfile(dicom_file)
-        finally:
-            shutil.rmtree(temporary_directory)
-
-    def test_decompress_directory(self):
-        temporary_directory = tempfile.mkdtemp()
-        try:
-            shutil.rmtree(temporary_directory)
-            shutil.copytree(test_data.GENERIC_COMPRESSED, temporary_directory)
-            convert_dicom.decompress_directory(temporary_directory)
-            assert _count_files(test_data.GENERIC_COMPRESSED) == _count_files(temporary_directory)
-        finally:
-            shutil.rmtree(temporary_directory)
-
-    def test_compress_file(self):
-        temporary_directory = tempfile.mkdtemp()
-        try:
-            dicom_file = os.path.join(temporary_directory, 'IM-0001-0001-0001.dcm')
-            input_file = os.path.join(test_data.GENERIC_ANATOMICAL, 'IM-0001-0001-0001.dcm')
-            shutil.copy(input_file, dicom_file)
-            convert_dicom.compress_dicom(dicom_file)
-            assert os.path.isfile(dicom_file)
-        finally:
-            shutil.rmtree(temporary_directory)
-
-    def test_compress_directory(self):
-        temporary_directory = tempfile.mkdtemp()
-        try:
-            shutil.rmtree(temporary_directory)
-            shutil.copytree(test_data.GENERIC_ANATOMICAL, temporary_directory)
-            convert_dicom.compress_directory(temporary_directory)
-            assert _count_files(test_data.GENERIC_ANATOMICAL) == _count_files(temporary_directory)
-        finally:
-            shutil.rmtree(temporary_directory)
 
 
 def _count_files(directory):

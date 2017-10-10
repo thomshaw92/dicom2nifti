@@ -6,7 +6,7 @@ dicom2nifti
 """
 
 # noinspection PyUnresolvedReferences
-from .settings import disable_validate_sliceincrement, \
+from dicom2nifti.settings import disable_validate_sliceincrement, \
     disable_validate_orientation, \
     disable_validate_orthogonal, \
     disable_validate_slicecount, \
@@ -17,9 +17,9 @@ from .settings import disable_validate_sliceincrement, \
     enable_validate_sliceincrement, \
     enable_validate_multiframe_implicit
 # noinspection PyUnresolvedReferences
-from .convert_dicom import dicom_series_to_nifti
+from dicom2nifti.convert_dicom import dicom_series_to_nifti
 # noinspection PyUnresolvedReferences
-from .convert_dir import convert_directory
+from dicom2nifti.convert_dir import convert_directory
 
 # Setup the logger correctly
 import logging

@@ -7,6 +7,7 @@ dicom2nifti
 
 from __future__ import print_function
 import dicom2nifti.patch_pydicom_encodings
+
 dicom2nifti.patch_pydicom_encodings.apply()
 
 import itertools
@@ -28,6 +29,7 @@ import dicom2nifti.common as common
 import dicom2nifti.convert_generic as convert_generic
 
 logger = logging.getLogger(__name__)
+
 
 def is_ge(dicom_input):
     """
@@ -204,7 +206,7 @@ def _get_grouped_dicoms(dicom_input):
             current_direction = numpy.array(dicom_.ImagePositionPatient) - previous_position
             current_direction = current_direction / numpy.linalg.norm(current_direction)
         if current_direction is not None and \
-                previous_direction is not None and \
+                        previous_direction is not None and \
                 not numpy.allclose(current_direction, previous_direction, rtol=0.01, atol=0.01):
             previous_position = numpy.array(dicom_.ImagePositionPatient)
             previous_direction = None

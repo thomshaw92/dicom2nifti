@@ -5,18 +5,19 @@ dicom2nifti
 @author: abrys
 """
 from __future__ import print_function
+
+import logging
+
+import dicom2nifti.compressed_dicom as compressed_dicom
 import dicom2nifti.patch_pydicom_encodings
 
 dicom2nifti.patch_pydicom_encodings.apply()
 
 import os
 import tempfile
-import subprocess
 import shutil
 import sys
 
-import logging
-import six
 from six import reraise
 
 try:
@@ -33,7 +34,6 @@ import dicom2nifti.convert_ge as convert_ge
 import dicom2nifti.convert_philips as convert_philips
 import dicom2nifti.common as common
 import dicom2nifti.image_reorientation as image_reorientation
-import dicom2nifti.settings as settings
 
 logger = logging.getLogger(__name__)
 
@@ -81,8 +81,6 @@ def dicom_series_to_nifti(original_dicom_directory, output_file, reorient_nifti=
     try:
         dicom_directory = os.path.join(temp_directory, 'dicom')
         shutil.copytree(original_dicom_directory, dicom_directory)
-
-        decompress_directory(dicom_directory)
 
         dicom_input = common.read_dicom_directory(dicom_directory)
 
@@ -154,9 +152,6 @@ def are_imaging_dicoms(dicom_input):
 
     # if it is philips and multiframe dicom then we assume it is ok
     if convert_philips.is_philips(dicom_input):
-        if isinstance(dicom_input, six.string_types):  # in case it is a directory
-            # in case of philips we need the actual uncompressed data for the check
-            decompress_directory(dicom_input)
         if convert_philips.is_multiframe_dicom(dicom_input):
             return True
 
@@ -187,99 +182,6 @@ def _get_vendor(dicom_input):
     return Vendor.GENERIC
 
 
-def decompress_dicom(input_file):
-    """
-    This function can be used to convert a jpeg compressed image to an uncompressed one for further conversion
-
-    :param input_file: single dicom file to decompress
-    """
-    gdcmconv_executable = settings.gdcmconv_path
-    if gdcmconv_executable is None:
-        gdcmconv_executable = _which('gdcmconv')
-    if gdcmconv_executable is None:
-        gdcmconv_executable = _which('gdcmconv.exe')
-
-    subprocess.check_output([gdcmconv_executable, '-w', input_file, input_file])
-
-
-def decompress_directory(dicom_directory):
-    """
-    This function can be used to convert a folder of jpeg compressed images to an uncompressed ones
-
-    :param dicom_directory: directory with dicom files to decompress
-    """
-    if not is_compressed(dicom_directory):
-        return
-
-    if settings.gdcmconv_path is None and _which('gdcmconv') is None and _which('gdcmconv.exe') is None:
-        raise ConversionError('GDCMCONV_NOT_FOUND')
-
-    logger.info('Decompressing dicom files in %s' % dicom_directory)
-    for root, _, files in os.walk(dicom_directory):
-        for dicom_file in files:
-            if common.is_dicom_file(os.path.join(root, dicom_file)):
-                decompress_dicom(os.path.join(root, dicom_file))
-
-
-def compress_dicom(input_file):
-    """
-    This function can be used to convert a jpeg compressed image to an uncompressed one for further conversion
-
-    :param input_file: single dicom file to compress
-    """
-    gdcmconv_executable = settings.gdcmconv_path
-    if gdcmconv_executable is None:
-        gdcmconv_executable = _which('gdcmconv')
-    if gdcmconv_executable is None:
-        gdcmconv_executable = _which('gdcmconv.exe')
-
-    subprocess.check_output([gdcmconv_executable, '-K', input_file, input_file])
-
-
-def compress_directory(dicom_directory):
-    """
-    This function can be used to convert a folder of jpeg compressed images to an uncompressed ones
-
-    :param dicom_directory: directory of dicom files to compress
-    """
-    if is_compressed(dicom_directory):
-        return
-
-    if _which('gdcmconv') is None and _which('gdcmconv.exe') is None:
-        raise ConversionError('GDCMCONV_NOT_FOUND')
-
-    logger.info('Compressing dicom files in %s' % dicom_directory)
-    for root, _, files in os.walk(dicom_directory):
-        for dicom_file in files:
-            if common.is_dicom_file(os.path.join(root, dicom_file)):
-                compress_dicom(os.path.join(root, dicom_file))
-
-
-def is_compressed(dicom_input):
-    """
-    Check if dicoms are compressed or not
-
-    :param dicom_input: directory with dicom files for 1 scan or a single dicom file
-    """
-    # read dicom header
-    if os.path.isfile(dicom_input):
-        header = pydicom.read_file(dicom_input,
-                                   defer_size=70,
-                                   stop_before_pixels=True,
-                                   force=dicom2nifti.settings.pydicom_read_force)
-    else:
-        header = _get_first_header(dicom_input)
-
-    uncompressed_types = ["1.2.840.10008.1.2",
-                          "1.2.840.10008.1.2.1",
-                          "1.2.840.10008.1.2.1.99",
-                          "1.2.840.10008.1.2.2"]
-
-    if 'TransferSyntaxUID' in header.file_meta and header.file_meta.TransferSyntaxUID in uncompressed_types:
-        return False
-    return True
-
-
 def _get_first_header(dicom_directory):
     """
     Function to get the first dicom file form a directory and return the header
@@ -293,31 +195,11 @@ def _get_first_header(dicom_directory):
         for file_name in file_names:
             file_path = os.path.join(root, file_name)
             # check wither it is a dicom file
-            if not common.is_dicom_file(file_path):
+            if not compressed_dicom.is_dicom_file(file_path):
                 continue
             # read the headers
-            return pydicom.read_file(file_path,
-                                     stop_before_pixels=True,
-                                     force=dicom2nifti.settings.pydicom_read_force)
+            return compressed_dicom.read_file(file_path,
+                                              stop_before_pixels=True,
+                                              force=dicom2nifti.settings.pydicom_read_force)
     # no dicom files found
     raise ConversionError('NO_DICOM_FILES_FOUND')
-
-
-def _which(program):
-    import os
-
-    def is_exe(executable_file):
-        return os.path.isfile(executable_file) and os.access(executable_file, os.X_OK)
-
-    file_path, file_name = os.path.split(program)
-    if file_path:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            path = path.strip('"')
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-
-    return None

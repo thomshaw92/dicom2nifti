@@ -15,7 +15,8 @@ import unittest
 import tests.test_data as test_data
 
 import dicom2nifti.convert_generic as convert_generic
-from dicom2nifti.common import is_dicom_file, read_dicom_directory
+from dicom2nifti.common import read_dicom_directory
+from dicom2nifti.compressed_dicom import is_dicom_file
 from tests.test_tools import compare_nifti, ground_thruth_filenames
 
 

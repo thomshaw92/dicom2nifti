@@ -8,6 +8,8 @@ import sys
 
 import dicom
 
+import dicom2nifti.compressed_dicom as compressed_dicom
+
 
 def dicom_diff(file1, file2):
     """ Shows the fields that differ between two DICOM images.
@@ -15,7 +17,7 @@ def dicom_diff(file1, file2):
     Inspired by https://code.google.com/p/pydicom/source/browse/source/dicom/examples/DicomDiff.py
     """
 
-    datasets = dicom.read_file(file1), dicom.read_file(file2)
+    datasets = compressed_dicom.read_file(file1), compressed_dicom.read_file(file2)
 
     rep = []
 

@@ -91,6 +91,13 @@ def _get_slice_pixeldata(dicom_slice):
     :param dicom_slice: slice to get the pixeldata for
     """
     data = dicom_slice.pixel_array
+    # fix overflow issues for signed data where BitsStored is lower than BitsAllocated
+    # for example a hitachi mri scan can have BitsAllocated 16 but BitsStored is 12 and HighBit 11
+    if dicom_slice.BitsAllocated != dicom_slice.BitsStored and dicom_slice.HighBit == dicom_slice.BitsStored - 1 :
+        max_value = pow(2, dicom_slice.HighBit) - 1
+        invert_value = -1 ^ max_value
+        data[data > max_value] = numpy.bitwise_or(data[data > max_value], invert_value)
+        pass
     return apply_scaling(data, dicom_slice)
 
 

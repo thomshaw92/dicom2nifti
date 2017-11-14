@@ -105,7 +105,7 @@ def _is_mosaic(dicom_input):
         header = dicom_input[0]
 
     # check if image type contains m and mosaic
-    if 'MOSAIC' not in header.ImageType:
+    if 'ImageType' not in header or 'MOSAIC' not in header.ImageType:
         return False
 
     if 'AcquisitionMatrix' not in header or header.AcquisitionMatrix is None:

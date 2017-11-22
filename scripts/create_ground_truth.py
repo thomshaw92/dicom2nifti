@@ -19,9 +19,11 @@ def subdir_count(path):
 
 
 def main():
-    for root, dir_names, _ in os.walk(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
-                                                   'tests',
-                                                   'data')):
+    test_data_directory = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                       'tests',
+                                       'data')
+    print(test_data_directory)
+    for root, dir_names, _ in os.walk(test_data_directory):
         settings.disable_validate_multiframe_implicit()
         # New directory
         for dir_name in dir_names:

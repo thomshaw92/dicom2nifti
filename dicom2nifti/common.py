@@ -91,9 +91,13 @@ def _get_slice_pixeldata(dicom_slice):
     :param dicom_slice: slice to get the pixeldata for
     """
     data = dicom_slice.pixel_array
-    # fix overflow issues for signed data where BitsStored is lower than BitsAllocated
+    # fix overflow issues for signed data where BitsStored is lower than BitsAllocated and PixelReprentation = 1 (signed)
     # for example a hitachi mri scan can have BitsAllocated 16 but BitsStored is 12 and HighBit 11
-    if dicom_slice.BitsAllocated != dicom_slice.BitsStored and dicom_slice.HighBit == dicom_slice.BitsStored - 1 :
+    if dicom_slice.BitsAllocated != dicom_slice.BitsStored and \
+                    dicom_slice.HighBit == dicom_slice.BitsStored - 1 and \
+                    dicom_slice.PixelRepresentation == 1:
+        if dicom_slice.BitsAllocated == 16:
+            data = data.astype(numpy.int16)  # assert that it is a signed type
         max_value = pow(2, dicom_slice.HighBit) - 1
         invert_value = -1 ^ max_value
         data[data > max_value] = numpy.bitwise_or(data[data > max_value], invert_value)
@@ -419,6 +423,30 @@ def validate_orthogonal(dicoms):
         logger.warning(combined_dir)
         logger.warning('---------------------------------------------------------')
         raise ConversionValidationError('NON_CUBICAL_IMAGE/GANTRY_TILT')
+
+
+def sort_dicoms(dicoms):
+    """
+    Sort the dicoms based om the image possition patient
+
+    :param dicoms: list of dicoms
+    """
+    # find most significant axis to use during sorting
+    # the original way of sorting (first x than y than z) does not work in certain border situations
+    # where for exampe the X will only slightly change causing the values to remain equal on multiple slices
+    # messing up the sorting completely)
+    dicom_input_sorted_x = sorted(dicoms, key=lambda x: (x.ImagePositionPatient[0]))
+    dicom_input_sorted_y = sorted(dicoms, key=lambda x: (x.ImagePositionPatient[1]))
+    dicom_input_sorted_z = sorted(dicoms, key=lambda x: (x.ImagePositionPatient[2]))
+    diff_x = abs(dicom_input_sorted_x[-1].ImagePositionPatient[0] - dicom_input_sorted_x[0].ImagePositionPatient[0])
+    diff_y = abs(dicom_input_sorted_y[-1].ImagePositionPatient[1] - dicom_input_sorted_y[0].ImagePositionPatient[1])
+    diff_z = abs(dicom_input_sorted_z[-1].ImagePositionPatient[2] - dicom_input_sorted_z[0].ImagePositionPatient[2])
+    if diff_x >= diff_y and diff_x >= diff_z:
+        return dicom_input_sorted_x
+    if diff_y >= diff_x and diff_y >= diff_z:
+        return dicom_input_sorted_y
+    if diff_z >= diff_x and diff_z >= diff_y:
+        return dicom_input_sorted_z
 
 
 def validate_sliceincrement(dicoms):

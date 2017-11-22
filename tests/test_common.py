@@ -15,7 +15,8 @@ from dicom2nifti.common import read_dicom_directory, \
     validate_sliceincrement, \
     validate_slicecount, \
     validate_orthogonal, \
-    validate_orientation
+    validate_orientation, \
+    sort_dicoms
 from dicom2nifti.convert_generic import dicom_to_nifti
 from dicom2nifti.exceptions import ConversionValidationError
 
@@ -28,11 +29,11 @@ class TestConversionCommon(unittest.TestCase):
         dicom2nifti.enable_validate_orthogonal()
 
     def test_validate_sliceincrement(self):
-        validate_sliceincrement(read_dicom_directory(test_data.GE_ANATOMICAL))
+        validate_sliceincrement(sort_dicoms(read_dicom_directory(test_data.GE_ANATOMICAL)))
 
         self.assertRaises(ConversionValidationError,
                           validate_sliceincrement,
-                          read_dicom_directory(test_data.FAILING_SLICEINCREMENT))
+                          sort_dicoms(read_dicom_directory(test_data.FAILING_SLICEINCREMENT)))
 
     def test_validate_sliceincrement_disabled(self):
         tmp_output_dir = tempfile.mkdtemp()

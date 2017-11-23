@@ -78,13 +78,17 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
         # noinspection PyBroadException
         try:
             # construct the filename for the nifti
-            base_filename = _remove_accents('%s' % dicom_input[0].SeriesNumber)
-            if 'SequenceName' in dicom_input[0]:
-                base_filename = _remove_accents('%s_%s' % (dicom_input[0].SeriesNumber,
-                                                           dicom_input[0].SequenceName))
-            elif 'ProtocolName' in dicom_input[0]:
-                base_filename = _remove_accents('%s_%s' % (dicom_input[0].SeriesNumber,
-                                                           dicom_input[0].ProtocolName))
+            base_filename = ""
+            if 'SeriesNumber' in dicom_input[0]:
+                base_filename = _remove_accents('%s' % dicom_input[0].SeriesNumber)
+                if 'SequenceName' in dicom_input[0]:
+                    base_filename = _remove_accents('%s_%s' % (base_filename,
+                                                               dicom_input[0].SequenceName))
+                elif 'ProtocolName' in dicom_input[0]:
+                    base_filename = _remove_accents('%s_%s' % (base_filename,
+                                                               dicom_input[0].ProtocolName))
+            else:
+                base_filename = _remove_accents(dicom_input[0].SeriesInstanceUID)
             logger.info('--------------------------------------------')
             logger.info('Start converting %s' % base_filename)
             if compression:

@@ -56,6 +56,7 @@
  | <a href="#D"><strong>D</strong></a>
  | <a href="#E"><strong>E</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#H"><strong>H</strong></a>
  | <a href="#I"><strong>I</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#N"><strong>N</strong></a>
@@ -90,16 +91,14 @@
 <h2 id="C">C</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.compress_dicom">compress_dicom() (in module dicom2nifti.convert_dicom)</a>
-</li>
-      <li><a href="dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.compress_directory">compress_directory() (in module dicom2nifti.convert_dicom)</a>
+      <li><a href="dicom2nifti.compressed_dicom.html#dicom2nifti.compressed_dicom.compress_directory">compress_directory() (in module dicom2nifti.compressed_dicom)</a>
 </li>
       <li><a href="dicom2nifti.exceptions.html#dicom2nifti.exceptions.ConversionError">ConversionError</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dicom2nifti.exceptions.html#dicom2nifti.exceptions.ConversionValidationError">ConversionValidationError</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dicom2nifti.convert_dir.html#dicom2nifti.convert_dir.convert_directory">convert_directory() (in module dicom2nifti.convert_dir)</a>
 </li>
       <li><a href="dicom2nifti.image_volume.html#dicom2nifti.image_volume.SliceType.CORONAL">CORONAL (dicom2nifti.image_volume.SliceType attribute)</a>
@@ -112,15 +111,13 @@
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.decompress_dicom">decompress_dicom() (in module dicom2nifti.convert_dicom)</a>
-</li>
-      <li><a href="dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.decompress_directory">decompress_directory() (in module dicom2nifti.convert_dicom)</a>
-</li>
       <li><a href="dicom2nifti.convert_siemens.html#dicom2nifti.convert_siemens.MosaicType.DESCENDING">DESCENDING (dicom2nifti.convert_siemens.MosaicType attribute)</a>
 </li>
       <li><a href="dicom2nifti.html#module-dicom2nifti">dicom2nifti (module)</a>
 </li>
       <li><a href="dicom2nifti.common.html#module-dicom2nifti.common">dicom2nifti.common (module)</a>
+</li>
+      <li><a href="dicom2nifti.compressed_dicom.html#module-dicom2nifti.compressed_dicom">dicom2nifti.compressed_dicom (module)</a>
 </li>
       <li><a href="dicom2nifti.convert_dicom.html#module-dicom2nifti.convert_dicom">dicom2nifti.convert_dicom (module)</a>
 </li>
@@ -129,6 +126,8 @@
       <li><a href="dicom2nifti.convert_ge.html#module-dicom2nifti.convert_ge">dicom2nifti.convert_ge (module)</a>
 </li>
       <li><a href="dicom2nifti.convert_generic.html#module-dicom2nifti.convert_generic">dicom2nifti.convert_generic (module)</a>
+</li>
+      <li><a href="dicom2nifti.convert_hitachi.html#module-dicom2nifti.convert_hitachi">dicom2nifti.convert_hitachi (module)</a>
 </li>
       <li><a href="dicom2nifti.convert_philips.html#module-dicom2nifti.convert_philips">dicom2nifti.convert_philips (module)</a>
 </li>
@@ -140,10 +139,10 @@
 </li>
       <li><a href="dicom2nifti.image_volume.html#module-dicom2nifti.image_volume">dicom2nifti.image_volume (module)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dicom2nifti.patch_pydicom_encodings.html#module-dicom2nifti.patch_pydicom_encodings">dicom2nifti.patch_pydicom_encodings (module)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dicom2nifti.settings.html#module-dicom2nifti.settings">dicom2nifti.settings (module)</a>
 </li>
       <li><a href="dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.dicom_array_to_nifti">dicom_array_to_nifti() (in module dicom2nifti.convert_dicom)</a>
@@ -154,6 +153,8 @@
 
       <ul>
         <li><a href="dicom2nifti.convert_generic.html#dicom2nifti.convert_generic.dicom_to_nifti">(in module dicom2nifti.convert_generic)</a>
+</li>
+        <li><a href="dicom2nifti.convert_hitachi.html#dicom2nifti.convert_hitachi.dicom_to_nifti">(in module dicom2nifti.convert_hitachi)</a>
 </li>
         <li><a href="dicom2nifti.convert_philips.html#dicom2nifti.convert_philips.dicom_to_nifti">(in module dicom2nifti.convert_philips)</a>
 </li>
@@ -225,18 +226,26 @@
   </ul></td>
 </tr></table>
 
+<h2 id="H">H</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.Vendor.HITACHI">HITACHI (dicom2nifti.convert_dicom.Vendor attribute)</a>
+</li>
+  </ul></td>
+</tr></table>
+
 <h2 id="I">I</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dicom2nifti.image_volume.html#dicom2nifti.image_volume.ImageVolume">ImageVolume (class in dicom2nifti.image_volume)</a>
 </li>
-      <li><a href="dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.is_compressed">is_compressed() (in module dicom2nifti.convert_dicom)</a>
+      <li><a href="dicom2nifti.compressed_dicom.html#dicom2nifti.compressed_dicom.is_dicom_file">is_dicom_file() (in module dicom2nifti.compressed_dicom)</a>
 </li>
-      <li><a href="dicom2nifti.common.html#dicom2nifti.common.is_dicom_file">is_dicom_file() (in module dicom2nifti.common)</a>
+      <li><a href="dicom2nifti.convert_ge.html#dicom2nifti.convert_ge.is_ge">is_ge() (in module dicom2nifti.convert_ge)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
-      <li><a href="dicom2nifti.convert_ge.html#dicom2nifti.convert_ge.is_ge">is_ge() (in module dicom2nifti.convert_ge)</a>
+      <li><a href="dicom2nifti.convert_hitachi.html#dicom2nifti.convert_hitachi.is_hitachi">is_hitachi() (in module dicom2nifti.convert_hitachi)</a>
 </li>
       <li><a href="dicom2nifti.convert_philips.html#dicom2nifti.convert_philips.is_multiframe_dicom">is_multiframe_dicom() (in module dicom2nifti.convert_philips)</a>
 </li>
@@ -286,6 +295,8 @@
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dicom2nifti.compressed_dicom.html#dicom2nifti.compressed_dicom.read_file">read_file() (in module dicom2nifti.compressed_dicom)</a>
+</li>
       <li><a href="dicom2nifti.image_reorientation.html#dicom2nifti.image_reorientation.reorient_image">reorient_image() (in module dicom2nifti.image_reorientation)</a>
 </li>
   </ul></td>
@@ -315,6 +326,8 @@
       <li><a href="dicom2nifti.image_volume.html#dicom2nifti.image_volume.SliceOrientation">SliceOrientation (class in dicom2nifti.image_volume)</a>
 </li>
       <li><a href="dicom2nifti.image_volume.html#dicom2nifti.image_volume.SliceType">SliceType (class in dicom2nifti.image_volume)</a>
+</li>
+      <li><a href="dicom2nifti.common.html#dicom2nifti.common.sort_dicoms">sort_dicoms() (in module dicom2nifti.common)</a>
 </li>
   </ul></td>
 </tr></table>

@@ -207,24 +207,6 @@ we should get the correct dtype that can cover all of them</p>
 </dd></dl>
 
 <dl class="function">
-<dt id="dicom2nifti.common.is_dicom_file">
-<code class="descclassname">dicom2nifti.common.</code><code class="descname">is_dicom_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#is_dicom_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.is_dicom_file" title="Permalink to this definition">¶</a></dt>
-<dd><p>Util function to check if file is a dicom file
-the first 128 bytes are preamble
-the next 4 bytes should contain DICM otherwise it is not a dicom</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename</strong> (<em>six.string_types</em>) &#8211; file to check for the DICM header block</td>
-</tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True if it is a dicom file</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
 <dt id="dicom2nifti.common.read_dicom_directory">
 <code class="descclassname">dicom2nifti.common.</code><code class="descname">read_dicom_directory</code><span class="sig-paren">(</span><em>dicom_directory</em>, <em>stop_before_pixels=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#read_dicom_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.read_dicom_directory" title="Permalink to this definition">¶</a></dt>
 <dd><p>Read all dicom files in a given directory (stop before pixels)</p>
@@ -295,6 +277,20 @@ the next 4 bytes should contain DICM otherwise it is not a dicom</p>
 <li><strong>nifti_image</strong> &#8211; nifti image to set the info to</li>
 </ul>
 </td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.common.sort_dicoms">
+<code class="descclassname">dicom2nifti.common.</code><code class="descname">sort_dicoms</code><span class="sig-paren">(</span><em>dicoms</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/common.html#sort_dicoms"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.common.sort_dicoms" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sort the dicoms based om the image possition patient</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dicoms</strong> &#8211; list of dicoms</td>
 </tr>
 </tbody>
 </table>

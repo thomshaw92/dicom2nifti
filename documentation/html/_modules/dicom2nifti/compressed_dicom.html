@@ -1,0 +1,230 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dicom2nifti.compressed_dicom &#8212; dicom2nifti  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dicom2nifti.compressed_dicom</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">dicom2nifti.settings</span> <span class="k">as</span> <span class="nn">settings</span>
+<span class="kn">from</span> <span class="nn">dicom2nifti.exceptions</span> <span class="k">import</span> <span class="n">ConversionError</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pydicom</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">dicom</span> <span class="k">as</span> <span class="nn">pydicom</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="read_file"><a class="viewcode-back" href="../../dicom2nifti.compressed_dicom.html#dicom2nifti.compressed_dicom.read_file">[docs]</a><span class="k">def</span> <span class="nf">read_file</span><span class="p">(</span><span class="n">dicom_file</span><span class="p">,</span> <span class="n">defer_size</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stop_before_pixels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">_is_compressed</span><span class="p">(</span><span class="n">dicom_file</span><span class="p">,</span> <span class="n">force</span><span class="p">):</span>
+        <span class="n">_decompress_dicom</span><span class="p">(</span><span class="n">dicom_file</span><span class="p">)</span>
+
+    <span class="n">dicom_header</span> <span class="o">=</span> <span class="n">pydicom</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">dicom_file</span><span class="p">,</span>
+                                     <span class="n">defer_size</span><span class="o">=</span><span class="n">defer_size</span><span class="p">,</span>
+                                     <span class="n">stop_before_pixels</span><span class="o">=</span><span class="n">stop_before_pixels</span><span class="p">,</span>
+                                     <span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">dicom_header</span></div>
+
+
+<span class="k">def</span> <span class="nf">_compress_dicom</span><span class="p">(</span><span class="n">input_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function can be used to convert a jpeg compressed image to an uncompressed one for further conversion</span>
+
+<span class="sd">    :param input_file: single dicom file to compress</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">gdcmconv_path</span>
+    <span class="k">if</span> <span class="n">gdcmconv_executable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">gdcmconv_executable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv.exe&#39;</span><span class="p">)</span>
+
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="n">gdcmconv_executable</span><span class="p">,</span> <span class="s1">&#39;-K&#39;</span><span class="p">,</span> <span class="n">input_file</span><span class="p">,</span> <span class="n">input_file</span><span class="p">])</span>
+
+
+<div class="viewcode-block" id="compress_directory"><a class="viewcode-back" href="../../dicom2nifti.compressed_dicom.html#dicom2nifti.compressed_dicom.compress_directory">[docs]</a><span class="k">def</span> <span class="nf">compress_directory</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function can be used to convert a folder of jpeg compressed images to an uncompressed ones</span>
+
+<span class="sd">    :param dicom_directory: directory of dicom files to compress</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">_is_compressed</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv.exe&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;GDCMCONV_NOT_FOUND&#39;</span><span class="p">)</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Compressing dicom files in </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">dicom_directory</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">dicom_file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">is_dicom_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">)):</span>
+                <span class="n">_compress_dicom</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="is_dicom_file"><a class="viewcode-back" href="../../dicom2nifti.compressed_dicom.html#dicom2nifti.compressed_dicom.is_dicom_file">[docs]</a><span class="k">def</span> <span class="nf">is_dicom_file</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Util function to check if file is a dicom file</span>
+<span class="sd">    the first 128 bytes are preamble</span>
+<span class="sd">    the next 4 bytes should contain DICM otherwise it is not a dicom</span>
+
+<span class="sd">    :param filename: file to check for the DICM header block</span>
+<span class="sd">    :type filename: six.string_types</span>
+<span class="sd">    :returns: True if it is a dicom file</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">file_stream</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">file_stream</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="mi">128</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">file_stream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">file_stream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">data</span> <span class="o">==</span> <span class="sa">b</span><span class="s1">&#39;DICM&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">pydicom_read_force</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dicom_headers</span> <span class="o">=</span> <span class="n">pydicom</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">defer_size</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">stop_before_pixels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dicom_headers</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="k">pass</span>
+    <span class="k">return</span> <span class="kc">False</span></div>
+
+
+<span class="k">def</span> <span class="nf">_is_compressed</span><span class="p">(</span><span class="n">dicom_file</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Check if dicoms are compressed or not</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">header</span> <span class="o">=</span> <span class="n">pydicom</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">dicom_file</span><span class="p">,</span>
+                               <span class="n">defer_size</span><span class="o">=</span><span class="mi">70</span><span class="p">,</span>
+                               <span class="n">stop_before_pixels</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                               <span class="n">force</span><span class="o">=</span><span class="n">force</span><span class="p">)</span>
+
+    <span class="n">uncompressed_types</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;1.2.840.10008.1.2&quot;</span><span class="p">,</span>
+                          <span class="s2">&quot;1.2.840.10008.1.2.1&quot;</span><span class="p">,</span>
+                          <span class="s2">&quot;1.2.840.10008.1.2.1.99&quot;</span><span class="p">,</span>
+                          <span class="s2">&quot;1.2.840.10008.1.2.2&quot;</span><span class="p">]</span>
+
+    <span class="k">if</span> <span class="s1">&#39;TransferSyntaxUID&#39;</span> <span class="ow">in</span> <span class="n">header</span><span class="o">.</span><span class="n">file_meta</span> <span class="ow">and</span> <span class="n">header</span><span class="o">.</span><span class="n">file_meta</span><span class="o">.</span><span class="n">TransferSyntaxUID</span> <span class="ow">in</span> <span class="n">uncompressed_types</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span> <span class="nf">_decompress_dicom</span><span class="p">(</span><span class="n">dicom_file</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function can be used to convert a jpeg compressed image to an uncompressed one for further conversion</span>
+
+<span class="sd">    :param input_file: single dicom file to decompress</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">gdcmconv_path</span>
+    <span class="k">if</span> <span class="n">gdcmconv_executable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">gdcmconv_executable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv.exe&#39;</span><span class="p">)</span>
+
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="n">gdcmconv_executable</span><span class="p">,</span> <span class="s1">&#39;-w&#39;</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">_which</span><span class="p">(</span><span class="n">program</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+
+    <span class="k">def</span> <span class="nf">is_exe</span><span class="p">(</span><span class="n">executable_file</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">executable_file</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">executable_file</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">X_OK</span><span class="p">)</span>
+
+    <span class="n">file_path</span><span class="p">,</span> <span class="n">file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">file_path</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">is_exe</span><span class="p">(</span><span class="n">program</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">program</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;PATH&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">strip</span><span class="p">(</span><span class="s1">&#39;&quot;&#39;</span><span class="p">)</span>
+            <span class="n">exe_file</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">program</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">is_exe</span><span class="p">(</span><span class="n">exe_file</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">exe_file</span>
+
+    <span class="k">return</span> <span class="kc">None</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, icometrix.
+    </div>
+  </body>
+</html>

@@ -95,12 +95,12 @@
     <span class="k">if</span> <span class="s1">&#39;Manufacturer&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span> <span class="ow">or</span> <span class="s1">&#39;Modality&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">False</span>  <span class="c1"># we try generic conversion in these cases</span>
 
-    <span class="c1"># check if manufacturer is Philips</span>
-    <span class="k">if</span> <span class="s1">&#39;PHILIPS&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="o">.</span><span class="n">Manufacturer</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
-        <span class="k">return</span> <span class="kc">False</span>
-
     <span class="c1"># check if Modality is mr</span>
     <span class="k">if</span> <span class="n">header</span><span class="o">.</span><span class="n">Modality</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span> <span class="o">!=</span> <span class="s1">&#39;MR&#39;</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="c1"># check if manufacturer is Philips</span>
+    <span class="k">if</span> <span class="s1">&#39;PHILIPS&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="o">.</span><span class="n">Manufacturer</span><span class="o">.</span><span class="n">upper</span><span class="p">():</span>
         <span class="k">return</span> <span class="kc">False</span>
 
     <span class="k">return</span> <span class="kc">True</span></div>

@@ -75,6 +75,11 @@
 <dd></dd></dl>
 
 <dl class="attribute">
+<dt id="dicom2nifti.convert_dicom.Vendor.HITACHI">
+<code class="descname">HITACHI</code><em class="property"> = 4</em><a class="headerlink" href="#dicom2nifti.convert_dicom.Vendor.HITACHI" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
 <dt id="dicom2nifti.convert_dicom.Vendor.PHILIPS">
 <code class="descname">PHILIPS</code><em class="property"> = 3</em><a class="headerlink" href="#dicom2nifti.convert_dicom.Vendor.PHILIPS" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
@@ -96,62 +101,6 @@ Possibilities are fMRI, DTI, Anatomical (if no clear type is found anatomical is
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dicom_input</strong> &#8211; directory with dicom files or a list of dicom objects</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="dicom2nifti.convert_dicom.compress_dicom">
-<code class="descclassname">dicom2nifti.convert_dicom.</code><code class="descname">compress_dicom</code><span class="sig-paren">(</span><em>input_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/convert_dicom.html#compress_dicom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.convert_dicom.compress_dicom" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function can be used to convert a jpeg compressed image to an uncompressed one for further conversion</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_file</strong> &#8211; single dicom file to compress</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="dicom2nifti.convert_dicom.compress_directory">
-<code class="descclassname">dicom2nifti.convert_dicom.</code><code class="descname">compress_directory</code><span class="sig-paren">(</span><em>dicom_directory</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/convert_dicom.html#compress_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.convert_dicom.compress_directory" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function can be used to convert a folder of jpeg compressed images to an uncompressed ones</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dicom_directory</strong> &#8211; directory of dicom files to compress</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="dicom2nifti.convert_dicom.decompress_dicom">
-<code class="descclassname">dicom2nifti.convert_dicom.</code><code class="descname">decompress_dicom</code><span class="sig-paren">(</span><em>input_file</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/convert_dicom.html#decompress_dicom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.convert_dicom.decompress_dicom" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function can be used to convert a jpeg compressed image to an uncompressed one for further conversion</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>input_file</strong> &#8211; single dicom file to decompress</td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="dicom2nifti.convert_dicom.decompress_directory">
-<code class="descclassname">dicom2nifti.convert_dicom.</code><code class="descname">decompress_directory</code><span class="sig-paren">(</span><em>dicom_directory</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/convert_dicom.html#decompress_directory"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.convert_dicom.decompress_directory" title="Permalink to this definition">¶</a></dt>
-<dd><p>This function can be used to convert a folder of jpeg compressed images to an uncompressed ones</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dicom_directory</strong> &#8211; directory with dicom files to decompress</td>
 </tr>
 </tbody>
 </table>
@@ -212,20 +161,6 @@ Inspired by <a class="reference external" href="http://code.google.com/p/pydicom
 <li><strong>original_dicom_directory</strong> &#8211; directory with the dicom files for a single series/scan</li>
 </ul>
 </td>
-</tr>
-</tbody>
-</table>
-</dd></dl>
-
-<dl class="function">
-<dt id="dicom2nifti.convert_dicom.is_compressed">
-<code class="descclassname">dicom2nifti.convert_dicom.</code><code class="descname">is_compressed</code><span class="sig-paren">(</span><em>dicom_input</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/convert_dicom.html#is_compressed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.convert_dicom.is_compressed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Check if dicoms are compressed or not</p>
-<table class="docutils field-list" frame="void" rules="none">
-<col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>dicom_input</strong> &#8211; directory with dicom files for 1 scan or a single dicom file</td>
 </tr>
 </tbody>
 </table>

@@ -98,6 +98,12 @@ For classic dicom files 4D images like fMRI and DTI/DKI are supported.
 For "Philips Enhanced Dicom" there is no support for "Implicit VR Endian" transfer syntax.
 For the others we support anatomical and 4D images like fMRI and DTI/DKI.
 
+Hitachi MR
+^^^^^^^^^^^
+Anatomical data should all be support.
+4D images like fMRI and DTI/DKI are NOT supported.
+Anyone willing to share DTI and/or fMRI dicom form Hitachi scanners please contact us.
+
 ------------------
  Unsupported data
 ------------------

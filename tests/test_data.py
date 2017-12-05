@@ -114,6 +114,13 @@ SIEMENS_CLASSIC_FMRI = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 SIEMENS_CLASSIC_FMRI_IMPLICIT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                              'data', 'siemens', 'fmri_classic', '001_implicit')
 
+# SIEMENS DATASETS
+HITACHI_ANATOMICAL = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                  'data', 'hitachi', 'anatomical', '001')
+
+HITACHI_ANATOMICAL_IMPLICIT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                           'data', 'hitachi', 'anatomical', '001_implicit')
+
 # FAILING
 FAILING_SLICEINCREMENT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                       'data', 'failing', 'sliceincrement', '001')

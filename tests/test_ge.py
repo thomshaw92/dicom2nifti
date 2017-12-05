@@ -84,6 +84,8 @@ class TestConversionGE(unittest.TestCase):
         assert not convert_ge.is_ge(read_dicom_directory(test_data.SIEMENS_ANATOMICAL))
         assert convert_ge.is_ge(read_dicom_directory(test_data.GE_ANATOMICAL))
         assert not convert_ge.is_ge(read_dicom_directory(test_data.PHILIPS_ANATOMICAL))
+        assert not convert_ge.is_ge(read_dicom_directory(test_data.GENERIC_ANATOMICAL))
+        assert not convert_ge.is_ge(read_dicom_directory(test_data.HITACHI_ANATOMICAL))
 
     def test_is_4d(self):
         diffusion_group = convert_ge._get_grouped_dicoms(read_dicom_directory(test_data.GE_DTI))

@@ -10,6 +10,7 @@ import logging
 
 import dicom2nifti.compressed_dicom as compressed_dicom
 import dicom2nifti.patch_pydicom_encodings
+from dicom2nifti import convert_hitachi
 
 dicom2nifti.patch_pydicom_encodings.apply()
 
@@ -50,6 +51,7 @@ class Vendor(object):
     SIEMENS = 1
     GE = 2
     PHILIPS = 3
+    HITACHI = 4
 
 
 # pylint: enable=w0232, r0903, C0103
@@ -133,6 +135,8 @@ def dicom_array_to_nifti(dicom_list, output_file, reorient_nifti=True):
         results = convert_ge.dicom_to_nifti(dicom_list, output_file)
     elif vendor == Vendor.PHILIPS:
         results = convert_philips.dicom_to_nifti(dicom_list, output_file)
+    elif vendor == Vendor.HITACHI:
+        results = convert_hitachi.dicom_to_nifti(dicom_list, output_file)
     else:
         raise ConversionValidationError("UNSUPPORTED_DATA")
 
@@ -165,19 +169,23 @@ def _get_vendor(dicom_input):
     This function will check the dicom headers to see which type of series it is
     Possibilities are fMRI, DTI, Anatomical (if no clear type is found anatomical is used)
     """
-    # check if it is siemens frmi
+    # check if it is siemens
     if convert_siemens.is_siemens(dicom_input):
         logger.info('Found manufacturer: SIEMENS')
         return Vendor.SIEMENS
-    # check if it is ge frmi
+    # check if it is ge
     if convert_ge.is_ge(dicom_input):
         logger.info('Found manufacturer: GE')
         return Vendor.GE
-    # check if it is ge frmi
+    # check if it is philips
     if convert_philips.is_philips(dicom_input):
         logger.info('Found manufacturer: PHILIPS')
         return Vendor.PHILIPS
-    # check if it is siemens dti
+    # check if it is philips
+    if convert_hitachi.is_hitachi(dicom_input):
+        logger.info('Found manufacturer: HITACHI')
+        return Vendor.HITACHI
+    # generic by default
     logger.info('WARNING: Assuming generic vendor conversion (ANATOMICAL)')
     return Vendor.GENERIC
 

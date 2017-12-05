@@ -81,6 +81,12 @@ class TestConversionDicom(unittest.TestCase):
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GENERIC_COMPRESSED)[1]) is True
 
+            results = convert_dicom.dicom_series_to_nifti(test_data.HITACHI_ANATOMICAL,
+                                                          os.path.join(tmp_output_dir, 'test.nii.gz'),
+                                                          True)
+            assert compare_nifti(results['NII_FILE'],
+                                 ground_thruth_filenames(test_data.HITACHI_ANATOMICAL)[1]) is True
+
         finally:
             shutil.rmtree(tmp_output_dir)
 

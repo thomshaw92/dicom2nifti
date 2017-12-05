@@ -16,7 +16,7 @@ import datetime
 from six import string_types, iteritems
 
 import dicom2nifti.compressed_dicom as compressed_dicom
-from dicom2nifti.common import is_dicom_file, read_dicom_directory
+from dicom2nifti.common import read_dicom_directory
 from dicom2nifti.convert_ge import is_ge
 from dicom2nifti.convert_siemens import is_siemens
 from dicom2nifti.convert_philips import is_philips
@@ -152,9 +152,13 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
     for (field_key, field_value) in iteritems(fields_to_keep):
         logging.info(field_key)
         if field_key == (0x7fe0, 0x0010):
+
             # anonimize the dicom pixeldata
-            random_data = numpy.random.randint(0, 255, dicom_in.pixel_array.shape).astype(dicom_in.pixel_array.dtype)
-            dicom_out.PixelData = random_data.tostring()  # = byte array (see pydicom docs)
+            #random_data = numpy.random.randint(0, 255, dicom_in.pixel_array.shape).astype(dicom_in.pixel_array.dtype)
+            #dicom_out.PixelData = random_data.tostring()  # = byte array (see pydicom docs)
+
+            dicom_out.PixelData = dicom_in.pixel_array.tostring()  # = byte array (see pydicom docs)
+
             # noinspection PyPep8Naming
             dicom_out[0x7fe0, 0x0010].VR = 'OB'
         elif field_value is None:
@@ -204,11 +208,11 @@ def _anonymize_files(dicom_directory_in, dicom_directory_out, fields_to_keep):
             dicom_file_in = os.path.join(root, file_name)
             current_dir = root[len(dicom_directory_in) + 1:]
             dicom_file_out = os.path.join(dicom_directory_out, current_dir, file_name)
-            if is_dicom_file(dicom_file_in):
+            if compressed_dicom.is_dicom_file(dicom_file_in):
                 logging.info("Processing " + dicom_file_in)
                 _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep)
             else:
                 logging.info("Skipping " + dicom_file_in + ", no dicom file")
 
 
-anonymize_directory('/Users/abrys/Documents/git/dicom2nifti/tests/data/ge/dti/002', '/Users/abrys/Documents/git/dicom2nifti/tests/data/ge/dti/002')
+anonymize_directory('/***', '/***')

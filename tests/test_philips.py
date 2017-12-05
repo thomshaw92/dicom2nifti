@@ -143,6 +143,7 @@ class TestConversionPhilips(unittest.TestCase):
         assert not convert_philips.is_philips(read_dicom_directory(test_data.SIEMENS_ANATOMICAL))
         assert not convert_philips.is_philips(read_dicom_directory(test_data.GE_ANATOMICAL))
         assert not convert_philips.is_philips(read_dicom_directory(test_data.GENERIC_ANATOMICAL))
+        assert not convert_philips.is_philips(read_dicom_directory(test_data.HITACHI_ANATOMICAL))
 
     def test_is_multiframe_dicom(self):
         assert convert_philips.is_multiframe_dicom(read_dicom_directory(test_data.PHILIPS_ENHANCED_DTI))

@@ -43,12 +43,12 @@ def is_ge(dicom_input):
     if 'Manufacturer' not in header or 'Modality' not in header:
         return False  # we try generic conversion in these cases
 
-    # check if manufacturer is GE
-    if 'GE MEDICAL SYSTEMS' not in header.Manufacturer.upper():
-        return False
-
     # check if Modality is mr
     if header.Modality.upper() != 'MR':
+        return False
+
+    # check if manufacturer is GE
+    if 'GE MEDICAL SYSTEMS' not in header.Manufacturer.upper():
         return False
 
     return True

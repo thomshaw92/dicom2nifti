@@ -517,25 +517,29 @@ def _get_t_position_index(multiframe_dicom):
 
     for current_index in range(len(multiframe_dicom.DimensionIndexSequence)):
         item = multiframe_dicom.DimensionIndexSequence[current_index]
-        if 'Temporal Position Index' in item.DimensionDescriptionLabel:
+        if 'DimensionDescriptionLabel' in item and \
+                'Temporal Position Index' in item.DimensionDescriptionLabel:
             return current_index
 
     # This seems to work for most dti
     for current_index in range(len(multiframe_dicom.DimensionIndexSequence)):
         item = multiframe_dicom.DimensionIndexSequence[current_index]
-        if 'Diffusion Gradient Orientation' in item.DimensionDescriptionLabel:
+        if 'DimensionDescriptionLabel' in item and \
+                'Diffusion Gradient Orientation' in item.DimensionDescriptionLabel:
             return current_index
 
     # This seems to work for 3D grace sequences
     for current_index in range(len(multiframe_dicom.DimensionIndexSequence)):
         item = multiframe_dicom.DimensionIndexSequence[current_index]
-        if 'Effective Echo Time' in item.DimensionDescriptionLabel:
+        if 'DimensionDescriptionLabel' in item and \
+                'Effective Echo Time' in item.DimensionDescriptionLabel:
             return current_index
 
     # First try trigger delay time (inspired by http://www.dclunie.com/papers/SCAR_20040522_CTMRMF.pdf)
     for current_index in range(len(multiframe_dicom.DimensionIndexSequence)):
         item = multiframe_dicom.DimensionIndexSequence[current_index]
-        if 'Trigger Delay Time' in item.DimensionDescriptionLabel:
+        if 'DimensionDescriptionLabel' in item and \
+                'Trigger Delay Time' in item.DimensionDescriptionLabel:
             return current_index
 
     return None

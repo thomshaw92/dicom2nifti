@@ -111,6 +111,8 @@ def is_multiframe_dicom(dicom_input):
     # read dicom header
     header = dicom_input[0]
 
+    if Tag(0x0002, 0x0002) not in header.file_meta:
+        return False
     if header.file_meta[0x0002, 0x0002].value == '1.2.840.10008.5.1.4.1.1.4.1':
         return True
     return False

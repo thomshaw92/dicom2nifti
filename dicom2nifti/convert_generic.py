@@ -40,6 +40,9 @@ def dicom_to_nifti(dicom_input, output_file):
     if len(dicom_input) <= 0:
         raise ConversionError('NO_DICOM_FILES_FOUND')
 
+    # remove duplicate slices based on position and data
+    dicom_input = _remove_duplicate_slices(dicom_input)
+
     # remove localizers based on image type
     dicom_input = _remove_localizers_by_imagetype(dicom_input)
     if settings.validate_slicecount:
@@ -81,6 +84,26 @@ def dicom_to_nifti(dicom_input, output_file):
     return {'NII_FILE': output_file}
 
 
+def _remove_duplicate_slices(dicoms):
+    """
+    Search dicoms for localizers and delete them
+    """
+    # Loop overall files and build dict
+
+    dicoms_dict = {}
+    filtered_dicoms = []
+    for dicom_ in dicoms:
+        if tuple(dicom_.ImagePositionPatient) not in dicoms_dict:
+            dicoms_dict[tuple(dicom_.ImagePositionPatient)] = dicom_
+            filtered_dicoms.append(dicom_)
+        else:
+            if numpy.array_equal(dicom_.pixel_array,
+                                 dicoms_dict[tuple(dicom_.ImagePositionPatient)].pixel_array):
+                logger.warning('Removing duplicate slice from series')
+            else:
+                filtered_dicoms.append(dicom_)
+    return filtered_dicoms
+
 def _remove_localizers_by_imagetype(dicoms):
     """
     Search dicoms for localizers and delete them
@@ -95,7 +118,6 @@ def _remove_localizers_by_imagetype(dicoms):
             continue
         filtered_dicoms.append(dicom_)
     return filtered_dicoms
-
 
 def _remove_localizers_by_orientation(dicoms):
     """

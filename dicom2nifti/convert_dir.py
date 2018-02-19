@@ -129,7 +129,7 @@ def _is_valid_imaging_dicom(dicom_header):
             return False
 
         return True
-    except:
+    except (KeyError, AttributeError):
         return False
 
 

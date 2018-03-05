@@ -18,10 +18,7 @@ import logging
 import nibabel
 import numpy
 
-try:
-    from pydicom.tag import Tag
-except ImportError:
-    from dicom.tag import Tag
+from pydicom.tag import Tag
 
 from six import string_types
 

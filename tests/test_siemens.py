@@ -11,10 +11,7 @@ import unittest
 
 import dicom2nifti.compressed_dicom as compressed_dicom
 
-try:
-    import pydicom
-except ImportError:
-    import dicom as pydicom
+import pydicom
 
 import tests.test_data as test_data
 

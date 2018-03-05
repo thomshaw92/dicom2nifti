@@ -2,4 +2,4 @@ six
 future
 nibabel
 numpy
-pydicom >= 0.9.9
+pydicom >= 1.0.1

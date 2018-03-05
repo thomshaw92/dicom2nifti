@@ -14,12 +14,8 @@ dicom2nifti.patch_pydicom_encodings.apply()
 import os
 import struct
 
-try:
-    import pydicom
-    from pydicom.tag import Tag
-except ImportError:
-    import dicom as pydicom
-    from dicom.tag import Tag
+import pydicom
+from pydicom.tag import Tag
 
 import logging
 import numpy

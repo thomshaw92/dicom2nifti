@@ -17,12 +17,8 @@ import logging
 import nibabel
 import numpy
 
-try:
-    import pydicom.config as pydicom_config
-    from pydicom.tag import Tag
-except ImportError:
-    import dicom.config as pydicom_config
-    from dicom.tag import Tag
+import pydicom.config as pydicom_config
+from pydicom.tag import Tag
 
 import dicom2nifti.common as common
 import dicom2nifti.settings as settings

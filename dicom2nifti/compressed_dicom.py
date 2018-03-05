@@ -6,10 +6,7 @@ import logging
 import dicom2nifti.settings as settings
 from dicom2nifti.exceptions import ConversionError
 
-try:
-    import pydicom
-except ImportError:
-    import dicom as pydicom
+import pydicom
 
 logger = logging.getLogger(__name__)
 

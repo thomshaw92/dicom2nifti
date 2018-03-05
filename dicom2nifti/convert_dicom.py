@@ -21,12 +21,8 @@ import sys
 
 from six import reraise
 
-try:
-    import pydicom
-    from pydicom.tag import Tag
-except ImportError:
-    import dicom as pydicom
-    from dicom.tag import Tag
+import pydicom
+from pydicom.tag import Tag
 
 from dicom2nifti.exceptions import ConversionValidationError, ConversionError
 import dicom2nifti.convert_generic as convert_generic

@@ -13,12 +13,8 @@ dicom2nifti.patch_pydicom_encodings.apply()
 
 import logging
 
-try:
-    import pydicom.config as pydicom_config
-    from pydicom.tag import Tag
-except ImportError:
-    import dicom.config as pydicom_config
-    from dicom.tag import Tag
+import pydicom.config as pydicom_config
+from pydicom.tag import Tag
 
 import dicom2nifti.convert_generic as convert_generic
 

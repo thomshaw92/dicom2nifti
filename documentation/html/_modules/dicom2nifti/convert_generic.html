@@ -64,10 +64,7 @@
 <span class="kn">import</span> <span class="nn">nibabel</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">pydicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
+<span class="kn">from</span> <span class="nn">pydicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
 
 <span class="kn">import</span> <span class="nn">six</span>
 
@@ -89,6 +86,9 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;NO_DICOM_FILES_FOUND&#39;</span><span class="p">)</span>
+
+    <span class="c1"># remove duplicate slices based on position and data</span>
+    <span class="n">dicom_input</span> <span class="o">=</span> <span class="n">_remove_duplicate_slices</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
 
     <span class="c1"># remove localizers based on image type</span>
     <span class="n">dicom_input</span> <span class="o">=</span> <span class="n">_remove_localizers_by_imagetype</span><span class="p">(</span><span class="n">dicom_input</span><span class="p">)</span>
@@ -131,6 +131,26 @@
     <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;NII_FILE&#39;</span><span class="p">:</span> <span class="n">output_file</span><span class="p">}</span></div>
 
 
+<span class="k">def</span> <span class="nf">_remove_duplicate_slices</span><span class="p">(</span><span class="n">dicoms</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Search dicoms for localizers and delete them</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Loop overall files and build dict</span>
+
+    <span class="n">dicoms_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">filtered_dicoms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">dicom_</span> <span class="ow">in</span> <span class="n">dicoms</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">dicom_</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">dicoms_dict</span><span class="p">:</span>
+            <span class="n">dicoms_dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">dicom_</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">)]</span> <span class="o">=</span> <span class="n">dicom_</span>
+            <span class="n">filtered_dicoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dicom_</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array_equal</span><span class="p">(</span><span class="n">dicom_</span><span class="o">.</span><span class="n">pixel_array</span><span class="p">,</span>
+                                 <span class="n">dicoms_dict</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">dicom_</span><span class="o">.</span><span class="n">ImagePositionPatient</span><span class="p">)]</span><span class="o">.</span><span class="n">pixel_array</span><span class="p">):</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;Removing duplicate slice from series&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">filtered_dicoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dicom_</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">filtered_dicoms</span>
+
 <span class="k">def</span> <span class="nf">_remove_localizers_by_imagetype</span><span class="p">(</span><span class="n">dicoms</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Search dicoms for localizers and delete them</span>
@@ -145,7 +165,6 @@
             <span class="k">continue</span>
         <span class="n">filtered_dicoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dicom_</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">filtered_dicoms</span>
-
 
 <span class="k">def</span> <span class="nf">_remove_localizers_by_orientation</span><span class="p">(</span><span class="n">dicoms</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>

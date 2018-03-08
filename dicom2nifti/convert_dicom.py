@@ -21,7 +21,6 @@ import sys
 
 from six import reraise
 
-import pydicom
 from pydicom.tag import Tag
 
 from dicom2nifti.exceptions import ConversionValidationError, ConversionError
@@ -31,7 +30,8 @@ import dicom2nifti.convert_ge as convert_ge
 import dicom2nifti.convert_philips as convert_philips
 import dicom2nifti.common as common
 import dicom2nifti.image_reorientation as image_reorientation
-
+import dicom2nifti.settings as settings
+import dicom2nifti.resample as resample
 logger = logging.getLogger(__name__)
 
 
@@ -135,6 +135,9 @@ def dicom_array_to_nifti(dicom_list, output_file, reorient_nifti=True):
         results = convert_hitachi.dicom_to_nifti(dicom_list, output_file)
     else:
         raise ConversionValidationError("UNSUPPORTED_DATA")
+
+    if settings.resample:
+        resample.resample_image(results['NII_FILE'])
 
     # do image reorientation if needed
     if reorient_nifti:

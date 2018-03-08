@@ -60,6 +60,12 @@
 </dd></dl>
 
 <dl class="function">
+<dt id="dicom2nifti.settings.disable_resampling">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">disable_resampling</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#disable_resampling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.disable_resampling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Disable resampling in case of gantry tilted data (disabled by default)</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="dicom2nifti.settings.disable_validate_multiframe_implicit">
 <code class="descclassname">dicom2nifti.settings.</code><code class="descname">disable_validate_multiframe_implicit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#disable_validate_multiframe_implicit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.disable_validate_multiframe_implicit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Disable the validation that checks that data is not multiframe implicit
@@ -107,6 +113,12 @@ USE WITH CAUTION!</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="dicom2nifti.settings.enable_resampling">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">enable_resampling</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#enable_resampling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.enable_resampling" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable resampling in case of gantry tilted data (disabled by default)</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="dicom2nifti.settings.enable_validate_multiframe_implicit">
 <code class="descclassname">dicom2nifti.settings.</code><code class="descname">enable_validate_multiframe_implicit</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#enable_validate_multiframe_implicit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.enable_validate_multiframe_implicit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Enable the validation that checks that data is not multiframe implicit again (DEFAULT ENABLED)</p>
@@ -148,6 +160,18 @@ USE WITH CAUTION!</p>
 </tr>
 </tbody>
 </table>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.settings.set_resample_padding">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">set_resample_padding</code><span class="sig-paren">(</span><em>padding</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#set_resample_padding"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.set_resample_padding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the spline interpolation padding</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dicom2nifti.settings.set_resample_spline_interpolation_order">
+<code class="descclassname">dicom2nifti.settings.</code><code class="descname">set_resample_spline_interpolation_order</code><span class="sig-paren">(</span><em>order</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/dicom2nifti/settings.html#set_resample_spline_interpolation_order"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dicom2nifti.settings.set_resample_spline_interpolation_order" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the spline interpolation order used during resampling of gantry tilted data</p>
 </dd></dl>
 
 </div>

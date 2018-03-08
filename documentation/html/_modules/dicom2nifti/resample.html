@@ -1,0 +1,253 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>dicom2nifti.resample &#8212; dicom2nifti  documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/classic.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true,
+        SOURCELINK_SUFFIX: '.txt'
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+  </head>
+  <body role="document">
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dicom2nifti.resample</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">dicom2nifti</span>
+
+<span class="sd">@author: abrys</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">nibabel</span>
+<span class="kn">import</span> <span class="nn">nibabel.affines</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">scipy.ndimage</span>
+
+
+<div class="viewcode-block" id="resample_image"><a class="viewcode-back" href="../../dicom2nifti.resample.html#dicom2nifti.resample.resample_image">[docs]</a><span class="k">def</span> <span class="nf">resample_image</span><span class="p">(</span><span class="n">input_nifti</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Resample a gantry tilted image in place</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># read the input image</span>
+    <span class="n">input_image</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">input_nifti</span><span class="p">)</span>
+    <span class="c1"># check if there is gantry tilting in the image</span>
+    <span class="k">if</span> <span class="n">_is_gantry_tilted</span><span class="p">(</span><span class="n">input_image</span><span class="o">.</span><span class="n">affine</span><span class="p">):</span>
+        <span class="n">output_image</span> <span class="o">=</span> <span class="n">_resample_gantry_tilted</span><span class="p">(</span><span class="n">input_image</span><span class="p">)</span>
+        <span class="n">output_image</span><span class="o">.</span><span class="n">to_filename</span><span class="p">(</span><span class="n">input_nifti</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_is_gantry_tilted</span><span class="p">(</span><span class="n">affine</span><span class="p">):</span>
+    <span class="c1"># calculate the x, y and z directions in world coordinates</span>
+    <span class="n">world_x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">affine</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]))[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">world_y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">affine</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]))[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">world_z</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">affine</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]))[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+
+    <span class="c1"># normalize the vectors</span>
+    <span class="n">world_x</span> <span class="o">/=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">world_x</span><span class="p">)</span>
+    <span class="n">world_y</span> <span class="o">/=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">world_y</span><span class="p">)</span>
+    <span class="n">world_z</span> <span class="o">/=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">world_z</span><span class="p">)</span>
+
+    <span class="c1"># calulate new orthogonal z and y and normalize</span>
+    <span class="n">orthogonal_z</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">world_y</span><span class="p">,</span> <span class="n">world_x</span><span class="p">)</span>
+    <span class="n">orthogonal_y</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">world_x</span><span class="p">,</span> <span class="n">world_z</span><span class="p">)</span>
+    <span class="n">orthogonal_z</span> <span class="o">/=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">orthogonal_z</span><span class="p">)</span>
+    <span class="n">orthogonal_y</span> <span class="o">/=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">orthogonal_y</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">world_y</span><span class="p">,</span> <span class="n">orthogonal_y</span><span class="p">)</span> <span class="ow">and</span> <span class="n">numpy</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">world_z</span><span class="p">,</span> <span class="n">orthogonal_z</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">return</span> <span class="kc">True</span>
+
+
+<span class="k">def</span> <span class="nf">_resample_gantry_tilted</span><span class="p">(</span><span class="n">original_image</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    In this function we will create an orthogonal image and resample the original data to this space</span>
+
+<span class="sd">    In this calculation we work in 3 spaces / coordinate systems</span>
+
+<span class="sd">    - original image coordinates</span>
+<span class="sd">    - world coordinates</span>
+<span class="sd">    - &quot;projected&quot; coordinates</span>
+
+<span class="sd">    This last one is a new rotated &quot;orthogonal&quot; coordinates system in mm where</span>
+<span class="sd">    x and y are perpendicular with the x and y or the image</span>
+
+<span class="sd">    We do the following steps</span>
+<span class="sd">    - calculate a new &quot;projection&quot; coordinate system</span>
+<span class="sd">    - calculate the world coordinates of all corners of the image in world coordinates</span>
+<span class="sd">    - project the world coordinates of the corners on the projection coordinate system</span>
+<span class="sd">    - calculate the min and max corners to get the orthogonal bounding box of the image in projected space</span>
+<span class="sd">    - translate the origin back to world coordinages</span>
+
+<span class="sd">    We now have the new xyz axis, origin and size and can create the new affine used for resampling</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">original_size</span> <span class="o">=</span> <span class="n">original_image</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span>
+    <span class="n">voxel_size</span> <span class="o">=</span> <span class="n">original_image</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">get_zooms</span><span class="p">()</span>
+
+    <span class="c1"># Calculate the x and y axis as is (we assume these to be at 90 deg to each other)</span>
+    <span class="c1"># We will then create a new z axis that is perpendicular to the new x,y plane</span>
+    <span class="n">x_axis_world</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">original_image</span><span class="o">.</span><span class="n">affine</span><span class="p">,</span> <span class="p">[[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]))[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">y_axis_world</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">original_image</span><span class="o">.</span><span class="n">affine</span><span class="p">,</span> <span class="p">[[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">]]))[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">x_axis_world</span> <span class="o">/=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">x_axis_world</span><span class="p">)</span>  <span class="c1"># normalization</span>
+    <span class="n">y_axis_world</span> <span class="o">/=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">y_axis_world</span><span class="p">)</span>  <span class="c1"># normalization</span>
+    <span class="n">z_axis_world</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">y_axis_world</span><span class="p">,</span> <span class="n">x_axis_world</span><span class="p">)</span>  <span class="c1"># calculate new z</span>
+    <span class="n">y_axis_world</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">x_axis_world</span><span class="p">,</span> <span class="n">z_axis_world</span><span class="p">)</span>  <span class="c1"># recalculate y in case x and y where not perpendicular</span>
+
+    <span class="c1"># get all corners in image coordinates</span>
+    <span class="n">points_image</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                    <span class="p">[</span><span class="n">original_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">original_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">],</span>
+                    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">original_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                    <span class="p">[</span><span class="n">original_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">original_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">],</span>
+                    <span class="p">[</span><span class="n">original_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">original_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                    <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">original_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">original_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+                    <span class="p">[</span><span class="n">original_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">original_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">original_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]]]</span>
+
+    <span class="c1"># get all corners in world coordinates</span>
+    <span class="n">points_world</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">points_image</span><span class="p">:</span>
+        <span class="n">points_world</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">original_image</span><span class="o">.</span><span class="n">affine</span><span class="p">,</span>
+                                                      <span class="p">[[</span><span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="p">[</span><span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span> <span class="p">[</span><span class="n">point</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span> <span class="p">[</span><span class="mi">1</span><span class="p">]]))[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">])</span>
+
+    <span class="c1"># project all points on the axis</span>
+    <span class="c1"># this will give the cooridites in &quot;mm&quot; but with the orientation of the new image</span>
+    <span class="c1"># image coordinates projection = numpy.dot(point, axis)</span>
+    <span class="n">projections</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="n">points_world</span><span class="p">:</span>
+        <span class="n">projection</span> <span class="o">=</span> <span class="p">[</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">x_axis_world</span><span class="p">),</span>
+                      <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">y_axis_world</span><span class="p">),</span>
+                      <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">z_axis_world</span><span class="p">)]</span>
+        <span class="n">projections</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">projection</span><span class="p">)</span>
+
+    <span class="n">projections</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">projections</span><span class="p">)</span>
+
+    <span class="c1"># get the lowest and highest x, y, z in &quot;projection&quot; space</span>
+    <span class="n">min_projected</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">amin</span><span class="p">(</span><span class="n">projections</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">max_projected</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">amax</span><span class="p">(</span><span class="n">projections</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c1"># calculate the image origin in world coordinates</span>
+    <span class="n">origin</span> <span class="o">=</span> <span class="n">min_projected</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">x_axis_world</span> <span class="o">+</span> \
+             <span class="n">min_projected</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">y_axis_world</span> <span class="o">+</span> \
+             <span class="n">min_projected</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">z_axis_world</span>
+
+    <span class="c1"># calculate the new image size in mm</span>
+    <span class="n">new_size_mm</span> <span class="o">=</span> <span class="n">max_projected</span> <span class="o">-</span> <span class="n">min_projected</span>
+
+    <span class="n">new_voxelsize</span> <span class="o">=</span> <span class="p">[</span><span class="nb">abs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">([</span><span class="n">voxel_size</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">x_axis_world</span><span class="p">)),</span>
+                     <span class="nb">abs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">voxel_size</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="mi">0</span><span class="p">],</span> <span class="n">y_axis_world</span><span class="p">)),</span>
+                     <span class="nb">abs</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">voxel_size</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span> <span class="n">z_axis_world</span><span class="p">))]</span>
+
+    <span class="n">new_shape</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">new_size_mm</span> <span class="o">/</span> <span class="n">new_voxelsize</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">int16</span><span class="p">)</span>
+
+    <span class="n">new_affine</span> <span class="o">=</span> <span class="n">_create_affine</span><span class="p">(</span><span class="n">x_axis_world</span><span class="p">,</span> <span class="n">y_axis_world</span><span class="p">,</span> <span class="n">z_axis_world</span><span class="p">,</span> <span class="n">origin</span><span class="p">,</span> <span class="n">new_voxelsize</span><span class="p">)</span>
+
+    <span class="n">combined_affine</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">new_affine</span><span class="p">)</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">original_image</span><span class="o">.</span><span class="n">affine</span><span class="p">)</span>
+    <span class="n">matrix</span><span class="p">,</span> <span class="n">offset</span> <span class="o">=</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">affines</span><span class="o">.</span><span class="n">to_matvec</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">inv</span><span class="p">(</span><span class="n">combined_affine</span><span class="p">))</span>
+    <span class="n">new_data</span> <span class="o">=</span> <span class="n">scipy</span><span class="o">.</span><span class="n">ndimage</span><span class="o">.</span><span class="n">affine_transform</span><span class="p">(</span><span class="n">original_image</span><span class="o">.</span><span class="n">get_data</span><span class="p">(),</span>
+                                              <span class="n">matrix</span><span class="o">=</span><span class="n">matrix</span><span class="p">,</span>
+                                              <span class="n">offset</span><span class="o">=</span><span class="n">offset</span><span class="p">,</span>
+                                              <span class="n">output_shape</span><span class="o">=</span><span class="n">new_shape</span><span class="p">,</span>
+                                              <span class="n">output</span><span class="o">=</span><span class="n">original_image</span><span class="o">.</span><span class="n">get_data</span><span class="p">()</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span>
+                                              <span class="n">order</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># 0 nn, 1 bilinear, ...</span>
+                                              <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;constant&#39;</span><span class="p">,</span>
+                                              <span class="n">cval</span><span class="o">=-</span><span class="mi">1000</span><span class="p">,</span>
+                                              <span class="n">prefilter</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">nibabel</span><span class="o">.</span><span class="n">Nifti1Image</span><span class="p">(</span><span class="n">new_data</span><span class="p">,</span> <span class="n">new_affine</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_create_affine</span><span class="p">(</span><span class="n">x_axis</span><span class="p">,</span> <span class="n">y_axis</span><span class="p">,</span> <span class="n">z_axis</span><span class="p">,</span> <span class="n">image_pos</span><span class="p">,</span> <span class="n">voxel_sizes</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to generate the affine matrix for a dicom series</span>
+<span class="sd">    This method was based on (http://nipy.org/nibabel/dicom/dicom_orientation.html)</span>
+
+<span class="sd">    :param sorted_dicoms: list with sorted dicom files</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Create affine matrix (http://nipy.sourceforge.net/nibabel/dicom/dicom_orientation.html#dicom-slice-affine)</span>
+
+    <span class="n">affine</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="p">[[</span><span class="n">x_axis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">voxel_sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y_axis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">voxel_sizes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">z_axis</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">voxel_sizes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">image_pos</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+         <span class="p">[</span><span class="n">x_axis</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">voxel_sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y_axis</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">voxel_sizes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">z_axis</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">voxel_sizes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">image_pos</span><span class="p">[</span><span class="mi">1</span><span class="p">]],</span>
+         <span class="p">[</span><span class="n">x_axis</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">voxel_sizes</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">y_axis</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">voxel_sizes</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">z_axis</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">voxel_sizes</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">image_pos</span><span class="p">[</span><span class="mi">2</span><span class="p">]],</span>
+         <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">]])</span>
+    <span class="k">return</span> <span class="n">affine</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../../index.html">
+              <img class="logo" src="../../_static/logo.png" alt="Logo"/>
+            </a></p>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dicom2nifti  documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2016, icometrix.
+    </div>
+  </body>
+</html>

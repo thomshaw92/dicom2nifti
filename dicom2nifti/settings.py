@@ -6,6 +6,9 @@ validate_sliceincrement = True
 validate_multiframe_implicit = True
 pydicom_read_force = False
 gdcmconv_path = None
+resample = False
+resample_padding = 0
+resample_spline_interpolation_order = 0  # spline interpolation order (0 nn , 1 bilinear, 3 cubic)
 
 
 def disable_validate_sliceincrement():
@@ -113,6 +116,37 @@ def disable_pydicom_read_force():
     """
     global pydicom_read_force
     pydicom_read_force = False
+
+
+def enable_resampling():
+    """
+    Enable resampling in case of gantry tilted data (disabled by default)
+    """
+    global resample
+    resample = True
+
+
+def disable_resampling():
+    """
+    Disable resampling in case of gantry tilted data (disabled by default)
+    """
+    global resample
+    resample = False
+
+def set_resample_padding(padding):
+    """
+    Set the spline interpolation padding
+    """
+    global resample_padding
+    resample_padding = padding
+
+
+def set_resample_spline_interpolation_order(order):
+    """
+    Set the spline interpolation order used during resampling of gantry tilted data
+    """
+    global resample_spline_interpolation_order
+    resample_spline_interpolation_order = order
 
 
 def set_gdcmconv_path(path):

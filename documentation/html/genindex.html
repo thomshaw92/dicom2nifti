@@ -141,6 +141,8 @@
 </li>
       <li><a href="dicom2nifti.patch_pydicom_encodings.html#module-dicom2nifti.patch_pydicom_encodings">dicom2nifti.patch_pydicom_encodings (module)</a>
 </li>
+      <li><a href="dicom2nifti.resample.html#module-dicom2nifti.resample">dicom2nifti.resample (module)</a>
+</li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dicom2nifti.settings.html#module-dicom2nifti.settings">dicom2nifti.settings (module)</a>
@@ -163,6 +165,8 @@
       </ul></li>
       <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.disable_pydicom_read_force">disable_pydicom_read_force() (in module dicom2nifti.settings)</a>
 </li>
+      <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.disable_resampling">disable_resampling() (in module dicom2nifti.settings)</a>
+</li>
       <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.disable_validate_multiframe_implicit">disable_validate_multiframe_implicit() (in module dicom2nifti.settings)</a>
 </li>
       <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.disable_validate_orientation">disable_validate_orientation() (in module dicom2nifti.settings)</a>
@@ -183,12 +187,14 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.enable_pydicom_read_force">enable_pydicom_read_force() (in module dicom2nifti.settings)</a>
 </li>
-      <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.enable_validate_multiframe_implicit">enable_validate_multiframe_implicit() (in module dicom2nifti.settings)</a>
+      <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.enable_resampling">enable_resampling() (in module dicom2nifti.settings)</a>
 </li>
-      <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.enable_validate_orientation">enable_validate_orientation() (in module dicom2nifti.settings)</a>
+      <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.enable_validate_multiframe_implicit">enable_validate_multiframe_implicit() (in module dicom2nifti.settings)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.enable_validate_orientation">enable_validate_orientation() (in module dicom2nifti.settings)</a>
+</li>
       <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.enable_validate_orthogonal">enable_validate_orthogonal() (in module dicom2nifti.settings)</a>
 </li>
       <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.enable_validate_slicecount">enable_validate_slicecount() (in module dicom2nifti.settings)</a>
@@ -293,11 +299,13 @@
   <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dicom2nifti.common.html#dicom2nifti.common.read_dicom_directory">read_dicom_directory() (in module dicom2nifti.common)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dicom2nifti.compressed_dicom.html#dicom2nifti.compressed_dicom.read_file">read_file() (in module dicom2nifti.compressed_dicom)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="dicom2nifti.image_reorientation.html#dicom2nifti.image_reorientation.reorient_image">reorient_image() (in module dicom2nifti.image_reorientation)</a>
+</li>
+      <li><a href="dicom2nifti.resample.html#dicom2nifti.resample.resample_image">resample_image() (in module dicom2nifti.resample)</a>
 </li>
   </ul></td>
 </tr></table>
@@ -311,12 +319,16 @@
 </li>
       <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.set_gdcmconv_path">set_gdcmconv_path() (in module dicom2nifti.settings)</a>
 </li>
-      <li><a href="dicom2nifti.common.html#dicom2nifti.common.set_ss_value">set_ss_value() (in module dicom2nifti.common)</a>
+      <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.set_resample_padding">set_resample_padding() (in module dicom2nifti.settings)</a>
 </li>
-      <li><a href="dicom2nifti.common.html#dicom2nifti.common.set_tr_te">set_tr_te() (in module dicom2nifti.common)</a>
+      <li><a href="dicom2nifti.settings.html#dicom2nifti.settings.set_resample_spline_interpolation_order">set_resample_spline_interpolation_order() (in module dicom2nifti.settings)</a>
+</li>
+      <li><a href="dicom2nifti.common.html#dicom2nifti.common.set_ss_value">set_ss_value() (in module dicom2nifti.common)</a>
 </li>
   </ul></td>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="dicom2nifti.common.html#dicom2nifti.common.set_tr_te">set_tr_te() (in module dicom2nifti.common)</a>
+</li>
       <li><a href="dicom2nifti.convert_dicom.html#dicom2nifti.convert_dicom.Vendor.SIEMENS">SIEMENS (dicom2nifti.convert_dicom.Vendor attribute)</a>
 </li>
       <li><a href="dicom2nifti.image_volume.html#dicom2nifti.image_volume.Slice">Slice (class in dicom2nifti.image_volume)</a>

@@ -67,12 +67,8 @@
 <span class="kn">import</span> <span class="nn">nibabel</span>
 <span class="kn">import</span> <span class="nn">numpy</span>
 
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">pydicom.config</span> <span class="k">as</span> <span class="nn">pydicom_config</span>
-    <span class="kn">from</span> <span class="nn">pydicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">dicom.config</span> <span class="k">as</span> <span class="nn">pydicom_config</span>
-    <span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
+<span class="kn">import</span> <span class="nn">pydicom.config</span> <span class="k">as</span> <span class="nn">pydicom_config</span>
+<span class="kn">from</span> <span class="nn">pydicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
 
 <span class="kn">import</span> <span class="nn">dicom2nifti.common</span> <span class="k">as</span> <span class="nn">common</span>
 <span class="kn">import</span> <span class="nn">dicom2nifti.settings</span> <span class="k">as</span> <span class="nn">settings</span>
@@ -161,6 +157,8 @@
     <span class="c1"># read dicom header</span>
     <span class="n">header</span> <span class="o">=</span> <span class="n">dicom_input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
+    <span class="k">if</span> <span class="n">Tag</span><span class="p">(</span><span class="mh">0x0002</span><span class="p">,</span> <span class="mh">0x0002</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">header</span><span class="o">.</span><span class="n">file_meta</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="n">header</span><span class="o">.</span><span class="n">file_meta</span><span class="p">[</span><span class="mh">0x0002</span><span class="p">,</span> <span class="mh">0x0002</span><span class="p">]</span><span class="o">.</span><span class="n">value</span> <span class="o">==</span> <span class="s1">&#39;1.2.840.10008.5.1.4.1.1.4.1&#39;</span><span class="p">:</span>
         <span class="k">return</span> <span class="kc">True</span>
     <span class="k">return</span> <span class="kc">False</span></div>
@@ -567,25 +565,29 @@
 
     <span class="k">for</span> <span class="n">current_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">)):</span>
         <span class="n">item</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">[</span><span class="n">current_index</span><span class="p">]</span>
-        <span class="k">if</span> <span class="s1">&#39;Temporal Position Index&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">DimensionDescriptionLabel</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;DimensionDescriptionLabel&#39;</span> <span class="ow">in</span> <span class="n">item</span> <span class="ow">and</span> \
+                <span class="s1">&#39;Temporal Position Index&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">DimensionDescriptionLabel</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">current_index</span>
 
     <span class="c1"># This seems to work for most dti</span>
     <span class="k">for</span> <span class="n">current_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">)):</span>
         <span class="n">item</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">[</span><span class="n">current_index</span><span class="p">]</span>
-        <span class="k">if</span> <span class="s1">&#39;Diffusion Gradient Orientation&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">DimensionDescriptionLabel</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;DimensionDescriptionLabel&#39;</span> <span class="ow">in</span> <span class="n">item</span> <span class="ow">and</span> \
+                <span class="s1">&#39;Diffusion Gradient Orientation&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">DimensionDescriptionLabel</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">current_index</span>
 
     <span class="c1"># This seems to work for 3D grace sequences</span>
     <span class="k">for</span> <span class="n">current_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">)):</span>
         <span class="n">item</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">[</span><span class="n">current_index</span><span class="p">]</span>
-        <span class="k">if</span> <span class="s1">&#39;Effective Echo Time&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">DimensionDescriptionLabel</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;DimensionDescriptionLabel&#39;</span> <span class="ow">in</span> <span class="n">item</span> <span class="ow">and</span> \
+                <span class="s1">&#39;Effective Echo Time&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">DimensionDescriptionLabel</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">current_index</span>
 
     <span class="c1"># First try trigger delay time (inspired by http://www.dclunie.com/papers/SCAR_20040522_CTMRMF.pdf)</span>
     <span class="k">for</span> <span class="n">current_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">)):</span>
         <span class="n">item</span> <span class="o">=</span> <span class="n">multiframe_dicom</span><span class="o">.</span><span class="n">DimensionIndexSequence</span><span class="p">[</span><span class="n">current_index</span><span class="p">]</span>
-        <span class="k">if</span> <span class="s1">&#39;Trigger Delay Time&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">DimensionDescriptionLabel</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s1">&#39;DimensionDescriptionLabel&#39;</span> <span class="ow">in</span> <span class="n">item</span> <span class="ow">and</span> \
+                <span class="s1">&#39;Trigger Delay Time&#39;</span> <span class="ow">in</span> <span class="n">item</span><span class="o">.</span><span class="n">DimensionDescriptionLabel</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">current_index</span>
 
     <span class="k">return</span> <span class="kc">None</span>

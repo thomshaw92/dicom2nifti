@@ -12,7 +12,7 @@ import os
 import logging
 
 import dicom2nifti.convert_dir as convert_directory
-import dicom2nifti
+import dicom2nifti.settings as settings
 import sys
 
 
@@ -25,6 +25,15 @@ def main(args):
 
     parser.add_argument('-G', '--allow-gantry-tilting', action='store_true',
                         help='allow the conversion of gantry tilted data (this will be reflected in the affine matrix only)')
+
+    parser.add_argument('-r', '--resample-gantry-tilting', action='store_true',
+                        help='resample gantry tilted data to an orthogonal image')
+
+    parser.add_argument('-o', '--resample-order', type=int,
+                        help='order of the spline interpolation used during the resampling (0 -> 5) [0 = NN, 1 = LIN, ....]')
+
+    parser.add_argument('-p', '--resample-padding', type=int,
+                        help='padding value to used during resampling to use as fill value')
 
     parser.add_argument('-M', '--allow-multiframe-implicit', action='store_true',
                         help='allow the conversion of multiframe data with implicit vr transfer syntax (this is not guaranteed to work)')
@@ -49,9 +58,15 @@ def main(args):
         return 2
     else:
         if args.allow_gantry_tilting:
-            dicom2nifti.disable_validate_orthogonal()
+            settings.disable_validate_orthogonal()
         if args.allow_multiframe_implicit:
-            dicom2nifti.disable_validate_multiframe_implicit()
+            settings.disable_validate_multiframe_implicit()
+        if args.resample_gantry_tilting:
+            settings.enable_resampling()
+        if args.resample_order:
+            settings.set_resample_spline_interpolation_order(args.resample_order)
+        if args.resample_padding:
+            settings.set_resample_padding(args.resample_padding)
         convert_directory.convert_directory(args.input_directory,
                                             args.output_directory,
                                             not args.no_compression,

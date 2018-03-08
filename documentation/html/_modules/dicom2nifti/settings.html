@@ -56,6 +56,9 @@
 <span class="n">validate_multiframe_implicit</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="n">pydicom_read_force</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="n">gdcmconv_path</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="n">resample</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="n">resample_padding</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">resample_spline_interpolation_order</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># spline interpolation order (0 nn , 1 bilinear, 3 cubic)</span>
 
 
 <div class="viewcode-block" id="disable_validate_sliceincrement"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.disable_validate_sliceincrement">[docs]</a><span class="k">def</span> <span class="nf">disable_validate_sliceincrement</span><span class="p">():</span>
@@ -163,6 +166,37 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">pydicom_read_force</span>
     <span class="n">pydicom_read_force</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+
+<div class="viewcode-block" id="enable_resampling"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.enable_resampling">[docs]</a><span class="k">def</span> <span class="nf">enable_resampling</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Enable resampling in case of gantry tilted data (disabled by default)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">resample</span>
+    <span class="n">resample</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="disable_resampling"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.disable_resampling">[docs]</a><span class="k">def</span> <span class="nf">disable_resampling</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Disable resampling in case of gantry tilted data (disabled by default)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">resample</span>
+    <span class="n">resample</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="set_resample_padding"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.set_resample_padding">[docs]</a><span class="k">def</span> <span class="nf">set_resample_padding</span><span class="p">(</span><span class="n">padding</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set the spline interpolation padding</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">resample_padding</span>
+    <span class="n">resample_padding</span> <span class="o">=</span> <span class="n">padding</span></div>
+
+
+<div class="viewcode-block" id="set_resample_spline_interpolation_order"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.set_resample_spline_interpolation_order">[docs]</a><span class="k">def</span> <span class="nf">set_resample_spline_interpolation_order</span><span class="p">(</span><span class="n">order</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Set the spline interpolation order used during resampling of gantry tilted data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">resample_spline_interpolation_order</span>
+    <span class="n">resample_spline_interpolation_order</span> <span class="o">=</span> <span class="n">order</span></div>
 
 
 <div class="viewcode-block" id="set_gdcmconv_path"><a class="viewcode-back" href="../../dicom2nifti.settings.html#dicom2nifti.settings.set_gdcmconv_path">[docs]</a><span class="k">def</span> <span class="nf">set_gdcmconv_path</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>

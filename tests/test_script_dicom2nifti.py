@@ -57,6 +57,34 @@ class TestConversionDicom(unittest.TestCase):
         finally:
             shutil.rmtree(tmp_output_dir)
 
+
+    def test_gantry_resampling(self):
+        tmp_output_dir = tempfile.mkdtemp()
+        script_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                                   'scripts',
+                                   'dicom2nifti')
+        assert os.path.isfile(script_file)
+
+        try:
+            if sys.version_info > (3, 0):
+                from importlib.machinery import SourceFileLoader
+                dicom2nifti_module = SourceFileLoader("dicom2nifti_script", script_file).load_module()
+            else:
+                import imp
+                dicom2nifti_module = imp.load_source('dicom2nifti_script', script_file)
+            dicom2nifti_module.main(['-G', '-r', '-o', '1', '-p', '-1000', test_data.FAILING_ORHTOGONAL, tmp_output_dir])
+            assert os.path.isfile(os.path.join(tmp_output_dir, "4_dicom2nifti.nii.gz"))
+            dicom2nifti_module.main(['--allow-gantry-tilting',
+                                     '--resample-gantry-tilting',
+                                     '--resample-order', '1',
+                                     '--resample-padding', '-1000',
+                                     test_data.FAILING_ORHTOGONAL,
+                                     tmp_output_dir])
+            assert os.path.isfile(os.path.join(tmp_output_dir, "4_dicom2nifti.nii.gz"))
+
+        finally:
+            shutil.rmtree(tmp_output_dir)
+
     def test_multiframe_option(self):
         tmp_output_dir = tempfile.mkdtemp()
         script_file = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),

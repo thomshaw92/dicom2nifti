@@ -63,12 +63,8 @@
 
 <span class="kn">import</span> <span class="nn">logging</span>
 
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">pydicom.config</span> <span class="k">as</span> <span class="nn">pydicom_config</span>
-    <span class="kn">from</span> <span class="nn">pydicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">dicom.config</span> <span class="k">as</span> <span class="nn">pydicom_config</span>
-    <span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
+<span class="kn">import</span> <span class="nn">pydicom.config</span> <span class="k">as</span> <span class="nn">pydicom_config</span>
+<span class="kn">from</span> <span class="nn">pydicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
 
 <span class="kn">import</span> <span class="nn">dicom2nifti.convert_generic</span> <span class="k">as</span> <span class="nn">convert_generic</span>
 

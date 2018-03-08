@@ -13,6 +13,7 @@ import unittest
 import tests.test_data as test_data
 
 import dicom2nifti.convert_dicom as convert_dicom
+import dicom2nifti.settings as settings
 from dicom2nifti.common import read_dicom_directory
 from tests.test_tools import compare_nifti, ground_thruth_filenames
 
@@ -104,6 +105,28 @@ class TestConversionDicom(unittest.TestCase):
         assert convert_dicom._get_vendor(
             read_dicom_directory(test_data.GENERIC_ANATOMICAL)) == convert_dicom.Vendor.GENERIC
 
+class TestConversionGantryTilted(unittest.TestCase):
+    def setUp(self):
+        settings.disable_validate_orthogonal()
+        settings.enable_resampling()
+        settings.set_resample_padding(-1000)
+        settings.set_resample_spline_interpolation_order(1)
+
+    def tearDown(self):
+        settings.disable_resampling()
+        settings.enable_validate_orthogonal()
+
+    def test_resampling(self):
+        tmp_output_dir = tempfile.mkdtemp()
+        try:
+
+            results = convert_dicom.dicom_series_to_nifti(test_data.FAILING_ORHTOGONAL,
+                                                          os.path.join(tmp_output_dir, 'test.nii.gz'),
+                                                          False)
+            self.assertTrue(os.path.isfile(results['NII_FILE']))
+
+        finally:
+            shutil.rmtree(tmp_output_dir)
 
 
 def _count_files(directory):

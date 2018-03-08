@@ -71,12 +71,7 @@
 
 <span class="kn">from</span> <span class="nn">six</span> <span class="k">import</span> <span class="n">reraise</span>
 
-<span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">pydicom</span>
-    <span class="kn">from</span> <span class="nn">pydicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
-<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">dicom</span> <span class="k">as</span> <span class="nn">pydicom</span>
-    <span class="kn">from</span> <span class="nn">dicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
+<span class="kn">from</span> <span class="nn">pydicom.tag</span> <span class="k">import</span> <span class="n">Tag</span>
 
 <span class="kn">from</span> <span class="nn">dicom2nifti.exceptions</span> <span class="k">import</span> <span class="n">ConversionValidationError</span><span class="p">,</span> <span class="n">ConversionError</span>
 <span class="kn">import</span> <span class="nn">dicom2nifti.convert_generic</span> <span class="k">as</span> <span class="nn">convert_generic</span>
@@ -85,7 +80,8 @@
 <span class="kn">import</span> <span class="nn">dicom2nifti.convert_philips</span> <span class="k">as</span> <span class="nn">convert_philips</span>
 <span class="kn">import</span> <span class="nn">dicom2nifti.common</span> <span class="k">as</span> <span class="nn">common</span>
 <span class="kn">import</span> <span class="nn">dicom2nifti.image_reorientation</span> <span class="k">as</span> <span class="nn">image_reorientation</span>
-
+<span class="kn">import</span> <span class="nn">dicom2nifti.settings</span> <span class="k">as</span> <span class="nn">settings</span>
+<span class="kn">import</span> <span class="nn">dicom2nifti.resample</span> <span class="k">as</span> <span class="nn">resample</span>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
@@ -189,6 +185,9 @@
         <span class="n">results</span> <span class="o">=</span> <span class="n">convert_hitachi</span><span class="o">.</span><span class="n">dicom_to_nifti</span><span class="p">(</span><span class="n">dicom_list</span><span class="p">,</span> <span class="n">output_file</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">raise</span> <span class="n">ConversionValidationError</span><span class="p">(</span><span class="s2">&quot;UNSUPPORTED_DATA&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">settings</span><span class="o">.</span><span class="n">resample</span><span class="p">:</span>
+        <span class="n">resample</span><span class="o">.</span><span class="n">resample_image</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="s1">&#39;NII_FILE&#39;</span><span class="p">])</span>
 
     <span class="c1"># do image reorientation if needed</span>
     <span class="k">if</span> <span class="n">reorient_nifti</span><span class="p">:</span>

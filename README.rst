@@ -19,17 +19,6 @@ Python library for converting dicom files to nifti
 
    pip install dicom2nifti
 
--------------------------------------
- Installation with pydicom >= 1.0.0
--------------------------------------
-Should you have the need to use dicom2nifti in combination with pydicom 1.0.0 you have to install pydicom first from source before installing dicom2nifti.
-Once pydicom 1.0.0 is final and released on pypi this step will be obsolete.
-
-.. code-block:: bash
-
-   pip install git+https://github.com/pydicom/pydicom.git
-   pip install dicom2nifti
-
 ---------------
  Updating
 ---------------
@@ -44,7 +33,8 @@ Command line
 ^^^^^^^^^^^^^
 .. code-block:: bash
 
-   dicom2nifti [--no-compression] [--no-reorientation] input_directory output_directory
+   dicom2nifti [-h] [-G] [-r] [-o RESAMPLE_ORDER] [-p RESAMPLE_PADDING] [-M] [-C] [-R] input_directory output_directory
+
 
 for more information
 
@@ -79,6 +69,37 @@ Most anatomical data for CT and MR should be supported as long as they are in cl
 Try avoiding "Implicit VR Endian" if possible as this makes converting non anatomical (i.e. DTI, fMRI, ...) much more difficult.
 
 There is some vendor specific support, more specifically for 4D imaging like fMRI and DTI/DKI
+
+Gantry tilted CT
+^^^^^^^^^^^^^^^^^
+By default support for gantry tilted ct is disabled as we validate image orthogonality.
+You can explicitly allow gantry tilted data by disabling this validation.
+
+Standard this will result in a nifti file where the gantry tilt is captured by the affine matrix.
+We also provide the option to resample the data to an orthogonal nifti.
+For this resampling we use scipy.ndimage.interpolation.affine_transform.
+You should configure the padding value and spline interpolation order
+
+Command line:
+
+.. code-block:: bash
+
+   dicom2nifti -G -r -o 1 -p -1000 input_directory output_directory
+
+
+Python code:
+
+.. code-block:: python
+
+   import dicom2nifti
+   import dicom2nifti.settings as settings
+
+   settings.enable_resampling()
+   settings.set_resample_spline_interpolation_order(1)
+   settings.set_resample_padding(-1000)
+
+   dicom2nifti.convert_directory(dicom_directory, output_folder)
+
 
 GE MR
 ^^^^^^

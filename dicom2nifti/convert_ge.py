@@ -7,6 +7,7 @@ dicom2nifti
 
 from __future__ import print_function
 import dicom2nifti.patch_pydicom_encodings
+from dicom2nifti.exceptions import ConversionError
 
 dicom2nifti.patch_pydicom_encodings.apply()
 
@@ -165,6 +166,13 @@ def _get_full_block(grouped_dicoms):
     size_t = len(data_blocks)
     full_block = numpy.zeros((size_x, size_y, size_z, size_t), dtype=data_blocks[0].dtype)
     for index in range(0, size_t):
+        if full_block[:, :, :, index].shape != data_blocks[index].shape:
+            logger.warning('Missing slices (slice count mismatch between timepoint %s and %s)')
+            logger.warning('---------------------------------------------------------')
+            logger.warning(full_block[:, :, :, index].shape)
+            logger.warning(data_blocks[index].shape)
+            logger.warning('---------------------------------------------------------')
+            raise ConversionError("MISSING_DICOM_FILES")
         full_block[:, :, :, index] = data_blocks[index]
 
     return full_block

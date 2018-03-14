@@ -47,6 +47,8 @@ def _get_gdcmconv():
     if gdcmconv_executable is None:
         raise ConversionError('GDCMCONV_NOT_FOUND')
 
+    return gdcmconv_executable
+
 
 def compress_directory(dicom_directory):
     """

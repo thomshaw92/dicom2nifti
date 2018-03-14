@@ -28,13 +28,24 @@ def _compress_dicom(input_file):
 
     :param input_file: single dicom file to compress
     """
+    gdcmconv_executable = _get_gdcmconv()
+
+    subprocess.check_output([gdcmconv_executable, '-K', input_file, input_file])
+
+
+def _get_gdcmconv():
+    """
+    Get the full path to gdcmconv.
+    If not found raise error
+    """
     gdcmconv_executable = settings.gdcmconv_path
     if gdcmconv_executable is None:
         gdcmconv_executable = _which('gdcmconv')
     if gdcmconv_executable is None:
         gdcmconv_executable = _which('gdcmconv.exe')
 
-    subprocess.check_output([gdcmconv_executable, '-K', input_file, input_file])
+    if gdcmconv_executable is None:
+        raise ConversionError('GDCMCONV_NOT_FOUND')
 
 
 def compress_directory(dicom_directory):
@@ -46,14 +57,12 @@ def compress_directory(dicom_directory):
     if _is_compressed(dicom_directory):
         return
 
-    if _which('gdcmconv') is None and _which('gdcmconv.exe') is None:
-        raise ConversionError('GDCMCONV_NOT_FOUND')
-
     logger.info('Compressing dicom files in %s' % dicom_directory)
     for root, _, files in os.walk(dicom_directory):
         for dicom_file in files:
             if is_dicom_file(os.path.join(root, dicom_file)):
                 _compress_dicom(os.path.join(root, dicom_file))
+
 
 def is_dicom_file(filename):
     """
@@ -106,11 +115,7 @@ def _decompress_dicom(dicom_file):
 
     :param input_file: single dicom file to decompress
     """
-    gdcmconv_executable = settings.gdcmconv_path
-    if gdcmconv_executable is None:
-        gdcmconv_executable = _which('gdcmconv')
-    if gdcmconv_executable is None:
-        gdcmconv_executable = _which('gdcmconv.exe')
+    gdcmconv_executable = _get_gdcmconv()
 
     subprocess.check_output([gdcmconv_executable, '-w', dicom_file, dicom_file])
 

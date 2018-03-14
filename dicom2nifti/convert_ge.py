@@ -167,7 +167,7 @@ def _get_full_block(grouped_dicoms):
     full_block = numpy.zeros((size_x, size_y, size_z, size_t), dtype=data_blocks[0].dtype)
     for index in range(0, size_t):
         if full_block[:, :, :, index].shape != data_blocks[index].shape:
-            logger.warning('Missing slices (slice count mismatch between timepoint %s and %s)')
+            logger.warning('Missing slices (slice count mismatch between timepoint %s and %s)' % (index-1, index))
             logger.warning('---------------------------------------------------------')
             logger.warning(full_block[:, :, :, index].shape)
             logger.warning(data_blocks[index].shape)

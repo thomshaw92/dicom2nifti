@@ -78,13 +78,26 @@
 
 <span class="sd">    :param input_file: single dicom file to compress</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_get_gdcmconv</span><span class="p">()</span>
+
+    <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="n">gdcmconv_executable</span><span class="p">,</span> <span class="s1">&#39;-K&#39;</span><span class="p">,</span> <span class="n">input_file</span><span class="p">,</span> <span class="n">input_file</span><span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">_get_gdcmconv</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Get the full path to gdcmconv.</span>
+<span class="sd">    If not found raise error</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">gdcmconv_path</span>
     <span class="k">if</span> <span class="n">gdcmconv_executable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">gdcmconv_executable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv.exe&#39;</span><span class="p">)</span>
 
-    <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="n">gdcmconv_executable</span><span class="p">,</span> <span class="s1">&#39;-K&#39;</span><span class="p">,</span> <span class="n">input_file</span><span class="p">,</span> <span class="n">input_file</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">gdcmconv_executable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;GDCMCONV_NOT_FOUND&#39;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">gdcmconv_executable</span>
 
 
 <div class="viewcode-block" id="compress_directory"><a class="viewcode-back" href="../../dicom2nifti.compressed_dicom.html#dicom2nifti.compressed_dicom.compress_directory">[docs]</a><span class="k">def</span> <span class="nf">compress_directory</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
@@ -96,14 +109,12 @@
     <span class="k">if</span> <span class="n">_is_compressed</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
         <span class="k">return</span>
 
-    <span class="k">if</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv.exe&#39;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="n">ConversionError</span><span class="p">(</span><span class="s1">&#39;GDCMCONV_NOT_FOUND&#39;</span><span class="p">)</span>
-
     <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Compressing dicom files in </span><span class="si">%s</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">dicom_directory</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">root</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">files</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">walk</span><span class="p">(</span><span class="n">dicom_directory</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">dicom_file</span> <span class="ow">in</span> <span class="n">files</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">is_dicom_file</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">)):</span>
                 <span class="n">_compress_dicom</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">))</span></div>
+
 
 <div class="viewcode-block" id="is_dicom_file"><a class="viewcode-back" href="../../dicom2nifti.compressed_dicom.html#dicom2nifti.compressed_dicom.is_dicom_file">[docs]</a><span class="k">def</span> <span class="nf">is_dicom_file</span><span class="p">(</span><span class="n">filename</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -156,11 +167,7 @@
 
 <span class="sd">    :param input_file: single dicom file to decompress</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">settings</span><span class="o">.</span><span class="n">gdcmconv_path</span>
-    <span class="k">if</span> <span class="n">gdcmconv_executable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv&#39;</span><span class="p">)</span>
-    <span class="k">if</span> <span class="n">gdcmconv_executable</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_which</span><span class="p">(</span><span class="s1">&#39;gdcmconv.exe&#39;</span><span class="p">)</span>
+    <span class="n">gdcmconv_executable</span> <span class="o">=</span> <span class="n">_get_gdcmconv</span><span class="p">()</span>
 
     <span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">([</span><span class="n">gdcmconv_executable</span><span class="p">,</span> <span class="s1">&#39;-w&#39;</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">,</span> <span class="n">dicom_file</span><span class="p">])</span>
 

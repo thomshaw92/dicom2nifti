@@ -133,3 +133,6 @@ FAILING_ORHTOGONAL = os.path.join(os.path.dirname(os.path.abspath(__file__)),
 
 FAILING_ORIENTATION = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                    'data', 'failing', 'sliceorientation', '001')
+
+FAILING_NOTAVOLUME = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                      'data', 'failing', 'notavolume', '001')

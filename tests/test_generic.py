@@ -17,6 +17,8 @@ import tests.test_data as test_data
 import dicom2nifti.convert_generic as convert_generic
 from dicom2nifti.common import read_dicom_directory
 from dicom2nifti.compressed_dicom import is_dicom_file
+import dicom2nifti.settings as settings
+from dicom2nifti.exceptions import ConversionError
 from tests.test_tools import compare_nifti, ground_thruth_filenames
 
 
@@ -30,6 +32,20 @@ class TestConversionGeneric(unittest.TestCase):
                                  ground_thruth_filenames(test_data.GE_ANATOMICAL)[0]) is True
 
         finally:
+            shutil.rmtree(tmp_output_dir)
+
+    def test_not_a_volume(self):
+        tmp_output_dir = tempfile.mkdtemp()
+        try:
+            settings.disable_validate_orthogonal()
+            with self.assertRaises(ConversionError) as exception:
+                convert_generic.dicom_to_nifti(read_dicom_directory(test_data.FAILING_NOTAVOLUME),
+                                               os.path.join(tmp_output_dir, 'test.nii.gz'))
+            self.assertEqual(str(exception.exception),
+                             'NOT_A_VOLUME')
+
+        finally:
+            settings.enable_validate_orthogonal()
             shutil.rmtree(tmp_output_dir)
 
     def test_is_dicom_file(self):

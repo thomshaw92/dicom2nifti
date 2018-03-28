@@ -6,9 +6,9 @@ dicom2nifti
 """
 from __future__ import print_function
 
-import dicom
-import dicom.UID
-import dicom.dataset
+import pydicom
+import pydicom.uid
+import pydicom.dataset
 import logging
 import numpy
 import os
@@ -25,8 +25,8 @@ def anonymize_directory(input_directory, output_directory=None):
     if output_directory is None:
         output_directory = input_directory
 
-    study_uid = dicom.UID.generate_uid()
-    series_uid = dicom.UID.generate_uid()
+    study_uid = pydicom.uid.generate_uid()
+    series_uid = pydicom.uid.generate_uid()
     date = datetime.datetime.now().strftime("%Y%m%d")
     time = datetime.datetime.now().strftime("%H%M%S.000000")
 
@@ -137,12 +137,13 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
 
     # Create new dicom file
     # Set new file meta information
-    file_meta = dicom.dataset.Dataset()
+    file_meta = pydicom.dataset.Dataset()
+    file_meta.TransferSyntaxUID = pydicom.uid.ExplicitVRLittleEndian
     for field_key in meta_fields:
         file_meta.add(dicom_in.file_meta.data_element(field_key))
 
         # Create the FileDataset instance (initially no data elements, but file_meta supplied)
-    dicom_out = dicom.dataset.FileDataset(dicom_file_out, {}, file_meta=file_meta, preamble=b'\0' * 128)
+    dicom_out = pydicom.dataset.FileDataset(dicom_file_out, {}, file_meta=file_meta, preamble=b'\0' * 128)
 
     # Copy transfer syntax
     dicom_out.is_little_endian = dicom_in.is_little_endian
@@ -154,10 +155,10 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
         if field_key == (0x7fe0, 0x0010):
 
             # anonimize the dicom pixeldata
-            #random_data = numpy.random.randint(0, 255, dicom_in.pixel_array.shape).astype(dicom_in.pixel_array.dtype)
-            #dicom_out.PixelData = random_data.tostring()  # = byte array (see pydicom docs)
+            random_data = numpy.random.randint(0, 255, dicom_in.pixel_array.shape).astype(dicom_in.pixel_array.dtype)
+            dicom_out.PixelData = random_data.tostring()  # = byte array (see pydicom docs)
 
-            dicom_out.PixelData = dicom_in.pixel_array.tostring()  # = byte array (see pydicom docs)
+            #dicom_out.PixelData = dicom_in.pixel_array.tostring()  # = byte array (see pydicom docs)
 
             # noinspection PyPep8Naming
             dicom_out[0x7fe0, 0x0010].VR = 'OB'
@@ -180,7 +181,10 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
         logging.info('Decompressing files')
 
     # Save the file
-    dicom_out.save_as(dicom_file_out)
+        dicom_out.is_little_endian = True
+    dicom_out.is_implicit_VR = False
+
+    dicom_out.save_as(dicom_file_out, write_like_original=False)
 
 
 def _anonymize_files(dicom_directory_in, dicom_directory_out, fields_to_keep):
@@ -203,7 +207,7 @@ def _anonymize_files(dicom_directory_in, dicom_directory_out, fields_to_keep):
 
         for file_name in file_names:
             # Create instance_UID
-            fields_to_keep['SOPInstanceUID'] = dicom.UID.generate_uid()
+            fields_to_keep['SOPInstanceUID'] = pydicom.uid.generate_uid()
 
             dicom_file_in = os.path.join(root, file_name)
             current_dir = root[len(dicom_directory_in) + 1:]

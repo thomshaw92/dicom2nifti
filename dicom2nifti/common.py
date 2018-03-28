@@ -20,7 +20,7 @@ from pydicom.tag import Tag
 import logging
 import numpy
 
-from dicom2nifti.exceptions import ConversionValidationError
+from dicom2nifti.exceptions import ConversionValidationError, ConversionError
 import dicom2nifti.settings
 
 logger = logging.getLogger(__name__)
@@ -385,6 +385,10 @@ def create_affine(sorted_dicoms):
         step = [0, 0, -1]
     else:
         step = (image_pos - last_image_pos) / (1 - len(sorted_dicoms))
+
+    # check if this is actually a volume and not all slices on the same location
+    if numpy.linalg.norm(step) == 0.0:
+        raise ConversionError("NOT_A_VOLUME")
 
     affine = numpy.matrix([[-image_orient1[0] * delta_r, -image_orient2[0] * delta_c, -step[0], -image_pos[0]],
                            [-image_orient1[1] * delta_r, -image_orient2[1] * delta_c, -step[1], -image_pos[1]],

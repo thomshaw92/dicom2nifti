@@ -45,7 +45,7 @@ def is_hitachi(dicom_input):
     return True
 
 
-def dicom_to_nifti(dicom_input, output_file):
+def dicom_to_nifti(dicom_input, output_file=None):
     """
     This is the main dicom to nifti conversion fuction for hitachi images.
     As input hitachi images are required. It will then determine the type of images and do the correct conversion

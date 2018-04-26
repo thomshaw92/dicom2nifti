@@ -340,6 +340,8 @@ def write_bvec_file(bvecs, bvec_file):
     :param bvecs: array with the vectors
     :param bvec_file: filepath to write to
     """
+    if bvec_file is None:
+        return
     logger.info('Saving BVEC file: %s' % bvec_file)
     with open(bvec_file, 'w') as text_file:
         # Map a dicection to string join them using a space and write to the file
@@ -355,6 +357,8 @@ def write_bval_file(bvals, bval_file):
     :param bvals: array with the values
     :param bval_file: filepath to write to
     """
+    if bval_file is None:
+        return
     logger.info('Saving BVAL file: %s' % bval_file)
     with open(bval_file, 'w') as text_file:
         # join the bvals using a space and write to the file

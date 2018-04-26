@@ -52,7 +52,7 @@ def is_ge(dicom_input):
     return True
 
 
-def dicom_to_nifti(dicom_input, output_file):
+def dicom_to_nifti(dicom_input, output_file=None):
     """
     This is the main dicom to nifti conversion fuction for ge images.
     As input ge images are required. It will then determine the type of images and do the correct conversion
@@ -126,27 +126,36 @@ def _4d_to_nifti(grouped_dicoms, output_file):
 
     logger.info('Creating nifti')
     # Convert to nifti
-    img = nibabel.Nifti1Image(full_block, affine)
-    common.set_tr_te(img, float(grouped_dicoms[0][0].RepetitionTime),
+    nii_image = nibabel.Nifti1Image(full_block, affine)
+    common.set_tr_te(nii_image, float(grouped_dicoms[0][0].RepetitionTime),
                      float(grouped_dicoms[0][0].EchoTime))
     logger.info('Saving nifti to disk %s' % output_file)
     # Save to disk
-    img.to_filename(output_file)
+    if output_file is not None:
+        nii_image.to_filename(output_file)
 
     if _is_diffusion_imaging(grouped_dicoms):
+        bval_file = None
+        bvec_file = None
         # Create the bval en bevec files
-        base_path = os.path.dirname(output_file)
-        base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
+        if output_file is not None:
+            base_path = os.path.dirname(output_file)
+            base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
 
-        logger.info('Creating bval en bvec files')
-        bval_file = '%s/%s.bval' % (base_path, base_name)
-        bvec_file = '%s/%s.bvec' % (base_path, base_name)
-        _create_bvals_bvecs(grouped_dicoms, bval_file, bvec_file)
+            logger.info('Creating bval en bvec files')
+            bval_file = '%s/%s.bval' % (base_path, base_name)
+            bvec_file = '%s/%s.bvec' % (base_path, base_name)
+        bval, bvec = _create_bvals_bvecs(grouped_dicoms, bval_file, bvec_file)
         return {'NII_FILE': output_file,
                 'BVAL_FILE': bval_file,
-                'BVEC_FILE': bvec_file}
+                'BVEC_FILE': bvec_file,
+                'NII': nii_image,
+                'BVAL': bval,
+                'BVEC': bvec
+                }
 
-    return {'NII_FILE': output_file}
+    return {'NII_FILE': output_file,
+            'NII': nii_image}
 
 
 def _get_full_block(grouped_dicoms):
@@ -167,7 +176,7 @@ def _get_full_block(grouped_dicoms):
     full_block = numpy.zeros((size_x, size_y, size_z, size_t), dtype=data_blocks[0].dtype)
     for index in range(0, size_t):
         if full_block[:, :, :, index].shape != data_blocks[index].shape:
-            logger.warning('Missing slices (slice count mismatch between timepoint %s and %s)' % (index-1, index))
+            logger.warning('Missing slices (slice count mismatch between timepoint %s and %s)' % (index - 1, index))
             logger.warning('---------------------------------------------------------')
             logger.warning(full_block[:, :, :, index].shape)
             logger.warning(data_blocks[index].shape)
@@ -211,7 +220,7 @@ def _get_grouped_dicoms(dicom_input):
             current_direction = numpy.array(dicom_.ImagePositionPatient) - previous_position
             current_direction = current_direction / numpy.linalg.norm(current_direction)
         if current_direction is not None and \
-                        previous_direction is not None and \
+                previous_direction is not None and \
                 not numpy.allclose(current_direction, previous_direction, rtol=0.01, atol=0.01):
             previous_position = numpy.array(dicom_.ImagePositionPatient)
             previous_direction = None
@@ -283,3 +292,5 @@ def _create_bvals_bvecs(grouped_dicoms, bval_file, bvec_file):
     # save the found bvecs to the file
     common.write_bval_file(bvals, bval_file)
     common.write_bvec_file(bvecs, bvec_file)
+
+    return bvals, bvecs

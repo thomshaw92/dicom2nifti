@@ -51,7 +51,7 @@ class Vendor(object):
 
 
 # pylint: enable=w0232, r0903, C0103
-def dicom_series_to_nifti(original_dicom_directory, output_file, reorient_nifti=True):
+def dicom_series_to_nifti(original_dicom_directory, output_file=None, reorient_nifti=True):
     """ Converts dicom single series (see pydicom) to nifty, mimicking SPM
 
     Examples: See unit test
@@ -71,8 +71,9 @@ def dicom_series_to_nifti(original_dicom_directory, output_file, reorient_nifti=
     Inspired by http://code.google.com/p/pydicom/source/browse/source/dicom/contrib/pydicom_series.py
 
     :param reorient_nifti: if True the nifti affine and data will be updated so the data is stored LAS oriented
-    :param output_file: file path to write to
+    :param output_file: file path to write to if not set to None
     :param original_dicom_directory: directory with the dicom files for a single series/scan
+    :return nibabel image
     """
     # copy files so we can can modify without altering the original
     temp_directory = tempfile.mkdtemp()

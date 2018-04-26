@@ -17,7 +17,6 @@ import re
 import traceback
 import unicodedata
 
-import pydicom
 from pydicom.tag import Tag
 
 import logging
@@ -25,7 +24,6 @@ import six
 from future.builtins import bytes
 from six import iteritems
 
-import dicom2nifti.common as common
 import dicom2nifti.convert_dicom as convert_dicom
 import dicom2nifti.convert_philips as convert_philips
 import dicom2nifti.settings

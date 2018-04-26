@@ -10,6 +10,8 @@ import shutil
 import tempfile
 import unittest
 
+import nibabel
+
 import tests.test_data as test_data
 
 import dicom2nifti.convert_dicom as convert_dicom
@@ -23,70 +25,87 @@ class TestConversionDicom(unittest.TestCase):
         tmp_output_dir = tempfile.mkdtemp()
         try:
             results = convert_dicom.dicom_series_to_nifti(test_data.SIEMENS_ANATOMICAL,
+                                                          None,
+                                                          False)
+            self.assertTrue(results.get('NII_FILE') is None)
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
+
+            results = convert_dicom.dicom_series_to_nifti(test_data.SIEMENS_ANATOMICAL,
                                                           os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                           False)
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.SIEMENS_ANATOMICAL)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_dicom.dicom_series_to_nifti(test_data.SIEMENS_ANATOMICAL,
                                                           os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                           True)
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.SIEMENS_ANATOMICAL)[1]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_dicom.dicom_series_to_nifti(test_data.SIEMENS_ANATOMICAL_IMPLICIT,
                                                           os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                           False)
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.SIEMENS_ANATOMICAL_IMPLICIT)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_dicom.dicom_series_to_nifti(test_data.SIEMENS_ANATOMICAL_IMPLICIT,
                                                           os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                           True)
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.SIEMENS_ANATOMICAL_IMPLICIT)[1]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_dicom.dicom_series_to_nifti(test_data.GENERIC_ANATOMICAL,
                                                           os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                           False)
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GENERIC_ANATOMICAL)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_dicom.dicom_series_to_nifti(test_data.GENERIC_ANATOMICAL,
                                                           os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                           True)
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GENERIC_ANATOMICAL)[1]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_dicom.dicom_series_to_nifti(test_data.GENERIC_ANATOMICAL_IMPLICIT,
                                                           os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                           False)
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GENERIC_ANATOMICAL_IMPLICIT)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_dicom.dicom_series_to_nifti(test_data.GENERIC_ANATOMICAL_IMPLICIT,
                                                           os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                           True)
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GENERIC_ANATOMICAL_IMPLICIT)[1]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_dicom.dicom_series_to_nifti(test_data.GENERIC_COMPRESSED,
                                                           os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                           False)
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GENERIC_COMPRESSED)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_dicom.dicom_series_to_nifti(test_data.GENERIC_COMPRESSED,
                                                           os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                           True)
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GENERIC_COMPRESSED)[1]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_dicom.dicom_series_to_nifti(test_data.HITACHI_ANATOMICAL,
                                                           os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                           True)
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.HITACHI_ANATOMICAL)[1]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
         finally:
             shutil.rmtree(tmp_output_dir)
@@ -104,6 +123,7 @@ class TestConversionDicom(unittest.TestCase):
             read_dicom_directory(test_data.PHILIPS_ENHANCED_ANATOMICAL)) == convert_dicom.Vendor.PHILIPS
         assert convert_dicom._get_vendor(
             read_dicom_directory(test_data.GENERIC_ANATOMICAL)) == convert_dicom.Vendor.GENERIC
+
 
 class TestConversionGantryTilted(unittest.TestCase):
     def setUp(self):

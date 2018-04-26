@@ -10,6 +10,9 @@ import shutil
 import tempfile
 import unittest
 
+import nibabel
+import numpy
+
 import tests.test_data as test_data
 
 import dicom2nifti.convert_philips as convert_philips
@@ -24,50 +27,75 @@ class TestConversionPhilips(unittest.TestCase):
     def test_diffusion_imaging(self):
         tmp_output_dir = tempfile.mkdtemp()
         try:
+
+            results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_DTI),
+                                                     None)
+            self.assertTrue(results.get('NII_FILE') is None)
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
+            self.assertTrue(results.get('BVAL_FILE') is None)
+            self.assertTrue(isinstance(results['BVAL'], numpy.ndarray))
+            self.assertTrue(results.get('BVEC_FILE') is None)
+            self.assertTrue(isinstance(results['BVEC'], numpy.ndarray))
+
             results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_DTI),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.PHILIPS_DTI)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
             assert compare_bval(results['BVAL_FILE'],
                                 ground_thruth_filenames(test_data.PHILIPS_DTI)[2]) is True
+            self.assertTrue(isinstance(results['BVAL'], numpy.ndarray))
             assert compare_bvec(results['BVEC_FILE'],
                                 ground_thruth_filenames(test_data.PHILIPS_DTI)[3]) is True
+            self.assertTrue(isinstance(results['BVEC'], numpy.ndarray))
 
             results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_DTI_002),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.PHILIPS_DTI_002)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
             assert compare_bval(results['BVAL_FILE'],
                                 ground_thruth_filenames(test_data.PHILIPS_DTI_002)[2]) is True
+            self.assertTrue(isinstance(results['BVAL'], numpy.ndarray))
             assert compare_bvec(results['BVEC_FILE'],
                                 ground_thruth_filenames(test_data.PHILIPS_DTI_002)[3]) is True
+            self.assertTrue(isinstance(results['BVEC'], numpy.ndarray))
 
             results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_ENHANCED_DTI),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.PHILIPS_ENHANCED_DTI)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
             assert compare_bval(results['BVAL_FILE'],
                                 ground_thruth_filenames(test_data.PHILIPS_ENHANCED_DTI)[2]) is True
+            self.assertTrue(isinstance(results['BVAL'], numpy.ndarray))
             assert compare_bvec(results['BVEC_FILE'],
                                 ground_thruth_filenames(test_data.PHILIPS_ENHANCED_DTI)[3]) is True
+            self.assertTrue(isinstance(results['BVEC'], numpy.ndarray))
 
             results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_DTI_IMPLICIT),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.PHILIPS_DTI_IMPLICIT)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
             assert compare_bval(results['BVAL_FILE'],
                                 ground_thruth_filenames(test_data.PHILIPS_DTI_IMPLICIT)[2]) is True
+            self.assertTrue(isinstance(results['BVAL'], numpy.ndarray))
             assert compare_bvec(results['BVEC_FILE'],
                                 ground_thruth_filenames(test_data.PHILIPS_DTI_IMPLICIT)[3]) is True
+            self.assertTrue(isinstance(results['BVEC'], numpy.ndarray))
 
             results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_DTI_IMPLICIT_002),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.PHILIPS_DTI_IMPLICIT_002)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
             assert compare_bval(results['BVAL_FILE'],
                                 ground_thruth_filenames(test_data.PHILIPS_DTI_IMPLICIT_002)[2]) is True
+            self.assertTrue(isinstance(results['BVAL'], numpy.ndarray))
             assert compare_bvec(results['BVEC_FILE'],
                                 ground_thruth_filenames(test_data.PHILIPS_DTI_IMPLICIT_002)[3]) is True
+            self.assertTrue(isinstance(results['BVEC'], numpy.ndarray))
 
             self.assertRaises(ConversionError,
                               convert_philips.dicom_to_nifti,
@@ -80,19 +108,27 @@ class TestConversionPhilips(unittest.TestCase):
         tmp_output_dir = tempfile.mkdtemp()
         try:
             results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_FMRI),
+                                                     None)
+            self.assertTrue(results.get('NII_FILE') is None)
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
+
+            results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_FMRI),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.PHILIPS_FMRI)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_FMRI_IMPLICIT),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.PHILIPS_FMRI_IMPLICIT)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_ENHANCED_FMRI),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.PHILIPS_ENHANCED_FMRI)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
             self.assertRaises(ConversionError,
                               convert_philips.dicom_to_nifti,
                               read_dicom_directory(test_data.PHILIPS_ENHANCED_FMRI_IMPLICIT),
@@ -104,19 +140,27 @@ class TestConversionPhilips(unittest.TestCase):
         tmp_output_dir = tempfile.mkdtemp()
         try:
             results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_ANATOMICAL),
+                                                     None)
+            self.assertTrue(results.get('NII_FILE') is None)
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
+
+            results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_ANATOMICAL),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.PHILIPS_ANATOMICAL)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_ANATOMICAL_IMPLICIT),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.PHILIPS_ANATOMICAL_IMPLICIT)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_philips.dicom_to_nifti(read_dicom_directory(test_data.PHILIPS_ENHANCED_ANATOMICAL),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.PHILIPS_ENHANCED_ANATOMICAL)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             self.assertRaises(ConversionError,
                               convert_philips.dicom_to_nifti,
@@ -134,6 +178,7 @@ class TestConversionPhilips(unittest.TestCase):
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.PHILIPS_ENHANCED_ANATOMICAL_IMPLICIT)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
             settings.enable_validate_multiframe_implicit()
         finally:
             shutil.rmtree(tmp_output_dir)

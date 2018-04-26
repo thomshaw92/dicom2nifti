@@ -65,7 +65,7 @@ def is_siemens(dicom_input):
     return True
 
 
-def dicom_to_nifti(dicom_input, output_file):
+def dicom_to_nifti(dicom_input, output_file=None):
     """
     This is the main dicom to nifti conversion function for ge images.
     As input ge images are required. It will then determine the type of images and do the correct conversion
@@ -173,28 +173,36 @@ def _mosaic_4d_to_nifti(dicom_input, output_file):
     affine = _create_affine_siemens_mosaic(dicom_input)
     logger.info('Creating nifti')
     # Convert to nifti
-    img = nibabel.Nifti1Image(full_block, affine)
-    common.set_tr_te(img, float(sorted_mosaics[0].RepetitionTime), float(sorted_mosaics[0].EchoTime))
+    nii_image = nibabel.Nifti1Image(full_block, affine)
+    common.set_tr_te(nii_image, float(sorted_mosaics[0].RepetitionTime), float(sorted_mosaics[0].EchoTime))
     logger.info('Saving nifti to disk')
     # Save to disk
-    img.to_filename(output_file)
+    if output_file is not None:
+        nii_image.to_filename(output_file)
 
     if _is_diffusion_imaging(dicom_input[0]):
         # Create the bval en bvec files
-        logger.info('Creating bval en bvec files')
-        base_path = os.path.dirname(output_file)
-        base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
-        logger.info('Creating bval en bvec files')
-        bval_file = '%s/%s.bval' % (base_path, base_name)
-        bvec_file = '%s/%s.bvec' % (base_path, base_name)
-        _create_bvals(sorted_mosaics, bval_file)
-        _create_bvecs(sorted_mosaics, bvec_file)
+        logger.info('Creating bval en bvec')
+        bval_file = None
+        bvec_file = None
+        if output_file is not None:
+            base_path = os.path.dirname(output_file)
+            base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
+            logger.info('Saving bval en bvec files')
+            bval_file = '%s/%s.bval' % (base_path, base_name)
+            bvec_file = '%s/%s.bvec' % (base_path, base_name)
+        bvals = _create_bvals(sorted_mosaics, bval_file)
+        bvecs = _create_bvecs(sorted_mosaics, bvec_file)
 
         return {'NII_FILE': output_file,
                 'BVAL_FILE': bval_file,
-                'BVEC_FILE': bvec_file}
+                'BVEC_FILE': bvec_file,
+                'NII': nii_image,
+                'BVAL': bvals,
+                'BVEC': bvecs}
 
-    return {'NII_FILE': output_file}
+    return {'NII_FILE': output_file,
+            'NII': nii_image}
 
 
 def _classic_4d_to_nifti(grouped_dicoms, output_file):
@@ -217,29 +225,36 @@ def _classic_4d_to_nifti(grouped_dicoms, output_file):
 
     logger.info('Creating nifti')
     # Convert to nifti
-    img = nibabel.Nifti1Image(full_block, affine)
-    common.set_tr_te(img, float(grouped_dicoms[0][0].RepetitionTime), float(grouped_dicoms[0][0].EchoTime))
+    nii_image = nibabel.Nifti1Image(full_block, affine)
+    common.set_tr_te(nii_image, float(grouped_dicoms[0][0].RepetitionTime), float(grouped_dicoms[0][0].EchoTime))
     logger.info('Saving nifti to disk')
     # Save to disk
-    img.to_filename(output_file)
+    if output_file is not None:
+        nii_image.to_filename(output_file)
 
     if _is_diffusion_imaging(grouped_dicoms[0][0]):
-        # Create the bval en bvec files
-        logger.info('Creating bval en bvec files')
-        base_path = os.path.dirname(output_file)
-        base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
-        logger.info('Creating bval en bvec files')
-        bval_file = '%s/%s.bval' % (base_path, base_name)
-        bvec_file = '%s/%s.bvec' % (base_path, base_name)
+        logger.info('Creating bval en bvec')
+        bval_file = None
+        bvec_file = None
+        if output_file is not None:
+            base_path = os.path.dirname(output_file)
+            base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
+            logger.info('Creating bval en bvec files')
+            bval_file = '%s/%s.bval' % (base_path, base_name)
+            bvec_file = '%s/%s.bvec' % (base_path, base_name)
 
-        _create_bvals(grouped_dicoms, bval_file)
-        _create_bvecs(grouped_dicoms, bvec_file)
+        bval = _create_bvals(grouped_dicoms, bval_file)
+        bvec = _create_bvecs(grouped_dicoms, bvec_file)
 
         return {'NII_FILE': output_file,
                 'BVAL_FILE': bval_file,
-                'BVEC_FILE': bvec_file}
+                'BVEC_FILE': bvec_file,
+                'NII': nii_image,
+                'BVAL': bval,
+                'BVEC': bvec}
 
-    return {'NII_FILE': output_file}
+    return {'NII_FILE': output_file,
+            'NII': nii_image}
 
 
 def _classic_get_grouped_dicoms(dicom_input):
@@ -486,6 +501,7 @@ def _create_bvals(sorted_dicoms, bval_file):
         bvals.append(common.get_is_value(dicom_headers[Tag(0x0019, 0x100c)]))
     # save the found bvecs to the file
     common.write_bval_file(bvals, bval_file)
+    return numpy.array(bvals)
 
 
 def _create_bvecs(sorted_dicoms, bvec_file):
@@ -535,5 +551,6 @@ def _create_bvecs(sorted_dicoms, bvec_file):
             # normalize the bvec
             new_bvec /= numpy.linalg.norm(new_bvec)
         bvecs[index, :] = new_bvec
-    # save the found bvecs to the file
-    common.write_bvec_file(bvecs, bvec_file)
+        # save the found bvecs to the file
+        common.write_bvec_file(bvecs, bvec_file)
+    return numpy.array(bvecs)

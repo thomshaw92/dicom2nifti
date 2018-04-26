@@ -52,7 +52,7 @@ def is_philips(dicom_input):
     return True
 
 
-def dicom_to_nifti(dicom_input, output_file):
+def dicom_to_nifti(dicom_input, output_file=None):
     """
     This is the main dicom to nifti conversion fuction for philips images.
     As input philips images are required. It will then determine the type of images and do the correct conversion
@@ -221,10 +221,10 @@ def _is_bval_type_a(grouped_dicoms):
     bvec_z_tag = Tag(0x2005, 0x10b2)
     for group in grouped_dicoms:
         if bvec_x_tag in group[0] and _is_float(common.get_fl_value(group[0][bvec_x_tag])) and \
-                        bvec_y_tag in group[0] and _is_float(common.get_fl_value(group[0][bvec_y_tag])) and \
-                        bvec_z_tag in group[0] and _is_float(common.get_fl_value(group[0][bvec_z_tag])) and \
-                        bval_tag in group[0] and _is_float(common.get_fl_value(group[0][bval_tag])) and \
-                        common.get_fl_value(group[0][bval_tag]) != 0:
+                bvec_y_tag in group[0] and _is_float(common.get_fl_value(group[0][bvec_y_tag])) and \
+                bvec_z_tag in group[0] and _is_float(common.get_fl_value(group[0][bvec_z_tag])) and \
+                bval_tag in group[0] and _is_float(common.get_fl_value(group[0][bval_tag])) and \
+                common.get_fl_value(group[0][bval_tag]) != 0:
             return True
     return False
 
@@ -275,34 +275,39 @@ def _multiframe_to_nifti(dicom_input, output_file):
     logger.info('Creating nifti')
 
     # Convert to nifti
-    img = nibabel.Nifti1Image(full_block, affine)
+    nii_image = nibabel.Nifti1Image(full_block, affine)
     timing_parameters = multiframe_dicom.SharedFunctionalGroupsSequence[0].MRTimingAndRelatedParametersSequence[0]
     first_frame = multiframe_dicom[Tag(0x5200, 0x9230)][0]
-    common.set_tr_te(img, float(timing_parameters.RepetitionTime),
+    common.set_tr_te(nii_image, float(timing_parameters.RepetitionTime),
                      float(first_frame[0x2005, 0x140f][0].EchoTime))
 
-    logger.info('Saving nifti to disk')
     # Save to disk
-    logger.info('Saving nifti to disk %s' % output_file)
-    img.to_filename(output_file)
+    if output_file is not None:
+        logger.info('Saving nifti to disk %s' % output_file)
+        nii_image.to_filename(output_file)
 
     if _is_multiframe_diffusion_imaging(dicom_input):
-        # Create the bval en bvec files
-        base_path = os.path.dirname(output_file)
-        base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
-        logger.info('Creating bval en bvec files')
-        bval_file = '%s/%s.bval' % (base_path, base_name)
-        bvec_file = '%s/%s.bvec' % (base_path, base_name)
-        bval_file, bvec_file = _create_bvals_bvecs(multiframe_dicom, bval_file, bvec_file, img, output_file)
+        bval_file = None
+        bvec_file = None
+        if output_file is not None:
+            # Create the bval en bvec files
+            base_path = os.path.dirname(output_file)
+            base_name = os.path.splitext(os.path.splitext(os.path.basename(output_file))[0])[0]
+            logger.info('Creating bval en bvec files')
+            bval_file = '%s/%s.bval' % (base_path, base_name)
+            bvec_file = '%s/%s.bvec' % (base_path, base_name)
+        bval, bvec, bval_file, bvec_file = _create_bvals_bvecs(multiframe_dicom, bval_file, bvec_file, nii_image,
+                                                               output_file)
 
-        result = {'NII_FILE': output_file}
-        if bval_file is not None:
-            result['BVAL_FILE'] = bval_file
-        if bvec_file is not None:
-            result['BVEC_FILE'] = bvec_file
-        return result
+        return {'NII_FILE': output_file,
+                'BVAL_FILE': bval_file,
+                'BVEC_FILE': bvec_file,
+                'NII': nii_image,
+                'BVAL': bval,
+                'BVEC': bvec}
 
-    return {'NII_FILE': output_file}
+    return {'NII_FILE': output_file,
+            'NII': nii_image}
 
 
 def _singleframe_to_nifti(grouped_dicoms, output_file):
@@ -320,32 +325,40 @@ def _singleframe_to_nifti(grouped_dicoms, output_file):
 
     logger.info('Creating nifti')
     # Convert to nifti
-    img = nibabel.Nifti1Image(full_block, affine)
-    common.set_tr_te(img, float(grouped_dicoms[0][0].RepetitionTime), float(grouped_dicoms[0][0].EchoTime))
+    nii_image = nibabel.Nifti1Image(full_block, affine)
+    common.set_tr_te(nii_image, float(grouped_dicoms[0][0].RepetitionTime), float(grouped_dicoms[0][0].EchoTime))
 
-    logger.info('Saving nifti to disk %s' % output_file)
-    # Save to disk
-    img.to_filename(output_file)
+    if output_file is not None:
+        # Save to disk
+        logger.info('Saving nifti to disk %s' % output_file)
+        nii_image.to_filename(output_file)
 
     if _is_singleframe_diffusion_imaging(grouped_dicoms):
+        bval_file = None
+        bvec_file = None
         # Create the bval en bvec files
-        base_name = os.path.splitext(output_file)[0]
-        if base_name.endswith('.nii'):
-            base_name = os.path.splitext(base_name)[0]
+        if output_file is not None:
+            base_name = os.path.splitext(output_file)[0]
+            if base_name.endswith('.nii'):
+                base_name = os.path.splitext(base_name)[0]
 
-        logger.info('Creating bval en bvec files')
-        bval_file = '%s.bval' % base_name
-        bvec_file = '%s.bvec' % base_name
-        bval_file, bvec_file = _create_singleframe_bvals_bvecs(grouped_dicoms, bval_file, bvec_file, img, output_file)
+            logger.info('Creating bval en bvec files')
+            bval_file = '%s.bval' % base_name
+            bvec_file = '%s.bvec' % base_name
+        nii_image, bval, bvec, bval_file, bvec_file = _create_singleframe_bvals_bvecs(grouped_dicoms,
+                                                                                      bval_file,
+                                                                                      bvec_file,
+                                                                                      nii_image,
+                                                                                      output_file)
 
-        result = {'NII_FILE': output_file}
-        if bval_file is not None:
-            result['BVAL_FILE'] = bval_file
-        if bvec_file is not None:
-            result['BVEC_FILE'] = bvec_file
-        return result
-
-    return {'NII_FILE': output_file}
+        return {'NII_FILE': output_file,
+                'BVAL_FILE': bval_file,
+                'BVEC_FILE': bvec_file,
+                'NII': nii_image,
+                'BVAL': bval,
+                'BVEC': bvec}
+    return {'NII_FILE': output_file,
+            'NII': nii_image}
 
 
 def _singleframe_to_block(grouped_dicoms):
@@ -574,8 +587,10 @@ def _create_bvals_bvecs(multiframe_dicom, bval_file, bvec_file, nifti, nifti_fil
     else:
         bval_file = None
         bvec_file = None
+        bvals = None
+        bvecs = None
 
-    return bval_file, bvec_file
+    return bvals, bvecs, bval_file, bvec_file
 
 
 def _fix_diffusion_images(bvals, bvecs, nifti, nifti_file):
@@ -635,4 +650,6 @@ def _create_singleframe_bvals_bvecs(grouped_dicoms, bval_file, bvec_file, nifti,
     else:
         bval_file = None
         bvec_file = None
-    return bval_file, bvec_file
+        bvals = None
+        bvecs = None
+    return nifti, bvals, bvecs, bval_file, bvec_file

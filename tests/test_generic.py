@@ -12,6 +12,8 @@ import string
 import tempfile
 import unittest
 
+import nibabel
+
 import tests.test_data as test_data
 
 import dicom2nifti.convert_generic as convert_generic
@@ -27,9 +29,15 @@ class TestConversionGeneric(unittest.TestCase):
         tmp_output_dir = tempfile.mkdtemp()
         try:
             results = convert_generic.dicom_to_nifti(read_dicom_directory(test_data.GE_ANATOMICAL),
+                                                     None)
+            self.assertTrue(results.get('NII_FILE') is None)
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
+
+            results = convert_generic.dicom_to_nifti(read_dicom_directory(test_data.GE_ANATOMICAL),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
             assert compare_nifti(results['NII_FILE'],
                                  ground_thruth_filenames(test_data.GE_ANATOMICAL)[0]) is True
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
         finally:
             shutil.rmtree(tmp_output_dir)

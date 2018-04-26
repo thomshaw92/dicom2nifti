@@ -68,17 +68,19 @@ def dicom_to_nifti(dicom_input, output_file):
     affine = common.create_affine(dicom_input)
 
     # Convert to nifti
-    img = nibabel.Nifti1Image(data, affine)
+    nii_image = nibabel.Nifti1Image(data, affine)
 
     # Set TR and TE if available
     if Tag(0x0018, 0x0081) in dicom_input[0] and Tag(0x0018, 0x0081) in dicom_input[0]:
-        common.set_tr_te(img, float(dicom_input[0].RepetitionTime), float(dicom_input[0].EchoTime))
+        common.set_tr_te(nii_image, float(dicom_input[0].RepetitionTime), float(dicom_input[0].EchoTime))
 
     # Save to disk
-    logger.info('Saving nifti to disk %s' % output_file)
-    img.to_filename(output_file)
+    if output_file is not None:
+        logger.info('Saving nifti to disk %s' % output_file)
+        nii_image.to_filename(output_file)
 
-    return {'NII_FILE': output_file}
+    return {'NII_FILE': output_file,
+            'NII': nii_image}
 
 
 def _remove_duplicate_slices(dicoms):

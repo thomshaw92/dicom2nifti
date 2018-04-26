@@ -50,9 +50,9 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            pytest --verbose --junitxml ./test-reports/dicom2nifti_junit.xml ./tests
+            pytest --verbose --junitxml ./test-results/dicom2nifti_junit.xml ./tests
 
-      - store_artifacts:
-          path: test-reports
-          destination: test-reports
+      - store_test_results:
+          path: test-results
+
           

@@ -51,12 +51,10 @@ jobs:
           command: |
             . venv/bin/activate
             mkdir -p ./test-results/junit
-            pytest --verbose --junitxml ./test-results/junit/dicom2nifti_junit.xml ./tests
-            mkdir -p $CIRCLE_TEST_REPORTS/junit/
-            cp ./test-results/junit/dicom2nifti_junit.xml $CIRCLE_TEST_REPORTS/junit/
+            pytest --verbose --junitxml ./test_reports/junit/dicom2nifti_junit.xml ./tests
 
       - store_test_results:
-          path: test-results
+          path: test_reports
 
 
           

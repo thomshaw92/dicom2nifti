@@ -398,11 +398,11 @@ def _get_grouped_dicoms(dicom_input):
 
     fast_read = True will only read the headers not the data
     """
-    # Order all dicom files by InstanceNumber
-    dicoms = sorted(dicom_input, key=lambda x: (x.ImagePositionPatient[0],
-                                                x.ImagePositionPatient[1],
-                                                x.ImagePositionPatient[2]))
-
+    # if all dicoms have an instance number try sorting by instance number else by position
+    if [d for d in dicom_input if 'InstanceNumber' in d]:
+        dicoms = sorted(dicom_input, key=lambda x: x.InstanceNumber)
+    else:
+        dicoms = common.sort_dicoms(dicom_input)
     # now group per stack
     grouped_dicoms = [[]]  # list with first element a list
     timepoint_index = 0

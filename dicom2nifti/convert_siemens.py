@@ -265,9 +265,10 @@ def _classic_get_grouped_dicoms(dicom_input):
     """
     # Loop overall files and build dict
     # Order all dicom files by InstanceNumber
-    dicoms = sorted(dicom_input, key=lambda x: (x.ImagePositionPatient[0],
-                                                x.ImagePositionPatient[1],
-                                                x.ImagePositionPatient[2]))
+    if [d for d in dicom_input if 'InstanceNumber' in d]:
+        dicoms = sorted(dicom_input, key=lambda x: x.InstanceNumber)
+    else:
+        dicoms = common.sort_dicoms(dicom_input)
 
     # now group per stack
     grouped_dicoms = []

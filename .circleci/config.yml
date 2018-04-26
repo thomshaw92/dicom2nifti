@@ -47,7 +47,7 @@ jobs:
       # https://pytest.org
       # https://nose.readthedocs.io
       - run:
-          name: run tests
+          name: Run tests
           command: |
             . venv/bin/activate
             pytest --verbose --junitxml ./test-results/dicom2nifti_junit.xml ./tests

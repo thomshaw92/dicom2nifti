@@ -195,7 +195,6 @@ class TestConversionSiemens(unittest.TestCase):
         assert not convert_siemens.is_siemens(read_dicom_directory(test_data.GENERIC_ANATOMICAL))
         assert not convert_siemens.is_siemens(read_dicom_directory(test_data.HITACHI_ANATOMICAL))
 
-
     def test_get_asconv_headers(self):
         mosaic = compressed_dicom.read_file(os.path.join(test_data.SIEMENS_FMRI, 'IM-0001-0001.dcm'))
         asconv_headers = convert_siemens._get_asconv_headers(mosaic)

@@ -1,7 +1,7 @@
-import subprocess
-
-import os
 import logging
+import os
+import subprocess
+import tempfile
 
 import dicom2nifti.settings as settings
 from dicom2nifti.exceptions import ConversionError
@@ -13,7 +13,12 @@ logger = logging.getLogger(__name__)
 
 def read_file(dicom_file, defer_size=None, stop_before_pixels=False, force=False):
     if _is_compressed(dicom_file, force):
-        _decompress_dicom(dicom_file)
+        with tempfile.NamedTemporaryFile() as fp:
+            _decompress_dicom(dicom_file, output_file=fp.name)
+            return pydicom.read_file(fp,
+                                     defer_size=None, # We can't defer
+                                     stop_before_pixels=stop_before_pixels,
+                                     force=force)
 
     dicom_header = pydicom.read_file(dicom_file,
                                      defer_size=defer_size,
@@ -111,7 +116,7 @@ def _is_compressed(dicom_file, force=False):
     return True
 
 
-def _decompress_dicom(dicom_file):
+def _decompress_dicom(dicom_file, output_file):
     """
     This function can be used to convert a jpeg compressed image to an uncompressed one for further conversion
 
@@ -119,7 +124,7 @@ def _decompress_dicom(dicom_file):
     """
     gdcmconv_executable = _get_gdcmconv()
 
-    subprocess.check_output([gdcmconv_executable, '-w', dicom_file, dicom_file])
+    subprocess.check_output([gdcmconv_executable, '-w', dicom_file, output_file])
 
 
 def _which(program):

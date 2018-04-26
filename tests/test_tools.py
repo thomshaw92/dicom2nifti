@@ -37,7 +37,7 @@ def compare_nifti(nifti_file_1, nifti_file_2):
         if nifti_1.get_data_dtype() != nifti_2.get_data_dtype():
             logging.warning('dtype mismatch')
             result = False
-        if not numpy.allclose(nifti_1.get_data(), nifti_2.get_data()):
+        if not numpy.allclose(nifti_1.get_data(), nifti_2.get_data(), rtol=1e-04, atol=1e-04,):
             logging.warning('data mismatch')
             result = False
 

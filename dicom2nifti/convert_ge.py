@@ -221,7 +221,7 @@ def _get_grouped_dicoms(dicom_input):
             current_direction = current_direction / numpy.linalg.norm(current_direction)
         if current_direction is not None and \
                 previous_direction is not None and \
-                not numpy.allclose(current_direction, previous_direction, rtol=0.01, atol=0.01):
+                not numpy.allclose(current_direction, previous_direction, rtol=0.05, atol=0.05):
             previous_position = numpy.array(dicom_.ImagePositionPatient)
             previous_direction = None
             stack_index += 1

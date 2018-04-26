@@ -466,7 +466,7 @@ def validate_sliceincrement(dicoms):
     for dicom_ in dicoms[2:]:
         current_image_position = numpy.array(dicom_.ImagePositionPatient)
         current_increment = previous_image_position - current_image_position
-        if not numpy.allclose(increment, current_increment, rtol=0.05, atol=0.05):
+        if not numpy.allclose(increment, current_increment, rtol=0.05, atol=0.1):
             logger.warning('Slice increment not consistent through all slices')
             logger.warning('---------------------------------------------------------')
             logger.warning('%s %s' % (previous_image_position, increment))

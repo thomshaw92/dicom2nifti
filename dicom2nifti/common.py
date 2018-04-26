@@ -457,6 +457,7 @@ def validate_sliceincrement(dicoms):
     """
     first_image_position = numpy.array(dicoms[0].ImagePositionPatient)
     previous_image_position = numpy.array(dicoms[1].ImagePositionPatient)
+
     increment = first_image_position - previous_image_position
     for dicom_ in dicoms[2:]:
         current_image_position = numpy.array(dicom_.ImagePositionPatient)
@@ -466,6 +467,8 @@ def validate_sliceincrement(dicoms):
             logger.warning('---------------------------------------------------------')
             logger.warning('%s %s' % (previous_image_position, increment))
             logger.warning('%s %s' % (current_image_position, current_increment))
+            if 'InstanceNumber' in dicom_:
+                logger.warning('Instance Number: %s' % dicom_.InstanceNumber)
             logger.warning('---------------------------------------------------------')
             raise ConversionValidationError('SLICE_INCREMENT_INCONSISTENT')
         previous_image_position = current_image_position

@@ -39,7 +39,21 @@ def compare_nifti(nifti_file_1, nifti_file_2):
             result = False
         if not (nifti_1.get_data() == nifti_2.get_data()).all():
             logging.warning('data mismatch')
-            logging.warning(numpy.max(numpy.abs(nifti_1.get_data() - nifti_2.get_data())))
+            logging.warning('perc 10:\n%s\n%s',
+                            numpy.percentile(nifti_1.get_data(), 10),
+                            numpy.percentile(nifti_2.get_data(), 10))
+            logging.warning('perc 25:\n%s\n%s',
+                            numpy.percentile(nifti_1.get_data(), 25),
+                            numpy.percentile(nifti_2.get_data(), 25))
+            logging.warning('perc 50:\n%s\n%s',
+                            numpy.percentile(nifti_1.get_data(), 50),
+                            numpy.percentile(nifti_2.get_data(), 50))
+            logging.warning('perc 75:\n%s\n%s',
+                            numpy.percentile(nifti_1.get_data(), 75),
+                            numpy.percentile(nifti_2.get_data(), 75))
+            logging.warning('perc 90:\n%s\n%s',
+                            numpy.percentile(nifti_1.get_data(), 90),
+                            numpy.percentile(nifti_2.get_data(), 90))
             result = False
 
     except:
@@ -53,7 +67,7 @@ def compare_bval(bval_file_1, bval_file_2):
     bval_2 = numpy.loadtxt(bval_file_2)
     equal = numpy.array_equal(bval_1, bval_2)
     if not equal:
-        logging.warning('bvals not equal\n%s\n', bval_1, bval_2)
+        logging.warning('bvals not equal\n%s\n', numpy.array2string(bval_1), numpy.array2string(bval_2))
     return equal
 
 
@@ -62,5 +76,5 @@ def compare_bvec(bvec_file_1, bvec_file_2):
     bvec_2 = numpy.loadtxt(bvec_file_2)
     equal = numpy.array_equal(bvec_1, bvec_2)
     if not equal:
-        logging.warning('bvecs not equal\n%s\n', bvec_1, bvec_2)
+        logging.warning('bvecs not equal\n%s\n', numpy.array2string(bvec_1), numpy.array2string(bvec_2))
     return equal

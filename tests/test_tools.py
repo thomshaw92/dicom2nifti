@@ -16,8 +16,7 @@ def ground_thruth_filenames(input_dir):
     return nifti_file, reoriented_nifti_file, bval_file, bvec_file
 
 
-def compare_nifti(nifti_file_1, nifti_file_2):
-    result = True
+def assert_compare_nifti(nifti_file_1, nifti_file_2):
     logging.info("%s %s" % (nifti_file_1, nifti_file_2))
     work_dir = tempfile.mkdtemp()
     try:
@@ -30,36 +29,29 @@ def compare_nifti(nifti_file_1, nifti_file_2):
 
         # check the affine
         if not numpy.allclose(nifti_1.affine, nifti_2.affine):
-            logging.warning('affine mismatch')
-            result = False
+            raise Exception('affine mismatch')
 
         # check the data
         if nifti_1.get_data_dtype() != nifti_2.get_data_dtype():
-            logging.warning('dtype mismatch')
-            result = False
-        if not numpy.allclose(nifti_1.get_data(), nifti_2.get_data(), rtol=1e-04, atol=1e-04,):
-            logging.warning('data mismatch')
-            result = False
+            raise Exception('dtype mismatch')
+        if not numpy.allclose(nifti_1.get_data(), nifti_2.get_data()):
+            raise Exception('data mismatch')
 
     except:
         shutil.rmtree(work_dir)
 
-    return result
 
-
-def compare_bval(bval_file_1, bval_file_2):
+def assert_compare_bval(bval_file_1, bval_file_2):
     bval_1 = numpy.loadtxt(bval_file_1)
     bval_2 = numpy.loadtxt(bval_file_2)
     equal = numpy.allclose(bval_1, bval_2)
     if not equal:
-        logging.warning('bvals not equal\n%s\n', numpy.array2string(bval_1), numpy.array2string(bval_2))
-    return equal
+        raise Exception('bvals not equal\n%s\n', numpy.array2string(bval_1), numpy.array2string(bval_2))
 
 
-def compare_bvec(bvec_file_1, bvec_file_2):
+def assert_compare_bvec(bvec_file_1, bvec_file_2):
     bvec_1 = numpy.loadtxt(bvec_file_1)
     bvec_2 = numpy.loadtxt(bvec_file_2)
     equal = numpy.allclose(bvec_1, bvec_2)
     if not equal:
-        logging.warning('bvecs not equal\n%s\n', numpy.array2string(bvec_1), numpy.array2string(bvec_2))
-    return equal
+        raise Exception('bvecs not equal\n%s\n', numpy.array2string(bvec_1), numpy.array2string(bvec_2))

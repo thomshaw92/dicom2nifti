@@ -16,7 +16,7 @@ import tests.test_data as test_data
 
 import dicom2nifti.convert_hitachi as convert_hitachi
 from dicom2nifti.common import read_dicom_directory
-from tests.test_tools import compare_nifti, compare_bval, compare_bvec, ground_thruth_filenames
+from tests.test_tools import assert_compare_nifti, assert_compare_bval, assert_compare_bvec, ground_thruth_filenames
 
 
 class TestConversionHitachi(unittest.TestCase):
@@ -30,14 +30,14 @@ class TestConversionHitachi(unittest.TestCase):
 
             results = convert_hitachi.dicom_to_nifti(read_dicom_directory(test_data.HITACHI_ANATOMICAL),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
-            assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.HITACHI_ANATOMICAL)[0]) is True
+            assert_compare_nifti(results['NII_FILE'],
+                                        ground_thruth_filenames(test_data.HITACHI_ANATOMICAL)[0])
             self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
             results = convert_hitachi.dicom_to_nifti(read_dicom_directory(test_data.HITACHI_ANATOMICAL_IMPLICIT),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
-            assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.HITACHI_ANATOMICAL_IMPLICIT)[0]) is True
+            assert_compare_nifti(results['NII_FILE'],
+                                        ground_thruth_filenames(test_data.HITACHI_ANATOMICAL_IMPLICIT)[0])
             self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
         finally:
             shutil.rmtree(tmp_output_dir)

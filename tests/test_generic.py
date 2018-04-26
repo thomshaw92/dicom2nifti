@@ -21,7 +21,7 @@ from dicom2nifti.common import read_dicom_directory
 from dicom2nifti.compressed_dicom import is_dicom_file
 import dicom2nifti.settings as settings
 from dicom2nifti.exceptions import ConversionError
-from tests.test_tools import compare_nifti, ground_thruth_filenames
+from tests.test_tools import assert_compare_nifti, ground_thruth_filenames
 
 
 class TestConversionGeneric(unittest.TestCase):
@@ -35,8 +35,8 @@ class TestConversionGeneric(unittest.TestCase):
 
             results = convert_generic.dicom_to_nifti(read_dicom_directory(test_data.GE_ANATOMICAL),
                                                      os.path.join(tmp_output_dir, 'test.nii.gz'))
-            assert compare_nifti(results['NII_FILE'],
-                                 ground_thruth_filenames(test_data.GE_ANATOMICAL)[0]) is True
+            assert_compare_nifti(results['NII_FILE'],
+                                        ground_thruth_filenames(test_data.GE_ANATOMICAL)[0])
             self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
         finally:

@@ -16,6 +16,8 @@ GENERIC_COMPRESSED = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                   'data', 'generic', 'compressed', '001')
 GENERIC_COMPRESSED_IMPLICIT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                            'data', 'generic', 'compressed', '001_implicit')
+GENERIC_NON_ISOTROPIC = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                                     'data', 'generic', 'anatomical', '002_non_isotropic')
 
 # GE DATASETS
 GE_ANATOMICAL = os.path.join(os.path.dirname(os.path.abspath(__file__)),
@@ -28,7 +30,7 @@ GE_DTI = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                       'data', 'ge', 'dti', '001')
 
 GE_DTI_OLD = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                      'data', 'ge', 'dti', '002')
+                          'data', 'ge', 'dti', '002')
 
 GE_DTI_IMPLICIT = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                'data', 'ge', 'dti', '001_implicit')
@@ -135,4 +137,4 @@ FAILING_ORIENTATION = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                                    'data', 'failing', 'sliceorientation', '001')
 
 FAILING_NOTAVOLUME = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                      'data', 'failing', 'notavolume', '001')
+                                  'data', 'failing', 'notavolume', '001')

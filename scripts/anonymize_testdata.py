@@ -21,6 +21,7 @@ from dicom2nifti.convert_ge import is_ge
 from dicom2nifti.convert_siemens import is_siemens
 from dicom2nifti.convert_philips import is_philips
 
+
 def anonymize_directory(input_directory, output_directory=None):
     if output_directory is None:
         output_directory = input_directory
@@ -158,7 +159,7 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
             random_data = numpy.random.randint(0, 255, dicom_in.pixel_array.shape).astype(dicom_in.pixel_array.dtype)
             dicom_out.PixelData = random_data.tostring()  # = byte array (see pydicom docs)
 
-            #dicom_out.PixelData = dicom_in.pixel_array.tostring()  # = byte array (see pydicom docs)
+            # dicom_out.PixelData = dicom_in.pixel_array.tostring()  # = byte array (see pydicom docs)
 
             # noinspection PyPep8Naming
             dicom_out[0x7fe0, 0x0010].VR = 'OB'
@@ -180,7 +181,7 @@ def _anonymize_file(dicom_file_in, dicom_file_out, fields_to_keep):
     if not os.path.exists(os.path.dirname(dicom_file_out)):
         logging.info('Decompressing files')
 
-    # Save the file
+        # Save the file
         dicom_out.is_little_endian = True
     dicom_out.is_implicit_VR = False
 
@@ -218,5 +219,5 @@ def _anonymize_files(dicom_directory_in, dicom_directory_out, fields_to_keep):
             else:
                 logging.info("Skipping " + dicom_file_in + ", no dicom file")
 
-
-anonymize_directory('/***', '/***')
+if __name__ == '__main__':
+    anonymize_directory('/***', '/***')

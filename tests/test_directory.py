@@ -15,6 +15,7 @@ import tests.test_data as test_data
 
 
 class TestConversionDirectory(unittest.TestCase):
+
     def test_convert_directory(self):
 
         tmp_output_dir = tempfile.mkdtemp()

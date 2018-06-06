@@ -86,6 +86,13 @@ class TestConversionDicom(unittest.TestCase):
                                         ground_thruth_filenames(test_data.GENERIC_ANATOMICAL_IMPLICIT)[1])
             self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
 
+            results = convert_dicom.dicom_series_to_nifti(test_data.GENERIC_NON_ISOTROPIC,
+                                                          os.path.join(tmp_output_dir, 'test.nii.gz'),
+                                                          False)
+            assert_compare_nifti(results['NII_FILE'],
+                                        ground_thruth_filenames(test_data.GENERIC_NON_ISOTROPIC)[0])
+            self.assertTrue(isinstance(results['NII'], nibabel.nifti1.Nifti1Image))
+
             results = convert_dicom.dicom_series_to_nifti(test_data.GENERIC_COMPRESSED,
                                                           os.path.join(tmp_output_dir, 'test.nii.gz'),
                                                           False)

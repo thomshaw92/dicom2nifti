@@ -4,15 +4,13 @@ dicom2nifti
 
 @author: abrys
 """
-import dicom
-import dicom.UID
-import dicom.dataset
+import pydicom
+import pydicom.dataset
 import os
 
 import logging
 
 import dicom2nifti.compressed_dicom as compressed_dicom
-
 
 
 def _shrink_file(dicom_file_in, subsample_factor):
@@ -32,12 +30,12 @@ def _shrink_file(dicom_file_in, subsample_factor):
 
     # Create new dicom file
     # Set new file meta information
-    file_meta = dicom.dataset.Dataset()
+    file_meta = pydicom.dataset.Dataset()
     for key, value in dicom_in.file_meta.items():
         file_meta.add(value)
 
         # Create the FileDataset instance (initially no data elements, but file_meta supplied)
-    dicom_out = dicom.dataset.FileDataset(dicom_file_out, {}, file_meta=file_meta, preamble=b'\0' * 128)
+    dicom_out = pydicom.dataset.FileDataset(dicom_file_out, {}, file_meta=file_meta, preamble=b'\0' * 128)
 
     # Copy transfer syntax
     dicom_out.is_little_endian = dicom_in.is_little_endian
@@ -71,11 +69,13 @@ def _shrink_file(dicom_file_in, subsample_factor):
         logging.info('Decompressing files')
 
     # Save the file
-    dicom_out.save_as(dicom_file_out)
+    dicom_out.save_as(dicom_file_out, write_like_original=False)
 
 
 def main():
-    _shrink_file('/*/*.dcm', subsample_factor=8)
+    _shrink_file('/***/***.dcm',
+                 subsample_factor=8)
+
 
 if __name__ == "__main__":
     main()

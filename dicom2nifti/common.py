@@ -47,8 +47,150 @@ def read_dicom_directory(dicom_directory, stop_before_pixels=False):
                                                            defer_size=100,
                                                            stop_before_pixels=stop_before_pixels,
                                                            force=dicom2nifti.settings.pydicom_read_force)
-                dicom_input.append(dicom_headers)
+                if is_valid_imaging_dicom(dicom_headers):
+                    dicom_input.append(dicom_headers)
     return dicom_input
+
+
+def is_hitachi(dicom_input):
+    """
+    Use this function to detect if a dicom series is a hitachi dataset
+
+    :param dicom_input: directory with dicom files for 1 scan of a dicom_header
+    """
+    # read dicom header
+    header = dicom_input[0]
+
+    if 'Manufacturer' not in header or 'Modality' not in header:
+        return False  # we try generic conversion in these cases
+
+    # check if Modality is mr
+    if header.Modality.upper() != 'MR':
+        return False
+
+    # check if manufacturer is hitachi
+    if 'HITACHI' not in header.Manufacturer.upper():
+        return False
+
+    return True
+
+
+def is_ge(dicom_input):
+    """
+    Use this function to detect if a dicom series is a GE dataset
+
+    :param dicom_input: list with dicom objects
+    """
+    # read dicom header
+    header = dicom_input[0]
+
+    if 'Manufacturer' not in header or 'Modality' not in header:
+        return False  # we try generic conversion in these cases
+
+    # check if Modality is mr
+    if header.Modality.upper() != 'MR':
+        return False
+
+    # check if manufacturer is GE
+    if 'GE MEDICAL SYSTEMS' not in header.Manufacturer.upper():
+        return False
+
+    return True
+
+
+def is_philips(dicom_input):
+    """
+    Use this function to detect if a dicom series is a philips dataset
+
+    :param dicom_input: directory with dicom files for 1 scan of a dicom_header
+    """
+    # read dicom header
+    header = dicom_input[0]
+
+    if 'Manufacturer' not in header or 'Modality' not in header:
+        return False  # we try generic conversion in these cases
+
+    # check if Modality is mr
+    if header.Modality.upper() != 'MR':
+        return False
+
+    # check if manufacturer is Philips
+    if 'PHILIPS' not in header.Manufacturer.upper():
+        return False
+
+    return True
+
+
+def is_siemens(dicom_input):
+    """
+    Use this function to detect if a dicom series is a siemens dataset
+
+    :param dicom_input: directory with dicom files for 1 scan
+    """
+    # read dicom header
+    header = dicom_input[0]
+
+    # check if manufacturer is Siemens
+    if 'Manufacturer' not in header or 'Modality' not in header:
+        return False  # we try generic conversion in these cases
+
+    # check if Modality is mr
+    if header.Modality.upper() != 'MR':
+        return False
+
+    if 'SIEMENS' not in header.Manufacturer.upper():
+        return False
+
+    return True
+
+
+def is_multiframe_dicom(dicom_input):
+    """
+    Use this function to detect if a dicom series is a siemens 4D dataset
+    NOTE: Only the first slice will be checked so you can only provide an already sorted dicom directory
+    (containing one series)
+
+    :param dicom_input: directory with dicom files for 1 scan
+    """
+    # read dicom header
+    header = dicom_input[0]
+
+    if Tag(0x0002, 0x0002) not in header.file_meta:
+        return False
+    if header.file_meta[0x0002, 0x0002].value == '1.2.840.10008.5.1.4.1.1.4.1':
+        return True
+    return False
+
+
+def is_valid_imaging_dicom(dicom_header):
+    """
+    Function will do some basic checks to see if this is a valid imaging dicom
+    """
+    # if it is philips and multiframe dicom then we assume it is ok
+    try:
+        if is_philips([dicom_header]):
+            if is_multiframe_dicom([dicom_header]):
+                return True
+
+        if "SeriesInstanceUID" not in dicom_header:
+            return False
+
+        if "InstanceNumber" not in dicom_header:
+            return False
+
+        if "ImageOrientationPatient" not in dicom_header or len(dicom_header.ImageOrientationPatient) < 6:
+            return False
+
+        if "ImagePositionPatient" not in dicom_header or len(dicom_header.ImagePositionPatient) < 3:
+            return False
+
+        # for all others if there is image position patient we assume it is ok
+        if Tag(0x0020, 0x0037) not in dicom_header:
+            return False
+
+        return True
+    except (KeyError, AttributeError):
+        return False
 
 
 def get_volume_pixeldata(sorted_slices):
@@ -90,8 +232,8 @@ def _get_slice_pixeldata(dicom_slice):
     # fix overflow issues for signed data where BitsStored is lower than BitsAllocated and PixelReprentation = 1 (signed)
     # for example a hitachi mri scan can have BitsAllocated 16 but BitsStored is 12 and HighBit 11
     if dicom_slice.BitsAllocated != dicom_slice.BitsStored and \
-                    dicom_slice.HighBit == dicom_slice.BitsStored - 1 and \
-                    dicom_slice.PixelRepresentation == 1:
+            dicom_slice.HighBit == dicom_slice.BitsStored - 1 and \
+            dicom_slice.PixelRepresentation == 1:
         if dicom_slice.BitsAllocated == 16:
             data = data.astype(numpy.int16)  # assert that it is a signed type
         max_value = pow(2, dicom_slice.HighBit) - 1
@@ -264,9 +406,9 @@ def do_scaling(data, rescale_slope, rescale_intercept, private_scale_slope=1.0, 
     need_floats = False
 
     if int(rescale_slope) != rescale_slope or \
-                    int(rescale_intercept) != rescale_intercept or \
-                    private_scale_slope != 1.0 or \
-                    private_scale_intercept != 0.0:
+            int(rescale_intercept) != rescale_intercept or \
+            private_scale_slope != 1.0 or \
+            private_scale_intercept != 0.0:
         need_floats = True
 
     if not need_floats:

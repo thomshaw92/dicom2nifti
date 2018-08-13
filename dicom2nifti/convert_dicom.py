@@ -155,8 +155,8 @@ def are_imaging_dicoms(dicom_input):
     """
 
     # if it is philips and multiframe dicom then we assume it is ok
-    if convert_philips.is_philips(dicom_input):
-        if convert_philips.is_multiframe_dicom(dicom_input):
+    if common.is_philips(dicom_input):
+        if common.is_multiframe_dicom(dicom_input):
             return True
 
     # for all others if there is image position patient we assume it is ok
@@ -170,19 +170,19 @@ def _get_vendor(dicom_input):
     Possibilities are fMRI, DTI, Anatomical (if no clear type is found anatomical is used)
     """
     # check if it is siemens
-    if convert_siemens.is_siemens(dicom_input):
+    if common.is_siemens(dicom_input):
         logger.info('Found manufacturer: SIEMENS')
         return Vendor.SIEMENS
     # check if it is ge
-    if convert_ge.is_ge(dicom_input):
+    if common.is_ge(dicom_input):
         logger.info('Found manufacturer: GE')
         return Vendor.GE
     # check if it is philips
-    if convert_philips.is_philips(dicom_input):
+    if common.is_philips(dicom_input):
         logger.info('Found manufacturer: PHILIPS')
         return Vendor.PHILIPS
     # check if it is philips
-    if convert_hitachi.is_hitachi(dicom_input):
+    if common.is_hitachi(dicom_input):
         logger.info('Found manufacturer: HITACHI')
         return Vendor.HITACHI
     # generic by default

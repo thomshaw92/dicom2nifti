@@ -16,6 +16,7 @@ import numpy
 import tests.test_data as test_data
 
 import dicom2nifti.convert_ge as convert_ge
+import dicom2nifti.common as common
 from dicom2nifti.common import read_dicom_directory
 from tests.test_tools import assert_compare_nifti, assert_compare_bval, assert_compare_bvec, ground_thruth_filenames
 
@@ -109,11 +110,11 @@ class TestConversionGE(unittest.TestCase):
             shutil.rmtree(tmp_output_dir)
 
     def test_is_ge(self):
-        assert not convert_ge.is_ge(read_dicom_directory(test_data.SIEMENS_ANATOMICAL))
-        assert convert_ge.is_ge(read_dicom_directory(test_data.GE_ANATOMICAL))
-        assert not convert_ge.is_ge(read_dicom_directory(test_data.PHILIPS_ANATOMICAL))
-        assert not convert_ge.is_ge(read_dicom_directory(test_data.GENERIC_ANATOMICAL))
-        assert not convert_ge.is_ge(read_dicom_directory(test_data.HITACHI_ANATOMICAL))
+        assert not common.is_ge(read_dicom_directory(test_data.SIEMENS_ANATOMICAL))
+        assert common.is_ge(read_dicom_directory(test_data.GE_ANATOMICAL))
+        assert not common.is_ge(read_dicom_directory(test_data.PHILIPS_ANATOMICAL))
+        assert not common.is_ge(read_dicom_directory(test_data.GENERIC_ANATOMICAL))
+        assert not common.is_ge(read_dicom_directory(test_data.HITACHI_ANATOMICAL))
 
     def test_is_4d(self):
         diffusion_group = convert_ge._get_grouped_dicoms(read_dicom_directory(test_data.GE_DTI))

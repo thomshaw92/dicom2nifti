@@ -103,6 +103,7 @@ def _remove_duplicate_slices(dicoms):
                 filtered_dicoms.append(dicom_)
     return filtered_dicoms
 
+
 def _remove_localizers_by_imagetype(dicoms):
     """
     Search dicoms for localizers and delete them
@@ -117,6 +118,7 @@ def _remove_localizers_by_imagetype(dicoms):
             continue
         filtered_dicoms.append(dicom_)
     return filtered_dicoms
+
 
 def _remove_localizers_by_orientation(dicoms):
     """

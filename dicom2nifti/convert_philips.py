@@ -28,30 +28,6 @@ from dicom2nifti.exceptions import ConversionError
 pydicom_config.enforce_valid_values = False
 logger = logging.getLogger(__name__)
 
-
-def is_philips(dicom_input):
-    """
-    Use this function to detect if a dicom series is a philips dataset
-
-    :param dicom_input: directory with dicom files for 1 scan of a dicom_header
-    """
-    # read dicom header
-    header = dicom_input[0]
-
-    if 'Manufacturer' not in header or 'Modality' not in header:
-        return False  # we try generic conversion in these cases
-
-    # check if Modality is mr
-    if header.Modality.upper() != 'MR':
-        return False
-
-    # check if manufacturer is Philips
-    if 'PHILIPS' not in header.Manufacturer.upper():
-        return False
-
-    return True
-
-
 def dicom_to_nifti(dicom_input, output_file=None):
     """
     This is the main dicom to nifti conversion fuction for philips images.
@@ -63,9 +39,9 @@ def dicom_to_nifti(dicom_input, output_file=None):
     :param dicom_input: directory with dicom files for 1 scan
     """
 
-    assert is_philips(dicom_input)
+    assert common.is_philips(dicom_input)
 
-    if is_multiframe_dicom(dicom_input):
+    if common.is_multiframe_dicom(dicom_input):
         _assert_explicit_vr(dicom_input)
         logger.info('Found multiframe dicom')
         if _is_multiframe_4d(dicom_input):
@@ -96,24 +72,6 @@ def _assert_explicit_vr(dicom_input):
             raise ConversionError('IMPLICIT_VR_ENHANCED_DICOM')
 
 
-def is_multiframe_dicom(dicom_input):
-    """
-    Use this function to detect if a dicom series is a siemens 4D dataset
-    NOTE: Only the first slice will be checked so you can only provide an already sorted dicom directory
-    (containing one series)
-
-    :param dicom_input: directory with dicom files for 1 scan
-    """
-    # read dicom header
-    header = dicom_input[0]
-
-    if Tag(0x0002, 0x0002) not in header.file_meta:
-        return False
-    if header.file_meta[0x0002, 0x0002].value == '1.2.840.10008.5.1.4.1.1.4.1':
-        return True
-    return False
-
-
 def _is_multiframe_diffusion_imaging(dicom_input):
     """
     Use this function to detect if a dicom series is a philips multiframe dti dataset
@@ -142,7 +100,7 @@ def _is_multiframe_4d(dicom_input):
     Use this function to detect if a dicom series is a philips multiframe 4D dataset
     """
     # check if it is multi frame dicom
-    if not is_multiframe_dicom(dicom_input):
+    if not common.is_multiframe_dicom(dicom_input):
         return False
 
     header = dicom_input[0]
@@ -163,7 +121,7 @@ def _is_multiframe_anatomical(dicom_input):
     (containing one series)
     """
     # check if it is multi frame dicom
-    if not is_multiframe_dicom(dicom_input):
+    if not common.is_multiframe_dicom(dicom_input):
         return False
 
     header = dicom_input[0]

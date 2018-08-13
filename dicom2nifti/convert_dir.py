@@ -24,8 +24,8 @@ import six
 from future.builtins import bytes
 from six import iteritems
 
+import dicom2nifti.common as common
 import dicom2nifti.convert_dicom as convert_dicom
-import dicom2nifti.convert_philips as convert_philips
 import dicom2nifti.settings
 
 logger = logging.getLogger(__name__)
@@ -75,7 +75,10 @@ def convert_directory(dicom_directory, output_folder, compression=True, reorient
             base_filename = ""
             if 'SeriesNumber' in dicom_input[0]:
                 base_filename = _remove_accents('%s' % dicom_input[0].SeriesNumber)
-                if 'SequenceName' in dicom_input[0]:
+                if 'SeriesDescription' in dicom_input[0]:
+                    base_filename = _remove_accents('%s_%s' % (base_filename,
+                                                               dicom_input[0].SeriesDescription))
+                elif 'SequenceName' in dicom_input[0]:
                     base_filename = _remove_accents('%s_%s' % (base_filename,
                                                                dicom_input[0].SequenceName))
                 elif 'ProtocolName' in dicom_input[0]:
@@ -102,8 +105,8 @@ def _is_valid_imaging_dicom(dicom_header):
     """
     # if it is philips and multiframe dicom then we assume it is ok
     try:
-        if convert_philips.is_philips([dicom_header]):
-            if convert_philips.is_multiframe_dicom([dicom_header]):
+        if common.is_philips([dicom_header]):
+            if common.is_multiframe_dicom([dicom_header]):
                 return True
 
         if "SeriesInstanceUID" not in dicom_header:

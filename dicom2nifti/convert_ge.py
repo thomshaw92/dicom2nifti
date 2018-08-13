@@ -29,29 +29,6 @@ import dicom2nifti.convert_generic as convert_generic
 logger = logging.getLogger(__name__)
 
 
-def is_ge(dicom_input):
-    """
-    Use this function to detect if a dicom series is a GE dataset
-
-    :param dicom_input: list with dicom objects
-    """
-    # read dicom header
-    header = dicom_input[0]
-
-    if 'Manufacturer' not in header or 'Modality' not in header:
-        return False  # we try generic conversion in these cases
-
-    # check if Modality is mr
-    if header.Modality.upper() != 'MR':
-        return False
-
-    # check if manufacturer is GE
-    if 'GE MEDICAL SYSTEMS' not in header.Manufacturer.upper():
-        return False
-
-    return True
-
-
 def dicom_to_nifti(dicom_input, output_file=None):
     """
     This is the main dicom to nifti conversion fuction for ge images.
@@ -62,7 +39,7 @@ def dicom_to_nifti(dicom_input, output_file=None):
     :param output_file: the filepath to the output nifti file
     :param dicom_input: list with dicom objects
     """
-    assert is_ge(dicom_input)
+    assert common.is_ge(dicom_input)
 
     logger.info('Reading and sorting dicom files')
     grouped_dicoms = _get_grouped_dicoms(dicom_input)

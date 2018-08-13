@@ -16,33 +16,11 @@ import logging
 import pydicom.config as pydicom_config
 from pydicom.tag import Tag
 
+import dicom2nifti.common as common
 import dicom2nifti.convert_generic as convert_generic
 
 pydicom_config.enforce_valid_values = False
 logger = logging.getLogger(__name__)
-
-
-def is_hitachi(dicom_input):
-    """
-    Use this function to detect if a dicom series is a hitachi dataset
-
-    :param dicom_input: directory with dicom files for 1 scan of a dicom_header
-    """
-    # read dicom header
-    header = dicom_input[0]
-
-    if 'Manufacturer' not in header or 'Modality' not in header:
-        return False  # we try generic conversion in these cases
-
-    # check if Modality is mr
-    if header.Modality.upper() != 'MR':
-        return False
-
-    # check if manufacturer is hitachi
-    if 'HITACHI' not in header.Manufacturer.upper():
-        return False
-
-    return True
 
 
 def dicom_to_nifti(dicom_input, output_file=None):
@@ -56,7 +34,7 @@ def dicom_to_nifti(dicom_input, output_file=None):
     :param dicom_input: directory with dicom files for 1 scan
     """
 
-    assert is_hitachi(dicom_input)
+    assert common.is_hitachi(dicom_input)
 
     # TODO add validations and conversion for DTI and fMRI once testdata is available
 

@@ -42,29 +42,6 @@ class MosaicType(object):
 # pylint: enable=w0232, r0903
 
 
-def is_siemens(dicom_input):
-    """
-    Use this function to detect if a dicom series is a siemens dataset
-
-    :param dicom_input: directory with dicom files for 1 scan
-    """
-    # read dicom header
-    header = dicom_input[0]
-
-    # check if manufacturer is Siemens
-    if 'Manufacturer' not in header or 'Modality' not in header:
-        return False  # we try generic conversion in these cases
-
-    # check if Modality is mr
-    if header.Modality.upper() != 'MR':
-        return False
-
-    if 'SIEMENS' not in header.Manufacturer.upper():
-        return False
-
-    return True
-
-
 def dicom_to_nifti(dicom_input, output_file=None):
     """
     This is the main dicom to nifti conversion function for ge images.
@@ -74,7 +51,7 @@ def dicom_to_nifti(dicom_input, output_file=None):
     :param dicom_input: directory with dicom files for 1 scan
     """
 
-    assert is_siemens(dicom_input)
+    assert common.is_siemens(dicom_input)
 
     if _is_4d(dicom_input):
         logger.info('Found sequence type: MOSAIC 4D')

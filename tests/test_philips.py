@@ -15,6 +15,7 @@ import numpy
 
 import tests.test_data as test_data
 
+import dicom2nifti.common as common
 import dicom2nifti.convert_philips as convert_philips
 import dicom2nifti.settings as settings
 from dicom2nifti.common import read_dicom_directory
@@ -184,19 +185,19 @@ class TestConversionPhilips(unittest.TestCase):
             shutil.rmtree(tmp_output_dir)
 
     def test_is_philips(self):
-        assert convert_philips.is_philips(read_dicom_directory(test_data.PHILIPS_ANATOMICAL))
-        assert not convert_philips.is_philips(read_dicom_directory(test_data.SIEMENS_ANATOMICAL))
-        assert not convert_philips.is_philips(read_dicom_directory(test_data.GE_ANATOMICAL))
-        assert not convert_philips.is_philips(read_dicom_directory(test_data.GENERIC_ANATOMICAL))
-        assert not convert_philips.is_philips(read_dicom_directory(test_data.HITACHI_ANATOMICAL))
+        assert common.is_philips(read_dicom_directory(test_data.PHILIPS_ANATOMICAL))
+        assert not common.is_philips(read_dicom_directory(test_data.SIEMENS_ANATOMICAL))
+        assert not common.is_philips(read_dicom_directory(test_data.GE_ANATOMICAL))
+        assert not common.is_philips(read_dicom_directory(test_data.GENERIC_ANATOMICAL))
+        assert not common.is_philips(read_dicom_directory(test_data.HITACHI_ANATOMICAL))
 
     def test_is_multiframe_dicom(self):
-        assert convert_philips.is_multiframe_dicom(read_dicom_directory(test_data.PHILIPS_ENHANCED_DTI))
-        assert not convert_philips.is_multiframe_dicom(read_dicom_directory(test_data.PHILIPS_DTI))
-        assert convert_philips.is_multiframe_dicom(read_dicom_directory(test_data.PHILIPS_ENHANCED_ANATOMICAL))
-        assert not convert_philips.is_multiframe_dicom(read_dicom_directory(test_data.PHILIPS_ANATOMICAL))
-        assert convert_philips.is_multiframe_dicom(read_dicom_directory(test_data.PHILIPS_ENHANCED_FMRI))
-        assert not convert_philips.is_multiframe_dicom(read_dicom_directory(test_data.PHILIPS_FMRI))
+        assert common.is_multiframe_dicom(read_dicom_directory(test_data.PHILIPS_ENHANCED_DTI))
+        assert not common.is_multiframe_dicom(read_dicom_directory(test_data.PHILIPS_DTI))
+        assert common.is_multiframe_dicom(read_dicom_directory(test_data.PHILIPS_ENHANCED_ANATOMICAL))
+        assert not common.is_multiframe_dicom(read_dicom_directory(test_data.PHILIPS_ANATOMICAL))
+        assert common.is_multiframe_dicom(read_dicom_directory(test_data.PHILIPS_ENHANCED_FMRI))
+        assert not common.is_multiframe_dicom(read_dicom_directory(test_data.PHILIPS_FMRI))
 
     def test_is_multiframe_diffusion_imaging(self):
         assert convert_philips._is_multiframe_diffusion_imaging(read_dicom_directory(test_data.PHILIPS_ENHANCED_DTI))

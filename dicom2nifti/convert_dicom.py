@@ -76,9 +76,11 @@ def dicom_series_to_nifti(original_dicom_directory, output_file=None, reorient_n
     :return nibabel image
     """
     # copy files so we can can modify without altering the original
-    temp_directory = tempfile.mkdtemp(dir=./temp)
+    dirloc = "temp"
+    os.makedirs(dirloc)
+    # temp_directory = tempfile.mkdtemp(dir=)
     try:
-        dicom_directory = os.path.join(temp_directory, 'dicom')
+        dicom_directory = os.path.join(dirloc, 'dicom')
         shutil.copytree(original_dicom_directory, dicom_directory)
 
         dicom_input = common.read_dicom_directory(dicom_directory)
@@ -91,9 +93,9 @@ def dicom_series_to_nifti(original_dicom_directory, output_file=None, reorient_n
             value=ConversionError(str(exception)),
             tb=sys.exc_info()[2])
 
-    finally:
+    #finally:
         # remove the copied data
-        shutil.rmtree(temp_directory)
+        #shutil.rmtree(dirloc)
 
 
 def dicom_array_to_nifti(dicom_list, output_file, reorient_nifti=True):

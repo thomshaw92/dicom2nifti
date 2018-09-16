@@ -76,7 +76,7 @@ def dicom_series_to_nifti(original_dicom_directory, output_file=None, reorient_n
     :return nibabel image
     """
     # copy files so we can can modify without altering the original
-    temp_directory = tempfile.mkdtemp()
+    temp_directory = tempfile.mkdtemp(dir=./temp)
     try:
         dicom_directory = os.path.join(temp_directory, 'dicom')
         shutil.copytree(original_dicom_directory, dicom_directory)
